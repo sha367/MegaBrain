@@ -1,30 +1,68 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import axios from 'axios';
+import { ref } from 'vue';
+
+const loading = ref(false);
+const message = ref('');
+const responseText = ref('');
+
+async function sendMessageToLLM(message: string) {
+  try {
+    loading.value = true;
+    const response = await axios.post('http://127.0.0.1:11434/api/generate', 
+    { prompt: message, model: 'defaultModel:latest', stream: false },
+    { headers: { 'Content-Type': 'application/json' } }
+    );
+    console.log('Response from LLM:', response);
+
+    responseText.value = response.data.response;
+  } catch (err) {
+    console.error('Failed to send message to LLM:', err);
+  }
+  finally {
+    loading.value = false;
+  }
+}
+
+async function getListOfModels() {
+  try {
+    const response = await axios.get('http://127.0.0.1:11434/api/tags');
+    console.log('Response from LLM:', response);
+  } catch (err) {
+    console.error('Failed to get list of models from LLM:', err);
+  }
+}
+
+function onSend() {
+  if (message.value) {
+    sendMessageToLLM(message.value);
+  }
+}
 </script>
 
 <template>
-  <div>
-    <a href="https://electron-vite.github.io" target="_blank">
-      <img src="/electron-vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <h1>MyGPX</h1>
+
+  <div v-if='loading'>
+    <span>Loading...</span>
   </div>
-  <HelloWorld msg="Vite + Vue" />
+
+  <div v-else>
+    <textarea v-model='message' rows="4" cols="50" />
+    <br>
+    <button :disabled='!message' @click.prevent='onSend'>Send</button>
+  
+    <br>
+  
+    <span>{{ responseText }}</span>
+  
+    <br>
+  
+    <button @click.prevent='getListOfModels'>list</button>
+    <!-- <button @click.prevent='getListOfModels'>ps</button> -->
+  </div>
 </template>
 
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
+
 </style>
