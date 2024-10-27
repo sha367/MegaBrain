@@ -1,0 +1,13 @@
+# CHANGELOG
+
+MyGPX - Uncensored and private AI for everybody
+
+## [Unreleased]
+### Added
+- Initiated the electron-vite-vue app
+- Added vue-router
+- Added pinia
+- Added unoCSS
+- Added iconify-icons
+- Attached llm binary to the project
+- Added script to launch llm executable from main process

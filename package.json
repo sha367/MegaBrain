@@ -4,13 +4,17 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc && vite build && electron-builder",
+    "dev": "ELECTRON_WRAP=0 && vite",
+    "build": "ELECTRON_WRAP=0 && vue-tsc && vite build",
+    "electron:dev": "ELECTRON_WRAP=1 && vite",
+    "electron:build": "ELECTRON_WRAP=1 && vue-tsc && vite build && electron-builder",
     "preview": "vite preview"
   },
   "dependencies": {
     "axios": "^1.7.7",
-    "vue": "^3.4.21"
+    "pinia": "^2.2.4",
+    "vue": "^3.4.21",
+    "vue-router": "^4.4.5"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",

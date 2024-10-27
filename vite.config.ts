@@ -3,11 +3,18 @@ import path from 'node:path'
 import electron from 'vite-plugin-electron/simple'
 import vue from '@vitejs/plugin-vue'
 
+/**
+ * Determine whether to wrap the Electron app.
+ */
+const needElectronWrapper = process.env.ELECTRON_WRAPPER === '1';
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
-    electron({
+
+    // Use electron plugin only when need to wrap the Electron app.
+    needElectronWrapper && electron({
       main: {
         // Shortcut of `build.lib.entry`.
         entry: 'electron/main.ts',
@@ -26,4 +33,10 @@ export default defineConfig({
         : {},
     }),
   ],
+
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
 })
