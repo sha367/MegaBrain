@@ -1,13 +1,24 @@
 import { app, BrowserWindow } from 'electron';
-// import { createRequire } from 'node:module';
+
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import fs from 'node:fs';
 import { spawn, exec } from 'node:child_process';
 import http from 'node:http';
 
-// const require = createRequire(import.meta.url);
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+// @ts-ignore
+const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+/** 
+ * Whether to run LLM binary or not.
+ */
+const needRunLLM = process.env.RUN_LLM === '1';
 
 const userHome = process.env.HOME || process.env.USERPROFILE;
 const ollamaModelsPath = `${userHome}/ollama_models`;
@@ -89,6 +100,8 @@ function createWindow() {
 
 // Запуск LLM по шагам
 async function runLLM() {
+  if (!needRunLLM) return;
+
   if (!fs.existsSync(llmPath)) {
     winSendError(`LLM executable not found at path: ${llmPath}`);
     throw new Error(`LLM executable not found at ${llmPath}`);
@@ -168,6 +181,7 @@ function waitForServer() {
 // Прерывание процесса LLM при закрытии приложения
 function stopLLM() {
   exec(`pkill -f ${llmPath}`, (error) => {
+    if (!needRunLLM) return; // Skip logs if RUN_LLM is not set, but try to kill a process anyway
     if (error) console.error('Failed to terminate LLM process:', error);
     else console.log('LLM process terminated.');
   });

@@ -3,11 +3,18 @@
 MyGPX - Uncensored and private AI for everybody
 
 ## [Unreleased]
+
 ### Added
-- Initiated the electron-vite-vue app
-- Added vue-router
-- Added pinia
-- Added unoCSS
-- Added iconify-icons
-- Attached llm binary to the project
-- Added script to launch llm executable from main process
+
+- ...Adding husky
+- ...Adding eslint
+- ...Adding prettier
+- Added MIT License
+- Added `.env` to manage `whether it's an electron or a web app` and `neccessarity to run llm`;
+- Added script to launch llm executable from main process;
+- Attached llm binary to the project;
+- Added `iconify-icons`;
+- Added `unoCSS`;
+- Added `pinia`;
+- Added `vue-router`;
+- Initiated the electron-vite-vue app;

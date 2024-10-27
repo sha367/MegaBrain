@@ -1,17 +1,28 @@
-import { defineConfig } from 'vite'
 import path from 'node:path'
-import electron from 'vite-plugin-electron/simple'
+
+import { defineConfig } from 'vite'
+
 import vue from '@vitejs/plugin-vue'
+import UnoCSS from 'unocss/vite'
+import electron from 'vite-plugin-electron/simple'
+
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 /**
  * Determine whether to wrap the Electron app.
  */
-const needElectronWrapper = process.env.ELECTRON_WRAPPER === '1';
+const needElectronWrapper = process.env.VITE_ELECTRON_WRAP === '1';
+
+console.log('Electron wrapper:', needElectronWrapper ? 'enabled' : 'disabled');
+console.log(process.env.VITE_ELECTRON_WRAP);
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
+    UnoCSS(),
 
     // Use electron plugin only when need to wrap the Electron app.
     needElectronWrapper && electron({

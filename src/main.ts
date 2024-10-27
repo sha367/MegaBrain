@@ -1,25 +1,26 @@
+import 'uno.css';
 import '@/style.css';
 
 import { createApp } from 'vue';
 import App from '@/App.vue';
 
+// Vue plugins
 import { router } from '@/router';
+import { pinia } from '@/pinia';
+
+// Element Plus
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+
+// Ipc
+import { initIpcLog } from './plugins/ipc/initIpcLog';
 
 createApp(App)
   .use(router)
+  .use(pinia)
+  .use(ElementPlus)
 
   .mount('#app')
   .$nextTick(() => {
-    // Use contextBridge
-    window.ipcRenderer?.on('main-process-message', (_event, message) => {
-      console.log(message)
-    })
-
-    window.ipcRenderer?.on('main-process-error', (_event, message) => {
-      console.error(message)
-    })
-
-    window.ipcRenderer?.on('main-process-warn', (_event, message) => {
-      console.warn(message)
-    })
+    initIpcLog();
   });

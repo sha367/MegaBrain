@@ -1,25 +1,25 @@
-import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
 
-import HomePage from '@/pages/HomePage.vue';
-import ChatPage from '@/pages/ChatPage.vue';
-import SettingsPage from '@/pages/SettingsPage.vue';
+import HomePage from "@/pages/HomePage.vue";
+import ChatPage from "@/pages/ChatPage.vue";
+import SettingsPage from "@/pages/SettingsPage.vue";
 
 /**
  * Define the routes of the application
  */
 const routes: Readonly<RouteRecordRaw[]> = [
   {
-    path: '/',
-    component: HomePage
+    path: "/",
+    component: HomePage,
   },
   {
-    path: '/chat',
-    component: ChatPage
+    path: "/chat",
+    component: ChatPage,
   },
   {
-    path: '/settings',
-    component: SettingsPage
-  }
+    path: "/settings",
+    component: SettingsPage,
+  },
 ];
 
 /**
@@ -27,5 +27,5 @@ const routes: Readonly<RouteRecordRaw[]> = [
  */
 export const router = createRouter({
   routes,
-  history: createWebHashHistory()
-})
+  history: createWebHashHistory(),
+});

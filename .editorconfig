@@ -1,0 +1,29 @@
+# EditorConfig helps maintain consistent coding styles for multiple developers
+# working across different editors and IDEs
+root = true
+
+[*]
+# File encoding — UTF-8
+charset = utf-8
+# Line endings — LF
+end_of_line = lf
+# Insert a newline at the end of each file
+insert_final_newline = true
+# Use spaces for indentation instead of tabs
+indent_style = space
+# Indentation size — 2 spaces
+indent_size = 2
+# Remove any trailing whitespace at the end of lines
+trim_trailing_whitespace = true
+
+# Settings for JavaScript and TypeScript files
+[*.{js,ts,jsx,tsx}]
+# Use double quotes for strings
+quote_type = double
+# Maximum line length — 80 characters
+max_line_length = 80
+
+# Settings for JSON files
+[*.json]
+# Indentation size — 2 spaces
+indent_size = 2

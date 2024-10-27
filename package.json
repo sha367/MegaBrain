@@ -4,23 +4,29 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "ELECTRON_WRAP=0 && vite",
-    "build": "ELECTRON_WRAP=0 && vue-tsc && vite build",
-    "electron:dev": "ELECTRON_WRAP=1 && vite",
-    "electron:build": "ELECTRON_WRAP=1 && vue-tsc && vite build && electron-builder",
+    "dev": "VITE_ELECTRON_WRAP=0 vite",
+    "build": "VITE_ELECTRON_WRAP=0 vue-tsc && VITE_ELECTRON_WRAP=0 vite build",
+    "electron:dev": "VITE_ELECTRON_WRAP=1 vite",
+    "electron:build": "VITE_ELECTRON_WRAP=1 vue-tsc && VITE_ELECTRON_WRAP=1 vite build && electron-builder",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@unocss/reset": "^0.63.6",
     "axios": "^1.7.7",
+    "element-plus": "^2.8.6",
     "pinia": "^2.2.4",
     "vue": "^3.4.21",
     "vue-router": "^4.4.5"
   },
   "devDependencies": {
+    "@iconify/json": "^2.2.264",
     "@vitejs/plugin-vue": "^5.0.4",
+    "dotenv": "^16.4.5",
     "electron": "^30.0.1",
     "electron-builder": "^24.13.3",
+    "sass": "^1.80.4",
     "typescript": "^5.2.2",
+    "unocss": "^0.63.6",
     "vite": "^5.1.6",
     "vite-plugin-electron": "^0.28.6",
     "vite-plugin-electron-renderer": "^0.14.5",

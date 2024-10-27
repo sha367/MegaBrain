@@ -1,94 +1,80 @@
-import { app as l, BrowserWindow as g } from "electron";
-import { fileURLToPath as _ } from "node:url";
-import t from "node:path";
-import f from "node:fs";
-import { exec as h, spawn as S } from "node:child_process";
-import y from "node:http";
-const L = t.dirname(_(import.meta.url)), C = process.env.HOME || process.env.USERPROFILE, m = `${C}/ollama_models`;
-process.env.OLLAMA_MODELS = m;
-process.env.APP_ROOT = t.join(L, "..");
-const u = process.env.VITE_DEV_SERVER_URL, v = t.join(process.env.APP_ROOT, "dist");
-process.env.VITE_PUBLIC = u ? t.join(process.env.APP_ROOT, "public") : v;
-const T = u ? t.join(L, "../resources") : process.resourcesPath;
-let o = null;
-const i = t.join(T, "ollama/llm"), p = t.join(m, "Modelfile"), a = (e) => {
-  o == null || o.webContents.send("main-process-message", e);
-}, w = (e) => {
-  o == null || o.webContents.send("main-process-error", e);
-}, $ = (e) => {
-  o == null || o.webContents.send("main-process-warn", e);
+import { app, BrowserWindow } from "electron";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+import fs from "node:fs";
+import { exec } from "node:child_process";
+import "node:http";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const userHome = process.env.HOME || process.env.USERPROFILE;
+const ollamaModelsPath = `${userHome}/ollama_models`;
+process.env.OLLAMA_MODELS = ollamaModelsPath;
+process.env.APP_ROOT = path.join(__dirname, "..");
+const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
+const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
+process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
+const RESOURCES_PATH = VITE_DEV_SERVER_URL ? path.join(__dirname, "../resources") : process.resourcesPath;
+let win = null;
+const llmPath = path.join(RESOURCES_PATH, "ollama/llm");
+const modelFilePath = path.join(ollamaModelsPath, "Modelfile");
+const winSendMessage = (message) => {
+  win == null ? void 0 : win.webContents.send("main-process-message", message);
 };
-function x() {
-  if (f.existsSync(p)) return;
-  const r = f.readdirSync(m).find((n) => n.endsWith(".gguf"));
-  if (!r)
+const winSendError = (message) => {
+  win == null ? void 0 : win.webContents.send("main-process-error", message);
+};
+function createModelfileIfNeeded() {
+  if (fs.existsSync(modelFilePath)) return;
+  const files = fs.readdirSync(ollamaModelsPath);
+  const ggufFile = files.find((file) => file.endsWith(".gguf"));
+  if (!ggufFile) {
     throw new Error("No .gguf model file found in ollama_models directory.");
-  const s = `FROM ${t.join(m, r)}`;
-  f.writeFileSync(p, s), console.log(`Created Modelfile: ${s}`);
+  }
+  const modelfileContent = `FROM ${path.join(ollamaModelsPath, ggufFile)}`;
+  fs.writeFileSync(modelFilePath, modelfileContent);
+  console.log(`Created Modelfile: ${modelfileContent}`);
 }
-function R() {
-  o = new g({
-    icon: t.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
+function createWindow() {
+  win = new BrowserWindow({
+    icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
-      preload: t.join(L, "preload.mjs")
+      preload: path.join(__dirname, "preload.mjs")
     }
-  }), o.webContents.openDevTools(), o.webContents.on("did-finish-load", async () => {
+  });
+  win.webContents.openDevTools();
+  win.webContents.on("did-finish-load", async () => {
     try {
-      console.log("Trying to run LLM..."), a("Trying to run LLM..."), x(), await I(), console.log("LLM started successfully"), a("LLM started successfully");
-    } catch (e) {
-      console.error("Failed to run LLM:", e), w(`Failed to run LLM: ${e}`);
+      console.log("Trying to run LLM...");
+      winSendMessage("Trying to run LLM...");
+      createModelfileIfNeeded();
+      console.log("LLM started successfully");
+      winSendMessage("LLM started successfully");
+    } catch (error) {
+      console.error("Failed to run LLM:", error);
+      winSendError(`Failed to run LLM: ${error}`);
     }
-  }), u ? o.loadURL(u) : o.loadFile(t.join(v, "index.html"));
+  });
+  if (VITE_DEV_SERVER_URL) {
+    win.loadURL(VITE_DEV_SERVER_URL);
+  } else {
+    win.loadFile(path.join(RENDERER_DIST, "index.html"));
+  }
 }
-async function I() {
-  if (!f.existsSync(i))
-    throw w(`LLM executable not found at path: ${i}`), new Error(`LLM executable not found at ${i}`);
-  await M(`${i}`, ["serve"], !0), console.log("LLM serve started."), a("LLM serve started."), await j(), await O("defaultModel") ? (console.warn("Model already exists. Skipping creation."), $("Model already exists. Skipping creation.")) : (console.log("Creating model..."), a("Creating model..."), await M(`${i}`, ["create", "defaultModel", "-f", p]));
-}
-async function O(e) {
-  return new Promise((r, s) => {
-    h(`${i} list`, (n, c) => {
-      if (n)
-        console.error("Error checking model list:", n), w(`Error checking model list: ${n}`), s(n);
-      else {
-        const d = c.includes(`${e}:latest`);
-        d && a(`Models: 
-${c}`), r(d);
-      }
-    });
+function stopLLM() {
+  exec(`pkill -f ${llmPath}`, (error) => {
+    if (error) console.error("Failed to terminate LLM process:", error);
+    else console.log("LLM process terminated.");
   });
 }
-function M(e, r, s = !1) {
-  return new Promise((n, c) => {
-    const d = S(e, r, { detached: s, stdio: "inherit" });
-    s ? n(!0) : d.on("close", (E) => {
-      E === 0 ? n(!0) : c(new Error(`Command failed with exit code ${E}`));
-    });
-  });
-}
-function j() {
-  return new Promise((e, r) => {
-    const s = setInterval(() => {
-      y.get("http://127.0.0.1:11434", (n) => {
-        n.statusCode === 200 && (clearInterval(s), e(!0));
-      }).on("error", () => {
-      });
-    }, 1e3);
-    setTimeout(() => {
-      clearInterval(s), r(new Error("LLM server failed to start in time."));
-    }, 15e3);
-  });
-}
-function P() {
-  h(`pkill -f ${i}`, (e) => {
-    e ? console.error("Failed to terminate LLM process:", e) : console.log("LLM process terminated.");
-  });
-}
-l.on("window-all-closed", () => {
-  process.platform !== "darwin" && (P(), l.quit());
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    stopLLM();
+    app.quit();
+  }
 });
-l.on("before-quit", P);
-l.on("activate", () => {
-  g.getAllWindows().length === 0 && R();
+app.on("before-quit", stopLLM);
+app.on("activate", () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
 });
-l.whenReady().then(R);
+app.whenReady().then(createWindow);
