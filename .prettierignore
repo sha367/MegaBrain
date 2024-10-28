@@ -1,0 +1,48 @@
+# Ignore build outputs and node_modules
+node_modules/
+dist/
+dist-electron/
+build/
+release/
+
+# Ignore version control folders
+.git/
+
+# Ignore environment and config files
+.env
+pnpm-lock.yaml
+
+# Ignore minified files and assets
+*.min.js
+*.min.css
+*.bundle.js
+*.bundle.css
+
+# Ignore specific asset folders
+public/
+static/
+
+# Ignore IDE settings
+.vscode/
+.idea/
+.DS_Store
+
+# Ignore markdown files (optional)
+*.md
+
+# Ignore images and other media files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+
+# Ignore any additional custom directories or files
+logs/
+
+# Others
+LICENSE
+.prettierignore
+.editorconfig
+.gitignore
+resources/

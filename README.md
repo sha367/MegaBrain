@@ -11,10 +11,10 @@ and be sure that all the variables are set as you need
 
 ```bash
 # for web:
-yarn dev
-yarn build 
+pnpm dev
+pnpm build
 
 # for electron app:
-yarn electron:dev
-yarn electron:build
+pnpm electron:dev
+pnpm electron:build
 ```

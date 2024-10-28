@@ -15,7 +15,7 @@ dotenv.config();
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/** 
+/**
  * Whether to run LLM binary or not.
  */
 const needRunLLM = process.env.RUN_LLM === '1';
@@ -28,9 +28,13 @@ process.env.APP_ROOT = path.join(__dirname, '..');
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
 // const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron');
 const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist');
-process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 'public') : RENDERER_DIST;
+process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
+  ? path.join(process.env.APP_ROOT, 'public')
+  : RENDERER_DIST;
 
-const RESOURCES_PATH = VITE_DEV_SERVER_URL ? path.join(__dirname, '../resources') : process.resourcesPath;
+const RESOURCES_PATH = VITE_DEV_SERVER_URL
+  ? path.join(__dirname, '../resources')
+  : process.resourcesPath;
 let win: BrowserWindow | null = null;
 
 const llmPath = path.join(RESOURCES_PATH, 'ollama/llm');
@@ -39,14 +43,14 @@ const llmPath = path.join(RESOURCES_PATH, 'ollama/llm');
 const modelFilePath = path.join(ollamaModelsPath, 'Modelfile');
 
 const winSendMessage = (message: string) => {
-  win?.webContents.send('main-process-message', message)
-}
+  win?.webContents.send('main-process-message', message);
+};
 const winSendError = (message: string) => {
-  win?.webContents.send('main-process-error', message)
-}
+  win?.webContents.send('main-process-error', message);
+};
 const winSendWarn = (message: string) => {
-  win?.webContents.send('main-process-warn', message)
-}
+  win?.webContents.send('main-process-warn', message);
+};
 
 // Создание Modelfile, если его нет
 function createModelfileIfNeeded() {
@@ -54,7 +58,7 @@ function createModelfileIfNeeded() {
 
   // Поиск первого .gguf файла в ollamaModelsPath
   const files = fs.readdirSync(ollamaModelsPath);
-  const ggufFile = files.find(file => file.endsWith('.gguf'));
+  const ggufFile = files.find((file) => file.endsWith('.gguf'));
 
   if (!ggufFile) {
     throw new Error('No .gguf model file found in ollama_models directory.');
@@ -117,7 +121,12 @@ async function runLLM() {
   if (!modelExists) {
     console.log('Creating model...');
     winSendMessage('Creating model...');
-    await runCommand(`${llmPath}`, ['create', 'defaultModel', '-f', modelFilePath]);
+    await runCommand(`${llmPath}`, [
+      'create',
+      'defaultModel',
+      '-f',
+      modelFilePath,
+    ]);
   } else {
     console.warn('Model already exists. Skipping creation.');
     winSendWarn('Model already exists. Skipping creation.');
@@ -163,12 +172,14 @@ function runCommand(command: string, args: string[], detached = false) {
 function waitForServer() {
   return new Promise((resolve, reject) => {
     const interval = setInterval(() => {
-      http.get('http://127.0.0.1:11434', (res) => {
-        if (res.statusCode === 200) {
-          clearInterval(interval);
-          resolve(true);
-        }
-      }).on('error', () => {});
+      http
+        .get('http://127.0.0.1:11434', (res) => {
+          if (res.statusCode === 200) {
+            clearInterval(interval);
+            resolve(true);
+          }
+        })
+        .on('error', () => {});
     }, 1000);
 
     setTimeout(() => {

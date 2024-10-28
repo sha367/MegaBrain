@@ -1,0 +1,46 @@
+{
+  /** Maximum line length for improved readability */
+  printWidth: 80,
+
+  /** Number of spaces per indentation level */
+  tabWidth: 2,
+
+  /** Use spaces instead of tabs for indentation */
+  useTabs: false,
+
+  /** Use single quotes in JavaScript, TypeScript, and Vue files */
+  singleQuote: true,
+
+  /** Add trailing commas wherever possible for cleaner diffs */
+  trailingComma: 'all',
+
+  /** Include spaces between brackets in object literals */
+  bracketSpacing: true,
+
+  /** Use single quotes in JSX for consistency with JavaScript */
+  jsxSingleQuote: true,
+
+  /** Add a semicolon at the end of every statement */
+  semi: true,
+
+  /** Use LF for line endings to maintain consistency across environments */
+  endOfLine: 'lf',
+
+  /** Only add quotes around object properties when necessary */
+  quoteProps: 'as-needed',
+
+  /** Indent content inside <script> and <style> tags in Vue files */
+  vueIndentScriptAndStyle: true,
+
+  /** Ignore whitespace sensitivity in HTML for cleaner formatting */
+  htmlWhitespaceSensitivity: 'ignore',
+
+  /** Preserve line breaks in text, useful for Markdown and comments */
+  proseWrap: 'preserve',
+
+  /** Always include parentheses around arrow function arguments */
+  arrowParens: 'always',
+
+  /** Enable Prettier support for Tailwind CSS formatting */
+  plugins: ['prettier-plugin-tailwindcss'],
+}

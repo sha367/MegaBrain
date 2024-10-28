@@ -2,7 +2,8 @@ import {
   defineConfig,
   presetUno,
   presetAttributify,
-  transformerDirectives } from 'unocss';
+  transformerDirectives,
+} from 'unocss';
 import { presetIcons } from 'unocss';
 
 export default defineConfig({
@@ -10,11 +11,9 @@ export default defineConfig({
     presetUno(),
     presetAttributify({
       prefix: '_',
-      prefixedOnly: true
+      prefixedOnly: true,
     }),
-    presetIcons()
+    presetIcons(),
   ],
-  transformers: [
-    transformerDirectives()
-  ]
+  transformers: [transformerDirectives()],
 });

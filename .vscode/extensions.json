@@ -1,3 +1,13 @@
 {
-  "recommendations": ["Vue.volar"],
+  "recommendations": [
+    "Vue.volar",                        // Vue-official
+    "antfu.unocss",                     // UnoCSS
+    "bradlc.vscode-tailwindcss",        // Tailwind CSS Intellisense
+    "stylelint.vscode-stylelint",       // Stylelint
+    "mrmlnc.vscode-scss",               // SCSS Intellisense
+    "sibiraj-s.vscode-scss-formatter",  // SCSS Formatter
+    "esbenp.prettier-vscode",           // Prettier
+    "yoavbls.pretty-ts-errors",         // Pretty TS Errors
+    "mrmlnc.vscode-json5",              // JSON5 syntax
+  ],
 }

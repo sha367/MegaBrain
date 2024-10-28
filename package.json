@@ -1,6 +1,7 @@
 {
   "name": "mygpx",
-  "private": true,
+  "private": false,
+  "license": "MIT",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
@@ -8,7 +9,11 @@
     "build": "VITE_ELECTRON_WRAP=0 vue-tsc && VITE_ELECTRON_WRAP=0 vite build",
     "electron:dev": "VITE_ELECTRON_WRAP=1 vite",
     "electron:build": "VITE_ELECTRON_WRAP=1 vue-tsc && VITE_ELECTRON_WRAP=1 vite build && electron-builder",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prettier:fix": "prettier --write .",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix && pnpm run prettier:fix",
+    "prepare": "husky"
   },
   "dependencies": {
     "@unocss/reset": "^0.63.6",
@@ -19,13 +24,21 @@
     "vue-router": "^4.4.5"
   },
   "devDependencies": {
+    "@eslint/js": "^9.13.0",
     "@iconify/json": "^2.2.264",
     "@vitejs/plugin-vue": "^5.0.4",
     "dotenv": "^16.4.5",
     "electron": "^30.0.1",
     "electron-builder": "^24.13.3",
+    "eslint": "^9.13.0",
+    "eslint-plugin-vue": "^9.30.0",
+    "globals": "^15.11.0",
+    "husky": "^9.1.6",
+    "prettier": "^3.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.8",
     "sass": "^1.80.4",
     "typescript": "^5.2.2",
+    "typescript-eslint": "^8.11.0",
     "unocss": "^0.63.6",
     "vite": "^5.1.6",
     "vite-plugin-electron": "^0.28.6",

@@ -1,0 +1,36 @@
+{
+  extends: [
+    'stylelint-config-standard', // Basic Stylelint rules
+    'stylelint-config-recommended-scss', // SCSS support
+    'stylelint-config-unocss', // UnoCSS support
+  ],
+  plugins: [
+    'stylelint-scss', // SCSS plugin for Stylelint
+    'stylelint-order', // Plugin for property ordering
+  ],
+  rules: {
+    // SCSS variable naming pattern
+    'scss/dollar-variable-pattern': '^[_a-z]+[a-zA-Z0-9-]*$',
+
+    // Alphabetical order for properties
+    'order/properties-alphabetical-order': true,
+
+    // Disable rules not relevant to UnoCSS
+    'selector-class-pattern': null, // UnoCSS generates custom class names
+    'keyframes-name-pattern': null, // UnoCSS generates custom keyframe names
+
+    // Other rules
+    'color-hex-length': 'short', // Use short hex notation
+    'string-quotes': 'single', // Use single quotes
+    'max-nesting-depth': 3, // Limit nesting depth
+    'no-duplicate-selectors': true, // Disallow duplicate selectors
+  },
+  ignoreFiles: [
+    '**/node_modules/**',
+    '**/dist/**',
+    '**/dist-electron/**',
+    '**/resources/**',
+    '**/release/**',
+    '**/public/**',
+  ],
+}

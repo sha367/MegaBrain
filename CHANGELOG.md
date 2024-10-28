@@ -6,9 +6,10 @@ MyGPX - Uncensored and private AI for everybody
 
 ### Added
 
-- ...Adding husky
-- ...Adding eslint
-- ...Adding prettier
+- ...Adding layout to Home-, Chat- and SettingsPage
+- Added husky
+- Added eslint
+- Added prettier
 - Added MIT License
 - Added `.env` to manage `whether it's an electron or a web app` and `neccessarity to run llm`;
 - Added script to launch llm executable from main process;

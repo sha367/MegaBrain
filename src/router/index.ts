@@ -1,23 +1,23 @@
-import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
+import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
 
-import HomePage from "@/pages/HomePage.vue";
-import ChatPage from "@/pages/ChatPage.vue";
-import SettingsPage from "@/pages/SettingsPage.vue";
+import HomePage from '@/pages/HomePage.vue';
+import ChatPage from '@/pages/ChatPage.vue';
+import SettingsPage from '@/pages/SettingsPage.vue';
 
 /**
  * Define the routes of the application
  */
 const routes: Readonly<RouteRecordRaw[]> = [
   {
-    path: "/",
+    path: '/',
     component: HomePage,
   },
   {
-    path: "/chat",
+    path: '/chat',
     component: ChatPage,
   },
   {
-    path: "/settings",
+    path: '/settings',
     component: SettingsPage,
   },
 ];

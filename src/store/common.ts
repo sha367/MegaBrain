@@ -13,6 +13,6 @@ export const useCommonStore = defineStore('common', {
   getters: {
     doubledValue(state) {
       return state.value * 2;
-    }
-  }
+    },
+  },
 });

@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from "vue-router";
-import Container from "./components/shared/Container.vue";
+  import { RouterLink, RouterView } from 'vue-router';
+  import myContainer from '@/components/myContainer.vue';
 </script>
 
 <template>
-  <div class="w-screen bg-blue-300 flex items-center py-4">
-    <Container>
-      <h1 class="flex items-center gap-1 color-white text-xl">
+  <div class="flex w-screen items-center bg-blue-300 py-4">
+    <myContainer>
+      <h1 class="color-white flex items-center gap-1 text-xl">
         <div _i-hugeicons:ai-brain-03 _text-4xl></div>
         <span>MyGPX</span>
       </h1>
-    </Container>
+    </myContainer>
   </div>
 
   <nav>
@@ -27,5 +27,3 @@ import Container from "./components/shared/Container.vue";
 
   <RouterView />
 </template>
-
-<style scoped></style>
