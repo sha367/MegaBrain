@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "prettier:fix": "prettier --write .",
     "lint": "eslint src/",
-    "lint:fix": "eslint src/ --fix && pnpm run prettier:fix",
+    "lint:fix": "eslint src/ --fix",
     "prepare": "husky"
   },
   "dependencies": {

@@ -13,11 +13,15 @@ const routes: Readonly<RouteRecordRaw[]> = [
     component: HomePage,
   },
   {
-    path: '/chat',
+    path: '/ChatPage',
     component: ChatPage,
   },
   {
-    path: '/settings',
+    path: '/ChatPage/:id',
+    component: ChatPage,
+  },
+  {
+    path: '/SettingsPage',
     component: SettingsPage,
   },
 ];

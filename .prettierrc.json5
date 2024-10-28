@@ -30,7 +30,7 @@
   quoteProps: 'as-needed',
 
   /** Indent content inside <script> and <style> tags in Vue files */
-  vueIndentScriptAndStyle: true,
+  vueIndentScriptAndStyle: false,
 
   /** Ignore whitespace sensitivity in HTML for cleaner formatting */
   htmlWhitespaceSensitivity: 'ignore',
@@ -43,4 +43,13 @@
 
   /** Enable Prettier support for Tailwind CSS formatting */
   plugins: ['prettier-plugin-tailwindcss'],
+
+  overrides: [
+    {
+      files: '*.vue',
+      options: {
+        singleQuote: true,
+      },
+    },
+  ],
 }

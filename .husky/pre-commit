@@ -2,7 +2,7 @@
 . "$(dirname "$0")/_/husky.sh"
 
 # Run lint:fix and prevent commit if there are errors
-pnpm lint:fix
+pnpm lint
 
 # If there were any errors in lint:fix, exit with code 1 to block commit
 if [ $? -ne 0 ]; then

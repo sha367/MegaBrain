@@ -18,8 +18,8 @@ trim_trailing_whitespace = true
 
 # Settings for JavaScript and TypeScript files
 [*.{js,ts,jsx,tsx}]
-# Use double quotes for strings
-quote_type = double
+# Use single quotes for strings
+quote_type = single
 # Maximum line length — 80 characters
 max_line_length = 80
 
