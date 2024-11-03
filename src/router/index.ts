@@ -1,6 +1,5 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
 
-import HomePage from '@/pages/HomePage.vue';
 import ChatPage from '@/pages/ChatPage.vue';
 import SettingsPage from '@/pages/SettingsPage.vue';
 
@@ -10,7 +9,7 @@ import SettingsPage from '@/pages/SettingsPage.vue';
 const routes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/',
-    component: HomePage,
+    component: ChatPage,
   },
   {
     path: '/ChatPage',

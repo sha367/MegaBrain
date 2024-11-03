@@ -2,17 +2,11 @@ import { defineStore } from 'pinia';
 
 export const useCommonStore = defineStore('common', {
   state: () => ({
-    value: 0,
+    loading: false,
   }),
   actions: {
-    setValue(newValue: number) {
-      console.log('setValue', newValue);
-      this.value = newValue;
-    },
-  },
-  getters: {
-    doubledValue(state) {
-      return state.value * 2;
+    setLoading(newValue: boolean) {
+      this.loading = newValue;
     },
   },
 });

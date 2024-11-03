@@ -1,6 +1,6 @@
 {
   /** Maximum line length for improved readability */
-  printWidth: 80,
+  printWidth: 100,
 
   /** Number of spaces per indentation level */
   tabWidth: 2,

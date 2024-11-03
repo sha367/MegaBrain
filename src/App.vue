@@ -1,29 +1,25 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router';
+import { RouterView } from 'vue-router';
 import AppHeader from './components/AppHeader.vue';
+import { useCommonStore } from './store/common';
+import MyScreenLoader from './components/shared/myScreenLoader.vue';
+
+const commonStore = useCommonStore();
 </script>
 
 <template>
-  <AppHeader />
+  <div class='w-screen h-screen overflow-hidden flex flex-col bg-gray-100 dark:bg-gray-800'>
+    <MyScreenLoader :show='commonStore.loading' />
 
-  <nav class='bg-red flex'>
-    <RouterLink to='/ChatPage'>
-      <ElButton>Chat</ElButton>
-    </RouterLink>
-    <RouterLink to='/SettingsPage'>
-      <ElButton>Settings</ElButton>
-    </RouterLink>
-  </nav>
+    <AppHeader />
 
-  <RouterView />
+    <RouterView />
+  </div>
 </template>
 
 <style lang="scss">
-Div {
-  @apply flex border border-2 border-blue-500 bg-blue-500 p-4 text-white shadow-2xl;
-}
-
-.div123 {
-  @apply bg-red;
+#app {
+  font-family: Roboto, sans-serif;
+  font-weight: 400;
 }
 </style>

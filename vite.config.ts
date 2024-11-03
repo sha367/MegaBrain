@@ -2,6 +2,9 @@ import path from 'node:path';
 
 import { defineConfig } from 'vite';
 
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import vue from '@vitejs/plugin-vue';
 import UnoCSS from 'unocss/vite';
 import electron from 'vite-plugin-electron/simple';
@@ -15,12 +18,15 @@ dotenv.config();
  */
 const needElectronWrapper = process.env.VITE_ELECTRON_WRAP === '1';
 
-console.log('Electron wrapper:', needElectronWrapper ? 'enabled' : 'disabled');
-console.log(process.env.VITE_ELECTRON_WRAP);
-
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    AutoImport({
+      resolvers: [ElementPlusResolver()],
+    }),
+    Components({
+      resolvers: [ElementPlusResolver()],
+    }),
     vue(),
     UnoCSS(),
 

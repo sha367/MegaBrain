@@ -3,6 +3,7 @@ import {
   presetUno,
   presetAttributify,
   transformerDirectives,
+  presetMini,
 } from 'unocss';
 import { presetIcons } from 'unocss';
 
@@ -14,6 +15,7 @@ export default defineConfig({
       prefixedOnly: true,
     }),
     presetIcons(),
+    presetMini(),
   ],
   transformers: [transformerDirectives()],
 });
