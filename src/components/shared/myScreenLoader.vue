@@ -9,10 +9,10 @@ const props = defineProps<{
 <template>
   <transition
     enter-from-class='opacity-0'
-    enter-active-class='transition-opacity'
+    enter-active-class='transition-opacity duration-100'
     enter-to-class='opacity-100'
     leave-from-class='opacity-100'
-    leave-active-class='transition-opacity'
+    leave-active-class='transition-opacity duration-500'
     leave-to-class='opacity-0'
   >
     <div
@@ -34,7 +34,7 @@ const props = defineProps<{
 .loader-screen {
   @apply
     fixed top-0 left-0 w-screen h-screen
-    bg-blue-500 bg-gradient-to-br from-blue-900 to-sky-500
+    bg-blue-500 bg-gradient-to-br from-white to-indigo-500
     z-50;
 }
 </style>

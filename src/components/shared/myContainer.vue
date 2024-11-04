@@ -6,8 +6,8 @@ const props = defineProps<{
 
 <template>
   <div
-    class='max-w-screen mx-auto px-4'
-    :class='props.tiny ? "w-[60rem]" : "w-full"'
+    class='w-full mx-auto px-4'
+    :class='props.tiny ? "max-w-[100rem]" : "max-w-screen w-full"'
   >
     <slot />
   </div>

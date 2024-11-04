@@ -11,32 +11,27 @@ const toggleDark = useToggle(isDark)
 </script>
 
 <template>
-  <div class='w-screen bg-blue-500 shadow-2xl color-white'>
+  <div class='w-screen bg-white shadow-md text-gray-900 z-10'>
     <MyContainer class='py-4'>
       <div class='flex justify-between items-center'>
-        <div class='cursor-pointer text-2xl'>
-          <div _i-line-md:menu />
-        </div>
-
         <RouterLink to='/'>
           <h1 class='flex items-center gap-1 text-xl'>
             <span class='font-black'>MyGPX</span>
           </h1>
         </RouterLink>
 
-        <div class='flex gap-4 items-center'>
-          <RouterLink
+        <div class='flex gap-4 items-center text-gray-400'>
+          <!-- <RouterLink
             :to='currentRoute.path !== "/SettingsPage" ? "/SettingsPage" : "/ChatPage"'
-            class='rounded-full overflow-hidden p-1'
-            :class='currentRoute.path === "/SettingsPage" ? "bg-gray-100 text-blue-500" : ""'
+            class='p-2 rounded-full overflow-hidden p-1 text-2xl hover:bg-gray-200 hover:text-indigo-500'
+            :class='currentRoute.path === "/SettingsPage" ? "text-indigo-500" : ""'
           >
             <div
               _i-line-md:cog-filled
-              _text-2xl
             />
-          </RouterLink>
+          </RouterLink> -->
           <div
-            class='cursor-pointer text-2xl'
+            class='p-2 rounded-full cursor-pointer text-2xl hover:text-indigo-500 hover:bg-gray-200'
             @click='() => toggleDark()'
           >
             <div

@@ -3,83 +3,35 @@ import { TChatMessage } from '@/components/chat/chat.types';
 import ChatBottomPannel from '@/components/chat/ChatBottomPannel.vue';
 import ChatMessageBlock from '@/components/chat/ChatMessageBlock.vue';
 import ChatMessagesScroll from '@/components/chat/ChatMessagesScroll.vue';
+import ChatStartNew from '@/components/chat/ChatStartNew.vue';
 import MyContainer from '@/components/shared/myContainer.vue';
-import { ref, watch } from 'vue';
+import { mockMessages } from '@/mock/messages';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
-const messages = ref<TChatMessage[]>([
-  {
-    id: 'aaa1',
-    content: 'Hello, how can I help you?',
-    from: '__llama__',
-    timestamp: new Date('01-11-2024 15:20').toISOString(),
-  },
-  {
-    id: 'aaa2',
-    content: 'Tell me a joke',
-    from: '__user__',
-    timestamp: new Date('01-11-2024 16:30').toISOString(),
-  },
-  {
-    id: 'aaa3',
-    content: 'Why don’t skeletons fight each other?\n\nThey don’t have the guts!',
-    from: '__llama__',
-    timestamp: new Date('01-11-2024 20:01').toISOString(),
-  },
-  {
-    id: 'aaa1',
-    content: 'Hello, how can I help you?',
-    from: '__llama__',
-    timestamp: new Date('01-11-2024 15:20').toISOString(),
-  },
-  {
-    id: 'aaa2',
-    content: 'Tell me a joke',
-    from: '__user__',
-    timestamp: new Date('01-11-2024 16:30').toISOString(),
-  },
-  {
-    id: 'aaa3',
-    content: 'Why don’t skeletons fight each other?\n\nThey don’t have the guts!',
-    from: '__llama__',
-    timestamp: new Date('01-11-2024 20:01').toISOString(),
-  },
-  {
-    id: 'aaa1',
-    content: 'Hello, how can I help you?',
-    from: '__llama__',
-    timestamp: new Date('01-11-2024 15:20').toISOString(),
-  },
-  {
-    id: 'aaa2',
-    content: 'Tell me a joke',
-    from: '__user__',
-    timestamp: new Date('01-11-2024 16:30').toISOString(),
-  },
-  {
-    id: 'aaa3',
-    content: 'Why don’t skeletons fight each other?\n\nThey don’t have the guts!',
-    from: '__llama__',
-    timestamp: new Date('01-11-2024 20:01').toISOString(),
-  },
-  {
-    id: 'aaa1',
-    content: 'Hello, how can I help you?',
-    from: '__llama__',
-    timestamp: new Date('01-11-2024 15:20').toISOString(),
-  },
-  {
-    id: 'aaa2',
-    content: 'Tell me a joke',
-    from: '__user__',
-    timestamp: new Date('01-11-2024 16:30').toISOString(),
-  },
-  {
-    id: 'aaa3',
-    content: 'Why don’t skeletons fight each other?\n\nThey don’t have the guts!',
-    from: '__llama__',
-    timestamp: new Date('01-11-2024 20:01').toISOString(),
-  },
-]);
+const route = useRoute();
+
+const chatId = computed(() => route.params.id as string);
+const isNewChat = computed(() => !chatId.value);
+const messages = ref<TChatMessage[]>([]);
+
+const setMock = (id: string) => {
+  // Mock
+  if (id) {
+    messages.value = [];
+    nextTick(() => {
+      messages.value = mockMessages;
+    });
+  }
+}
+
+watch(chatId, (newChatId) => {
+  setMock(newChatId);
+});
+
+onMounted(() => {
+  setMock(chatId.value);
+});
 
 /** Send the value from ChatBottomPannel to server */
 const sendMessage = (content: string) => {
@@ -104,7 +56,13 @@ watch(() => messages.value, () => {
 <template>
   <div class='flex flex-col grow overflow-hidden'>
     <div class='flex flex-col grow overflow-hidden'>
-      <ChatMessagesScroll ref='chatMessagesScroll'>
+      <ChatStartNew
+        v-if='isNewChat'
+      />
+      <ChatMessagesScroll
+        v-else
+        ref='chatMessagesScroll'
+      >
         <MyContainer
           tiny
           class='flex flex-col h-full gap-2 py-4'

@@ -30,7 +30,7 @@ const autoResize = () => {
     const textareaElement = textareaRef.value?.$el.querySelector('textarea') as HTMLTextAreaElement | null;
     if (textareaElement) {
       textareaElement.style.height = 'auto'; // Сброс высоты
-      textareaElement.style.height = `${textareaElement.scrollHeight - 20}px`; // Установка новой высоты
+      textareaElement.style.height = `${textareaElement.scrollHeight}px`; // Установка новой высоты
     }
   });
 };
