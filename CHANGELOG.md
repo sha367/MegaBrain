@@ -6,7 +6,8 @@ MyGPX - Uncensored and private AI for everybody
 
 ### Added
 
-- ...Adding layout to Home-, Chat- and SettingsPage
+- ...
+- Added layout to Chat- and SettingsPage
 - Added husky
 - Added eslint
 - Added prettier

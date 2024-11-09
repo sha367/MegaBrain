@@ -16,7 +16,7 @@ const suggestedModelFiles = ref<TModelFile[]>([
 ]);
 
 onMounted(() => {
-  // modelFiles.value = mockModelFiles;
+  modelFiles.value = mockModelFiles;
 });
 </script>
 

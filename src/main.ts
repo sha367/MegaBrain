@@ -11,7 +11,6 @@ import { pinia } from '@/pinia';
 // Ipc
 import { initIpcLog } from './plugins/ipc/initIpcLog';
 
-
 createApp(App)
   .use(router)
   .use(pinia)

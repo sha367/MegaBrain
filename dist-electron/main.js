@@ -1,14 +1,16 @@
-import { app, BrowserWindow } from "electron";
-import { createRequire } from "node:module";
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+import { BrowserWindow, ipcMain, app } from "electron";
 import { fileURLToPath } from "node:url";
 import path$1 from "node:path";
-import fs$1 from "node:fs";
-import { exec, spawn } from "node:child_process";
-import http from "node:http";
 import require$$0 from "fs";
 import require$$1 from "path";
 import require$$2 from "os";
 import require$$3 from "crypto";
+import http from "node:http";
+import fs$1 from "node:fs";
+import { spawn, exec } from "node:child_process";
 function getDefaultExportFromCjs(x) {
   return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
 }
@@ -356,112 +358,150 @@ main$1.exports.populate = DotenvModule.populate;
 main$1.exports = DotenvModule;
 var mainExports = main$1.exports;
 const dotenv = /* @__PURE__ */ getDefaultExportFromCjs(mainExports);
-dotenv.config();
-createRequire(import.meta.url);
-const __dirname = path$1.dirname(fileURLToPath(import.meta.url));
-const needRunLLM = process.env.RUN_LLM === "1";
-const userHome = process.env.HOME || process.env.USERPROFILE;
-const ollamaModelsPath = `${userHome}/ollama_models`;
-process.env.OLLAMA_MODELS = ollamaModelsPath;
-process.env.APP_ROOT = path$1.join(__dirname, "..");
-const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
-const RENDERER_DIST = path$1.join(process.env.APP_ROOT, "dist");
-process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path$1.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
-const RESOURCES_PATH = VITE_DEV_SERVER_URL ? path$1.join(__dirname, "../resources") : process.resourcesPath;
-let win = null;
-const llmPath = path$1.join(RESOURCES_PATH, "ollama/llm");
-const modelFilePath = path$1.join(ollamaModelsPath, "Modelfile");
-const winSendMessage = (message) => {
-  win == null ? void 0 : win.webContents.send("main-process-message", message);
+const getConfigs = (dirname) => {
+  const RUN_LLM = process.env.RUN_LLM === "1";
+  const USER_HOME = process.env.HOME || process.env.USERPROFILE;
+  const OLLAMA_MODELS = `${USER_HOME}/ollama_models`;
+  const APP_ROOT = path$1.join(dirname, "..");
+  const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
+  const MAIN_DIST = path$1.join(APP_ROOT, "dist-electron");
+  const RENDERER_DIST = path$1.join(APP_ROOT, "dist");
+  const RESOURCES_PATH = VITE_DEV_SERVER_URL ? path$1.join(dirname, "../resources") : process.resourcesPath;
+  const LLM_PATH = path$1.join(RESOURCES_PATH, "ollama/llm");
+  const MODEL_FILE_PATH = path$1.join(OLLAMA_MODELS, "Modelfile");
+  process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path$1.join(APP_ROOT, "public") : RENDERER_DIST;
+  process.env.OLLAMA_MODELS = OLLAMA_MODELS;
+  return {
+    RUN_LLM,
+    USER_HOME,
+    OLLAMA_MODELS,
+    APP_ROOT,
+    VITE_DEV_SERVER_URL,
+    MAIN_DIST,
+    RENDERER_DIST,
+    RESOURCES_PATH,
+    LLM_PATH,
+    MODEL_FILE_PATH
+  };
 };
-const winSendError = (message) => {
-  win == null ? void 0 : win.webContents.send("main-process-error", message);
+const _ConfigProvider = class _ConfigProvider {
+  static get configs() {
+    return _ConfigProvider._configs;
+  }
+  /** ! init before usage configs ! */
+  static initConfigs(dirname) {
+    _ConfigProvider._configs = getConfigs(dirname);
+  }
 };
-const winSendWarn = (message) => {
-  win == null ? void 0 : win.webContents.send("main-process-warn", message);
-};
-function createModelfileIfNeeded() {
-  if (fs$1.existsSync(modelFilePath)) return;
-  const files = fs$1.readdirSync(ollamaModelsPath);
-  const ggufFile = files.find((file) => file.endsWith(".gguf"));
-  if (!ggufFile) {
-    throw new Error("No .gguf model file found in ollama_models directory.");
+__publicField(_ConfigProvider, "_configs");
+let ConfigProvider = _ConfigProvider;
+const _WindowProvider = class _WindowProvider {
+  static init(dirname) {
+    _WindowProvider.dirname = dirname;
   }
-  const modelfileContent = `FROM ${path$1.join(ollamaModelsPath, ggufFile)}`;
-  fs$1.writeFileSync(modelFilePath, modelfileContent);
-  console.log(`Created Modelfile: ${modelfileContent}`);
-}
-function createWindow() {
-  win = new BrowserWindow({
-    icon: path$1.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
-    webPreferences: {
-      preload: path$1.join(__dirname, "preload.mjs")
-    }
-  });
-  win.webContents.openDevTools();
-  win.webContents.on("did-finish-load", async () => {
-    try {
-      console.log("Trying to run LLM...");
-      winSendMessage("Trying to run LLM...");
-      createModelfileIfNeeded();
-      await runLLM();
-      console.log("LLM started successfully");
-      winSendMessage("LLM started successfully");
-    } catch (error) {
-      console.error("Failed to run LLM:", error);
-      winSendError(`Failed to run LLM: ${error}`);
-    }
-  });
-  if (VITE_DEV_SERVER_URL) {
-    win.loadURL(VITE_DEV_SERVER_URL);
-  } else {
-    win.loadFile(path$1.join(RENDERER_DIST, "index.html"));
+  static getWin() {
+    return _WindowProvider._win;
   }
-}
-async function runLLM() {
-  if (!needRunLLM) return;
-  if (!fs$1.existsSync(llmPath)) {
-    winSendError(`LLM executable not found at path: ${llmPath}`);
-    throw new Error(`LLM executable not found at ${llmPath}`);
+  static deleteWindow() {
+    _WindowProvider._win = null;
   }
-  await runCommand(`${llmPath}`, ["serve"], true);
-  console.log("LLM serve started.");
-  winSendMessage("LLM serve started.");
-  await waitForServer();
-  const modelExists = await checkModelExists("defaultModel");
-  if (!modelExists) {
-    console.log("Creating model...");
-    winSendMessage("Creating model...");
-    await runCommand(`${llmPath}`, [
-      "create",
-      "defaultModel",
-      "-f",
-      modelFilePath
-    ]);
-  } else {
-    console.warn("Model already exists. Skipping creation.");
-    winSendWarn("Model already exists. Skipping creation.");
+  static setOnBeforeMount(callback) {
+    _WindowProvider.onBeforeMount = callback;
   }
-}
-async function checkModelExists(modelName) {
-  return new Promise((resolve, reject) => {
-    exec(`${llmPath} list`, (error, stdout) => {
-      if (error) {
-        console.error("Error checking model list:", error);
-        winSendError(`Error checking model list: ${error}`);
-        reject(error);
-      } else {
-        const modelExists = stdout.includes(`${modelName}:latest`);
-        if (modelExists) {
-          winSendMessage(`Models: 
-${stdout}`);
-        }
-        resolve(modelExists);
+  static createWindow() {
+    var _a;
+    console.log("========================");
+    console.log("=======Creating window=====");
+    console.log("========================");
+    _WindowProvider._win = new BrowserWindow({
+      icon: path$1.join(process.env.VITE_PUBLIC, "images/ollama-avatar.png"),
+      width: 1080,
+      minWidth: 1080,
+      height: 800,
+      minHeight: 800,
+      webPreferences: {
+        preload: path$1.join(_WindowProvider.dirname, "preload.mjs")
       }
     });
-  });
+    _WindowProvider._win.webContents.openDevTools();
+    (_a = _WindowProvider.onBeforeMount) == null ? void 0 : _a.call(_WindowProvider);
+    if (ConfigProvider.configs.VITE_DEV_SERVER_URL) {
+      _WindowProvider._win.loadURL(ConfigProvider.configs.VITE_DEV_SERVER_URL);
+    } else {
+      _WindowProvider._win.loadFile(path$1.join(ConfigProvider.configs.RENDERER_DIST, "index.html"));
+    }
+    _WindowProvider._win.on("closed", () => {
+      _WindowProvider._win = null;
+    });
+  }
+};
+__publicField(_WindowProvider, "dirname", "");
+__publicField(_WindowProvider, "_win", null);
+__publicField(_WindowProvider, "onBeforeMount");
+let WindowProvider = _WindowProvider;
+const _LOG = class _LOG {
+  static init(getWin) {
+    _LOG.getWin = getWin;
+  }
+  static info(message) {
+    var _a, _b;
+    (_b = (_a = _LOG.getWin) == null ? void 0 : _a.call(_LOG)) == null ? void 0 : _b.webContents.send("main-process-message", message);
+  }
+  static error(message) {
+    var _a, _b;
+    (_b = (_a = _LOG.getWin) == null ? void 0 : _a.call(_LOG)) == null ? void 0 : _b.webContents.send("main-process-error", message);
+  }
+  static warn(message) {
+    var _a, _b;
+    (_b = (_a = _LOG.getWin) == null ? void 0 : _a.call(_LOG)) == null ? void 0 : _b.webContents.send("main-process-warn", message);
+  }
+};
+__publicField(_LOG, "getWin");
+let LOG = _LOG;
+class ChatController {
+  static async getChats() {
+    return "getChats";
+  }
+  static async getChat() {
+    return "getChat";
+  }
+  static async updateChat() {
+    return "updateChat";
+  }
+  static async createNewChat() {
+    return "createNewChat";
+  }
+  static async deleteChat() {
+    return "deleteChat";
+  }
 }
-function runCommand(command, args, detached = false) {
+class ModelController {
+  static async getModels() {
+    return "getModels";
+  }
+  static async downloadModel() {
+    return "downloadModel";
+  }
+  static async deleteModel() {
+    return "deleteModel";
+  }
+}
+const startRouter = () => {
+  ipcMain.handle("chats:get", ChatController.getChats);
+  ipcMain.handle("chat:get", ChatController.getChat);
+  ipcMain.handle("chat:update", ChatController.updateChat);
+  ipcMain.handle("chat:create", ChatController.createNewChat);
+  ipcMain.handle("chat:delete", ChatController.deleteChat);
+  ipcMain.handle("models:get", ModelController.getModels);
+  ipcMain.handle("model:download", ModelController.downloadModel);
+  ipcMain.handle("model:delete", ModelController.deleteModel);
+};
+class RouterProvider {
+  static init() {
+    startRouter();
+  }
+}
+const runCommand = (command, args, detached = false) => {
   return new Promise((resolve, reject) => {
     const process2 = spawn(command, args, { detached, stdio: "inherit" });
     if (!detached) {
@@ -473,8 +513,74 @@ function runCommand(command, args, detached = false) {
       resolve(true);
     }
   });
+};
+function createModelfileIfNeeded() {
+  if (fs$1.existsSync(ConfigProvider.configs.MODEL_FILE_PATH)) return;
+  const files = fs$1.readdirSync(ConfigProvider.configs.OLLAMA_MODELS);
+  const ggufFile = files.find((file) => file.endsWith(".gguf"));
+  if (!ggufFile) {
+    throw new Error("No .gguf model file found in ollama_models directory.");
+  }
+  const modelfileContent = `FROM ${path$1.join(ConfigProvider.configs.OLLAMA_MODELS, ggufFile)}`;
+  fs$1.writeFileSync(ConfigProvider.configs.MODEL_FILE_PATH, modelfileContent);
+  console.log(`Created Modelfile: ${modelfileContent}`);
 }
-function waitForServer() {
+async function runLLM() {
+  try {
+    await _runLLM();
+  } catch (error) {
+    LOG.error(`Failed to run LLM: ${error}`);
+  }
+}
+async function _runLLM() {
+  if (!ConfigProvider.configs.RUN_LLM) return;
+  LOG.info("Trying to run LLM...");
+  await createModelfileIfNeeded();
+  if (!fs$1.existsSync(ConfigProvider.configs.LLM_PATH)) {
+    LOG.error(`LLM executable not found at path: ${ConfigProvider.configs.LLM_PATH}`);
+    throw new Error(`LLM executable not found at ${ConfigProvider.configs.LLM_PATH}`);
+  }
+  await runCommand(`${ConfigProvider.configs.LLM_PATH}`, ["serve"], true);
+  LOG.info("LLM serve started.");
+  await waitForLLMServer();
+  const modelExists = await checkModelExists("defaultModel");
+  if (!modelExists) {
+    LOG.info("Creating model...");
+    await runCommand(`${ConfigProvider.configs.LLM_PATH}`, [
+      "create",
+      "defaultModel",
+      "-f",
+      ConfigProvider.configs.MODEL_FILE_PATH
+    ]);
+  } else {
+    LOG.warn("Model already exists. Skipping creation.");
+  }
+}
+async function stopLLM() {
+  exec(`pkill -f ${ConfigProvider.configs.LLM_PATH}`, (error) => {
+    if (!ConfigProvider.configs.RUN_LLM) return;
+    if (error) console.error("Failed to terminate LLM process:", error);
+    else console.log("LLM process terminated.");
+  });
+}
+async function checkModelExists(modelName) {
+  return new Promise((resolve, reject) => {
+    exec(`${ConfigProvider.configs.LLM_PATH} list`, (error, stdout) => {
+      if (error) {
+        LOG.error(`Error checking model list: ${error}`);
+        reject(error);
+      } else {
+        const modelExists = stdout.includes(`${modelName}:latest`);
+        if (modelExists) {
+          LOG.info(`Models: 
+${stdout}`);
+        }
+        resolve(modelExists);
+      }
+    });
+  });
+}
+function waitForLLMServer() {
   return new Promise((resolve, reject) => {
     const interval = setInterval(() => {
       http.get("http://127.0.0.1:11434", (res) => {
@@ -491,23 +597,23 @@ function waitForServer() {
     }, 15e3);
   });
 }
-function stopLLM() {
-  exec(`pkill -f ${llmPath}`, (error) => {
-    if (!needRunLLM) return;
-    if (error) console.error("Failed to terminate LLM process:", error);
-    else console.log("LLM process terminated.");
-  });
-}
+dotenv.config();
+const __dirname = path$1.dirname(fileURLToPath(import.meta.url));
+ConfigProvider.initConfigs(__dirname);
+WindowProvider.init(__dirname);
+LOG.init(WindowProvider.getWin);
+RouterProvider.init();
+WindowProvider.setOnBeforeMount(runLLM);
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
-    stopLLM();
     app.quit();
+    WindowProvider.deleteWindow();
   }
 });
 app.on("before-quit", stopLLM);
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
+    WindowProvider.createWindow();
   }
 });
-app.whenReady().then(createWindow);
+app.whenReady().then(WindowProvider.createWindow);

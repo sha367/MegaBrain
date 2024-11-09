@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { RouterLink, useRouter } from 'vue-router';
+import {
+  RouterLink,
+  // useRouter
+} from 'vue-router';
 import MyContainer from './shared/myContainer.vue';
 
-const { currentRoute } = useRouter();
+// const { currentRoute } = useRouter();
 
-import { useDark, useToggle } from '@vueuse/core'
+// import { useDark, useToggle } from '@vueuse/core'
 
-const isDark = useDark()
-const toggleDark = useToggle(isDark)
+// const isDark = useDark()
+// const toggleDark = useToggle(isDark)
 </script>
 
 <template>
@@ -30,7 +33,7 @@ const toggleDark = useToggle(isDark)
               _i-line-md:cog-filled
             />
           </RouterLink> -->
-          <div
+          <!-- <div
             class='p-2 rounded-full cursor-pointer text-2xl hover:text-indigo-500 hover:bg-gray-200'
             @click='() => toggleDark()'
           >
@@ -42,7 +45,7 @@ const toggleDark = useToggle(isDark)
               v-else
               _i-line-md:sun-rising-filled-loop
             />
-          </div>
+          </div> -->
         </div>
       </div>
     </MyContainer>
