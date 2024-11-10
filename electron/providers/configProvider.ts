@@ -16,9 +16,11 @@ const getConfigs = (dirname: string) => {
   const LLM_PATH = path.join(RESOURCES_PATH, 'ollama/llm');
   const MODEL_FILE_PATH = path.join(OLLAMA_MODELS, 'Modelfile');
 
-  process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
-    ? path.join(APP_ROOT, 'public')
-    : RENDERER_DIST;
+  const VITE_PUBLIC = VITE_DEV_SERVER_URL
+  ? path.join(APP_ROOT, 'public')
+  : RENDERER_DIST;
+  process.env.VITE_PUBLIC = VITE_PUBLIC;
+
   process.env.OLLAMA_MODELS = OLLAMA_MODELS;
 
   return {
@@ -31,6 +33,7 @@ const getConfigs = (dirname: string) => {
     RENDERER_DIST,
     RESOURCES_PATH,
     LLM_PATH,
+    VITE_PUBLIC,
     MODEL_FILE_PATH
   }
 };

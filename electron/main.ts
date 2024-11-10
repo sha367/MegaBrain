@@ -9,31 +9,44 @@ import { WindowProvider } from './providers/windowProvider';
 import { LOG } from './providers/logProvider';
 import { RouterProvider } from './providers/routerProvider';
 import { runLLM, stopLLM } from './services/llmService';
+import { WinContentProvider } from './providers/winContentProvider';
 
 dotenv.config();
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-ConfigProvider.initConfigs(__dirname);
-WindowProvider.init(__dirname);
-LOG.init(WindowProvider.getWin);
-RouterProvider.init();
+// Init providers
+{
+  ConfigProvider.initConfigs(__dirname);
+  WindowProvider.init(__dirname);
+  LOG.init(WindowProvider.getWin);
+  WinContentProvider.init(WindowProvider.getWin)
+  RouterProvider.init();
+}
 
-WindowProvider.setOnBeforeMount(runLLM);
-
-app.on('window-all-closed', () => {
+// TODO: move to /handlers
+const onBeforeMount = () => {
+  runLLM();
+};
+const onWindowAllClosed = () => {
   if (process.platform !== 'darwin') {
     app.quit();
-    WindowProvider.deleteWindow()
   }
-});
-
-app.on('before-quit', stopLLM);
-
-app.on('activate', () => {
+};
+const onBeforeQuit = () => {
+  stopLLM();
+};
+const onActivate = () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     WindowProvider.createWindow();
   }
-});
+};
+const onWhenReady = () => {
+  WindowProvider.createWindow();
+};
 
-app.whenReady().then(WindowProvider.createWindow);
+WindowProvider.setOnBeforeMount(onBeforeMount);
+
+app.on('window-all-closed', onWindowAllClosed);
+app.on('before-quit', onBeforeQuit);
+app.on('activate', onActivate);
+app.whenReady().then(onWhenReady);

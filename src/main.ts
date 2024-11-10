@@ -10,12 +10,13 @@ import { pinia } from '@/pinia';
 
 // Ipc
 import { initIpcLog } from './plugins/ipc/initIpcLog';
+import { initIpcHandler } from './plugins/ipc/initIpcHandler';
+
+initIpcLog();
+initIpcHandler();
 
 createApp(App)
   .use(router)
   .use(pinia)
 
   .mount('#app')
-  .$nextTick(() => {
-    initIpcLog();
-  });

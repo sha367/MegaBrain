@@ -6,16 +6,12 @@ import MyScreenLoader from './components/shared/myScreenLoader.vue';
 import AppSidebar from './components/AppSidebar.vue';
 
 const commonStore = useCommonStore();
-commonStore.setLoading(true);
-
-setTimeout(() => {
-  commonStore.setLoading(false);
-}, 3000);
+commonStore.initLoadingStatusHandler();
 </script>
 
 <template>
   <div class='w-screen h-screen flex flex-col'>
-    <MyScreenLoader :show='commonStore.loading' />
+    <MyScreenLoader :status='commonStore.loadingStatus' />
 
     <AppHeader />
 

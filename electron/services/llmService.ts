@@ -6,6 +6,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import { exec } from 'node:child_process';
 import { runCommand } from "./childProcessService";
+import { WinContentProvider } from "electron/providers/winContentProvider";
 
 // Создание Modelfile, если его нет
 function createModelfileIfNeeded() {
@@ -16,6 +17,7 @@ function createModelfileIfNeeded() {
   const ggufFile = files.find((file) => file.endsWith('.gguf'));
 
   if (!ggufFile) {
+    WinContentProvider.send('main-process-loading-status', 'error');
     throw new Error('No .gguf model file found in ollama_models directory.');
   }
 
@@ -38,11 +40,14 @@ async function _runLLM() {
   if (!CP.configs.RUN_LLM) return;
 
   LOG.info('Trying to run LLM...');
+  WinContentProvider.send('main-process-loading-status', 'init_llm');
 
   await createModelfileIfNeeded();
+  WinContentProvider.send('main-process-loading-status', 'launch_llm');
 
   if (!fs.existsSync(CP.configs.LLM_PATH)) {
     LOG.error(`LLM executable not found at path: ${CP.configs.LLM_PATH}`);
+    WinContentProvider.send('main-process-loading-status', 'error');
     throw new Error(`LLM executable not found at ${CP.configs.LLM_PATH}`);
   }
 
@@ -50,6 +55,7 @@ async function _runLLM() {
   LOG.info('LLM serve started.');
 
   await waitForLLMServer();
+  WinContentProvider.send('main-process-loading-status', 'wait_for_llm');
 
   const modelExists = await checkModelExists('defaultModel');
   if (!modelExists) {
@@ -64,7 +70,8 @@ async function _runLLM() {
     LOG.warn('Model already exists. Skipping creation.');
   }
 
-  // LOG.info('LLM started successfully');
+  LOG.info('LLM started successfully');
+  WinContentProvider.send('main-process-loading-status', 'completed');
 }
 
 // Прерывание процесса LLM при закрытии приложения

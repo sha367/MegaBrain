@@ -2,6 +2,9 @@
 
 ## Chats
 ### GET `chats/`
+```typescript
+params: {}
+```
 ### GET `chat/`
 ```typescript
 params: {
@@ -29,6 +32,15 @@ params: {
 
 ## Models
 ### GET `models/`
+```typescript
+params: {}
+```
+### GET `model/`
+```typescript
+params: {
+  id: string
+}
+```
 ### POST `model/download/`
 ```typescript
 params: {

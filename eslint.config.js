@@ -4,7 +4,12 @@ import tseslint from 'typescript-eslint';
 import pluginVue from 'eslint-plugin-vue';
 
 export default [
-  { files: ['**/*.{js,mjs,cjs,ts,vue}'] },
+  {
+    files: ['**/*.{js,mjs,cjs,ts,vue}'],
+    rules: {
+      "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
+    }
+  },
   { languageOptions: { globals: globals.browser } },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,

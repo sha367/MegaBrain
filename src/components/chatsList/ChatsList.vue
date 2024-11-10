@@ -2,8 +2,9 @@
 import { computed, onMounted, ref } from 'vue';
 import ChatsListItem from './ChatsListItem.vue';
 import { TChat } from './chatsList.types';
-import { mockChatsList } from '@/mock/chatsList';
+// import { mockChatsList } from '@/mock/chatsList';
 import { useRoute } from 'vue-router';
+import { chatApi } from '@/api/chatApi';
 
 const route = useRoute();
 const currentChatId = computed(() => {
@@ -16,8 +17,23 @@ const currentChatId = computed(() => {
 const chats = ref<TChat[]>([]);
 
 onMounted(() => {
-  chats.value = mockChatsList;
+  loadModels();
 });
+
+const loadModels = async () => {
+  try {
+    const res = await chatApi.getChats();
+    console.log(res);
+
+    if (res.error || !res.data) {
+      throw new Error('Couldn\'t load chats');
+    }
+
+    chats.value = res.data;
+  } catch (err) {
+    console.log(err);
+  }
+};
 </script>
 
 <template>

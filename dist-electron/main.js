@@ -369,7 +369,8 @@ const getConfigs = (dirname) => {
   const RESOURCES_PATH = VITE_DEV_SERVER_URL ? path$1.join(dirname, "../resources") : process.resourcesPath;
   const LLM_PATH = path$1.join(RESOURCES_PATH, "ollama/llm");
   const MODEL_FILE_PATH = path$1.join(OLLAMA_MODELS, "Modelfile");
-  process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path$1.join(APP_ROOT, "public") : RENDERER_DIST;
+  const VITE_PUBLIC = VITE_DEV_SERVER_URL ? path$1.join(APP_ROOT, "public") : RENDERER_DIST;
+  process.env.VITE_PUBLIC = VITE_PUBLIC;
   process.env.OLLAMA_MODELS = OLLAMA_MODELS;
   return {
     RUN_LLM,
@@ -381,6 +382,7 @@ const getConfigs = (dirname) => {
     RENDERER_DIST,
     RESOURCES_PATH,
     LLM_PATH,
+    VITE_PUBLIC,
     MODEL_FILE_PATH
   };
 };
@@ -414,7 +416,7 @@ const _WindowProvider = class _WindowProvider {
     console.log("=======Creating window=====");
     console.log("========================");
     _WindowProvider._win = new BrowserWindow({
-      icon: path$1.join(process.env.VITE_PUBLIC, "images/ollama-avatar.png"),
+      icon: path$1.join(ConfigProvider.configs.VITE_PUBLIC, "images/ollama-avatar.png"),
       width: 1080,
       minWidth: 1080,
       height: 800,
@@ -458,32 +460,138 @@ const _LOG = class _LOG {
 };
 __publicField(_LOG, "getWin");
 let LOG = _LOG;
-class ChatController {
-  static async getChats() {
-    return "getChats";
+class ModelController {
+  static async getModels(_) {
+    return {
+      data: [
+        {
+          id: "1",
+          name: "Model 1",
+          description: "Model 1 description",
+          avatar: path$1.join(ConfigProvider.configs.VITE_PUBLIC, "images", "ollama-avatar.svg"),
+          url: "https://www.google.com",
+          downloadUrl: "https://www.google.com"
+        },
+        {
+          id: "2",
+          name: "Model 2",
+          description: "Model 2 description",
+          avatar: path$1.join(ConfigProvider.configs.VITE_PUBLIC, "images", "ollama-avatar.svg"),
+          url: "https://www.google.com",
+          downloadUrl: "https://www.google.com"
+        },
+        {
+          id: "3",
+          name: "Model 3",
+          description: "Model 3 description",
+          avatar: path$1.join(ConfigProvider.configs.VITE_PUBLIC, "images", "ollama-avatar.svg"),
+          url: "https://www.google.com",
+          downloadUrl: "https://www.google.com"
+        }
+      ]
+    };
   }
-  static async getChat() {
-    return "getChat";
+  static async getModel(_, params) {
+    return {
+      data: {
+        id: params.id,
+        name: "Model 1",
+        description: "Model 1 description",
+        avatar: path$1.join(ConfigProvider.configs.VITE_PUBLIC, "images", "ollama-avatar.svg"),
+        url: "https://www.google.com",
+        downloadUrl: "https://www.google.com"
+      }
+    };
   }
-  static async updateChat() {
-    return "updateChat";
+  static async downloadModel(_, params) {
+    return {
+      data: {
+        id: params.id
+      }
+    };
   }
-  static async createNewChat() {
-    return "createNewChat";
-  }
-  static async deleteChat() {
-    return "deleteChat";
+  static async deleteModel(_, params) {
+    return {
+      data: {
+        id: params.id
+      }
+    };
   }
 }
-class ModelController {
-  static async getModels() {
-    return "getModels";
+class ChatController {
+  static async getChats(_) {
+    const modelId = "llama1";
+    const model = await ModelController.getModel(_, { id: modelId });
+    return {
+      data: [
+        {
+          id: "1",
+          name: "Chat 1",
+          modelId,
+          model,
+          description: "Chat 1 description",
+          lastMessage: "Chat 1 last message"
+        },
+        {
+          id: "2",
+          name: "Chat 1",
+          modelId,
+          model,
+          description: "Chat 1 description",
+          lastMessage: "Chat 1 last message"
+        }
+      ]
+    };
   }
-  static async downloadModel() {
-    return "downloadModel";
+  static async getChat(_, params) {
+    const modelId = "llama1";
+    const model = await ModelController.getModel(_, { id: modelId });
+    return {
+      data: {
+        id: params.id,
+        name: "Chat 1",
+        modelId,
+        model,
+        description: "Chat 1 description",
+        lastMessage: "Chat 1 last message"
+      }
+    };
   }
-  static async deleteModel() {
-    return "deleteModel";
+  static async updateChat(_, params) {
+    const modelId = "llama1";
+    const model = await ModelController.getModel(_, { id: modelId });
+    return {
+      data: {
+        id: params.id,
+        name: "Chat 1",
+        modelId,
+        model,
+        description: "Chat 1 description",
+        lastMessage: params.message
+      }
+    };
+  }
+  static async createNewChat(_, params) {
+    const { modelId, message } = params;
+    const model = await ModelController.getModel(_, { id: modelId });
+    return {
+      data: {
+        id: "somenewid",
+        name: "Chat 1",
+        modelId,
+        model,
+        description: "Chat 1 description",
+        lastMessage: message
+      }
+    };
+  }
+  static async deleteChat(_, params) {
+    const chat = ChatController.getChat(_, { id: params.id });
+    return {
+      data: {
+        ...chat
+      }
+    };
   }
 }
 const startRouter = () => {
@@ -597,23 +705,47 @@ function waitForLLMServer() {
     }, 15e3);
   });
 }
+const _WinContentProvider = class _WinContentProvider {
+  static init(getWin) {
+    _WinContentProvider.getWin = getWin;
+  }
+  static send(channel, message) {
+    var _a, _b;
+    (_b = (_a = _WinContentProvider.getWin) == null ? void 0 : _a.call(_WinContentProvider)) == null ? void 0 : _b.webContents.send(channel, message);
+  }
+};
+__publicField(_WinContentProvider, "getWin");
+let WinContentProvider = _WinContentProvider;
 dotenv.config();
 const __dirname = path$1.dirname(fileURLToPath(import.meta.url));
-ConfigProvider.initConfigs(__dirname);
-WindowProvider.init(__dirname);
-LOG.init(WindowProvider.getWin);
-RouterProvider.init();
-WindowProvider.setOnBeforeMount(runLLM);
-app.on("window-all-closed", () => {
+{
+  ConfigProvider.initConfigs(__dirname);
+  WindowProvider.init(__dirname);
+  LOG.init(WindowProvider.getWin);
+  WinContentProvider.init(WindowProvider.getWin);
+  RouterProvider.init();
+}
+const onBeforeMount = () => {
+  runLLM();
+};
+const onWindowAllClosed = () => {
   if (process.platform !== "darwin") {
     app.quit();
-    WindowProvider.deleteWindow();
   }
-});
-app.on("before-quit", stopLLM);
-app.on("activate", () => {
+};
+const onBeforeQuit = () => {
+  stopLLM();
+};
+const onActivate = () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     WindowProvider.createWindow();
   }
-});
-app.whenReady().then(WindowProvider.createWindow);
+};
+const onWhenReady = () => {
+  WindowProvider.createWindow();
+};
+WindowProvider.setOnBeforeMount(onBeforeMount);
+app.on("window-all-closed", onWindowAllClosed);
+app.on("before-quit", onBeforeQuit);
+app.on("activate", onActivate);
+app.whenReady().then(onWhenReady);

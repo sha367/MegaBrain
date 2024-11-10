@@ -1,9 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
-  show: boolean;
+  status: typeof window['mainProcessLoadingStatus'];
 }>();
-
-
 </script>
 
 <template>
@@ -16,7 +14,7 @@ const props = defineProps<{
     leave-to-class='opacity-0'
   >
     <div
-      v-if='props.show'
+      v-if='props.status && props.status !== "completed"'
       class='loader-screen'
     >
       <div class='flex flex-col gap-8 justify-center items-center w-full h-full text-white'>
@@ -25,6 +23,7 @@ const props = defineProps<{
           _text-8xl
         />
         <span class='text-2xl'>MyGPX</span>
+        <span class='text-2xl'>{{ props.status }}</span>
       </div>
     </div>
   </transition>

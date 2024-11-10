@@ -3,7 +3,7 @@
  */
 export const initIpcLog = () => {
   if (!window.ipcRenderer) {
-    console.error();
+    console.error('no ipcRenderer');
     return;
   }
 

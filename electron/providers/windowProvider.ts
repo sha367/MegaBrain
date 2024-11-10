@@ -26,7 +26,7 @@ export class WindowProvider {
     console.log('=======Creating window=====');
     console.log('========================');
     WindowProvider._win = new BrowserWindow({
-      icon: path.join(process.env.VITE_PUBLIC, 'images/ollama-avatar.png'),
+      icon: path.join(CP.configs.VITE_PUBLIC, 'images/ollama-avatar.png'),
       width: 1080,
       minWidth: 1080,
       height: 800,
