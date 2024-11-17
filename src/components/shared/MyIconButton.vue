@@ -40,7 +40,7 @@ const emit = defineEmits(['on-click']);
   <div
     class='text-2xl cursor-pointer rounded-full p-2'
     :class='dynamicClasses'
-    @click='() => emit("on-click")'
+    @click.stop='() => emit("on-click")'
   >
     <slot />
   </div>

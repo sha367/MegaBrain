@@ -1,8 +1,8 @@
+import { TModel } from "../models/models.types";
+
 export type TChat = {
   id: string;
-  name: string;
-  lastMessage: {
-    message: string;
-    timestamp: string;
-  }
+  modelId: string;
+  model: TModel
+  lastMessage: string;
 };

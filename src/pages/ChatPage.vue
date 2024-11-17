@@ -1,47 +1,59 @@
 <script lang='ts' setup>
+import { chatApi } from '@/api/chatApi';
+import { messagesApi } from '@/api/messagesApi';
 import { TChatMessage } from '@/components/chat/chat.types';
-import ChatBottomPannel from '@/components/chat/ChatBottomPannel.vue';
 import ChatMessageBlock from '@/components/chat/ChatMessageBlock.vue';
 import ChatMessagesScroll from '@/components/chat/ChatMessagesScroll.vue';
-import ChatStartNew from '@/components/chat/ChatStartNew.vue';
+import ChatTemplate from '@/components/chat/ChatTemplate.vue';
 import MyContainer from '@/components/shared/myContainer.vue';
-import { mockMessages } from '@/mock/messages';
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { checkResponse } from '@/utils/checkResponse';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
 const chatId = computed(() => route.params.id as string);
-const isNewChat = computed(() => !chatId.value);
 const messages = ref<TChatMessage[]>([]);
 
-const setMock = (id: string) => {
-  // Mock
-  if (id) {
-    messages.value = [];
-    nextTick(() => {
-      messages.value = mockMessages;
-    });
+/** Load chat messages */
+const loadMessages = async (id: string) => {
+  try {
+    const res = await messagesApi.getMessages({ chatId: id });
+    console.log('loadMessages', res);
+
+    checkResponse(res);
+
+    messages.value = res.data;
+  } catch (err) {
+    console.log(err);
   }
-}
+};
 
 watch(chatId, (newChatId) => {
-  setMock(newChatId);
+  loadMessages(newChatId);
 });
 
 onMounted(() => {
-  setMock(chatId.value);
+  loadMessages(chatId.value);
 });
+
+const sendMessageRequest = async (content: string) => {
+  try {
+    const res = await chatApi.updateChat({ id: chatId.value, message: content });
+    console.log('sendMessageRequest', res);
+
+    checkResponse(res);
+
+    messages.value.push(res.data);
+  } catch (err) {
+    console.log(err);
+  }
+};
 
 /** Send the value from ChatBottomPannel to server */
 const sendMessage = (content: string) => {
   if (content) {
-    messages.value = [...messages.value, {
-      id: Math.random().toString(36).substr(2, 9),
-      content: content,
-      from: '__user__',
-      timestamp: new Date().toISOString(),
-    }];
+    sendMessageRequest(content);
     chatMessagesScroll.value?.scrollToBottom(true);
   }
 };
@@ -54,41 +66,31 @@ watch(() => messages.value, () => {
 </script>
 
 <template>
-  <div class='flex flex-col grow overflow-hidden'>
-    <div class='flex flex-col grow overflow-hidden'>
-      <ChatStartNew
-        v-if='isNewChat'
-      />
-      <ChatMessagesScroll
-        v-else
-        ref='chatMessagesScroll'
+  <ChatTemplate @send-message='sendMessage'>
+    <ChatMessagesScroll
+      ref='chatMessagesScroll'
+    >
+      <MyContainer
+        tiny
+        class='flex flex-col h-full gap-2 py-4'
       >
-        <MyContainer
-          tiny
-          class='flex flex-col h-full gap-2 py-4'
+        <TransitionGroup
+          enter-from-class='opacity-0 -translate-x-200'
+          enter-active-class='transform transition-all duration-500'
+          enter-to-class='opacity-100 translate-x-0'
+          leave-from-class='opacity-100 translate-x-0'
+          leave-active-class='transition-opacity'
+          leave-to-class='opacity-0 -translate-x-200'
         >
-          <TransitionGroup
-            enter-from-class='opacity-0 -translate-x-200'
-            enter-active-class='transform transition-all duration-500'
-            enter-to-class='opacity-100 translate-x-0'
-            leave-from-class='opacity-100 translate-x-0'
-            leave-active-class='transition-opacity'
-            leave-to-class='opacity-0 -translate-x-200'
+          <ChatMessageBlock
+            v-for='message in messages'
+            :key='message.id'
+            :message='message'
           >
-            <ChatMessageBlock
-              v-for='message in messages'
-              :key='message.id'
-              :message='message'
-            >
-              {{ message }}
-            </ChatMessageBlock>
-          </TransitionGroup>
-        </MyContainer>
-      </ChatMessagesScroll>
-    </div>
-    <ChatBottomPannel
-      clear-on-send
-      @send-message='sendMessage'
-    />
-  </div>
+            {{ message }}
+          </ChatMessageBlock>
+        </TransitionGroup>
+      </MyContainer>
+    </ChatMessagesScroll>
+  </ChatTemplate>
 </template>

@@ -12,7 +12,7 @@ const updateChat = async (params: { id: string, message: string }) => {
   return ipcRequest('chat:update', params);
 }
 
-const createNewChat = async (params: { message: string }) => {
+const createNewChat = async (params: { message: string, modelId: string }) => {
   return ipcRequest('chat:create', params);
 }
 

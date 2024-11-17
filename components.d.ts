@@ -15,6 +15,7 @@ declare module 'vue' {
     ChatsList: typeof import('./src/components/chatsList/ChatsList.vue')['default']
     ChatsListItem: typeof import('./src/components/chatsList/ChatsListItem.vue')['default']
     ChatStartNew: typeof import('./src/components/chat/ChatStartNew.vue')['default']
+    ChatTemplate: typeof import('./src/components/chat/ChatTemplate.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']
     ModelCard: typeof import('./src/components/models/ModelCard.vue')['default']

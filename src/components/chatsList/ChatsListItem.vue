@@ -14,9 +14,7 @@ const goToChat = (id: TChat['id']) => {
   router.push({ name: 'ChatPage', params: { id } });
 };
 
-const onDeleteChat = () => {
-  console.log('Delete chat', props.item.id);
-};
+const emit = defineEmits(['on-delete']);
 </script>
 
 <template>
@@ -27,14 +25,14 @@ const onDeleteChat = () => {
   >
     <div class='flex gap-2'>
       <div class='shrink-0'>
-        <ElAvatar src='/images/ollama-avatar.svg' />
+        <ElAvatar :src='"/images/ollama-avatar.svg"' />
       </div>
       <div class='flex flex-col'>
         <div class='font-semibold'>
-          {{ props.item.name }}
+          {{ props.item.model.name }}
         </div>
         <div class='text-gray-500 text-xs overflow-hidden max-w-[10rem] truncate'>
-          {{ props.item.lastMessage.message }}
+          {{ props.item.lastMessage }}
         </div>
       </div>
     </div>
@@ -42,7 +40,7 @@ const onDeleteChat = () => {
     <div class='shrink-0'>
       <MyIconButton
         variant='danger'
-        @on-click='() => onDeleteChat()'
+        @on-click='() => emit("on-delete", props.item.id)'
       >
         <div _i-hugeicons:delete-02 />
       </MyIconButton>

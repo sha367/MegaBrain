@@ -1,22 +1,22 @@
 <script setup lang="ts">
 import ModelFileCard from '@/components/models/ModelFileCard.vue';
-import { TModelFile } from '@/components/models/models.types';
+import { TModel } from '@/components/models/models.types';
 import MyContainer from '@/components/shared/myContainer.vue';
-import { mockModelFiles } from '@/mock/modelFile';
+// import { mockModelFiles } from '@/mock/modelFile';
 import { onMounted, ref } from 'vue';
 
-const modelFiles = ref<TModelFile[]>([]);
-const suggestedModelFiles = ref<TModelFile[]>([
-  {
-    id: '1',
-    name: 'Ollama',
-    url: 'https://ollama.com',
-    downloadUrl: 'https://ollama.com',
-  }
+const modelFiles = ref<TModel[]>([]);
+const suggestedModelFiles = ref<TModel[]>([
+  // {
+  //   id: '1',
+  //   name: 'Ollama',
+  //   url: 'https://ollama.com',
+  //   downloadUrl: 'https://ollama.com',
+  // }
 ]);
 
 onMounted(() => {
-  modelFiles.value = mockModelFiles;
+  // modelFiles.value = mockModelFiles;
 });
 </script>
 

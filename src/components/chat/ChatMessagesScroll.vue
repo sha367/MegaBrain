@@ -7,8 +7,6 @@ const scrollToBottom = (force?: boolean) => {
   nextTick(() => {
     if (!scroll.value) return;
 
-    console.log('scrolling', scroll.value.scrollHeight - scroll.value.scrollTop - scroll.value.clientHeight);
-
     const hasToScroll = force || (scroll.value.scrollHeight - scroll.value.scrollTop - scroll.value.clientHeight) < 200;
 
     if (!hasToScroll) return;

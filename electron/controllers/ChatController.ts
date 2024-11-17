@@ -1,29 +1,25 @@
 import { IpcMainInvokeEvent } from "electron";
 import { ModelController } from "./ModelController";
+import { getMockChats } from "./../mock";
 
 export class ChatController {
   static async getChats(_: IpcMainInvokeEvent) {
-    const modelId = "llama1";
-    const model = await ModelController.getModel(_, { id: modelId });
+    const chats = await getMockChats();
+    const modelIds = chats.map((chat) => chat.modelId);
+    const models = await ModelController.getModels(_, { ids: modelIds });
+
+    const chatsWithModels = chats.map((chat) => {
+      const model = models.data.find((model) => model.id === chat.modelId);
+
+      return {
+        ...chat,
+        model,
+      };
+    });
 
     return {
       data: [
-        {
-          id: "1",
-          name: "Chat 1",
-          modelId,
-          model,
-          description: "Chat 1 description",
-          lastMessage: "Chat 1 last message",
-        },
-        {
-          id: "2",
-          name: "Chat 1",
-          modelId,
-          model,
-          description: "Chat 1 description",
-          lastMessage: "Chat 1 last message",
-        },
+        ...chatsWithModels,
       ],
     };
   }
@@ -34,15 +30,16 @@ export class ChatController {
   ) {
     const modelId = "llama1";
     const model = await ModelController.getModel(_, { id: modelId });
+    const chat = (await getMockChats()).find((chat) => chat.id === params.id);
+
+    const chatWithModel = {
+      ...chat,
+      model,
+    };
 
     return {
       data: {
-        id: params.id,
-        name: "Chat 1",
-        modelId,
-        model,
-        description: "Chat 1 description",
-        lastMessage: "Chat 1 last message",
+        ...chatWithModel,
       },
     };
   }
@@ -51,17 +48,26 @@ export class ChatController {
     _: IpcMainInvokeEvent,
     params: { id: string, message: string }
   ) {
-    const modelId = "llama1";
+    const chat = await ChatController.getChat(_, { id: params.id });
+    const modelId = chat.data.modelId;
+
+    if (!modelId) {
+      return {
+        error: {
+          message: "Model not found",
+        },
+      };
+    }
     const model = await ModelController.getModel(_, { id: modelId });
+
+    const chatWithModel = {
+      ...chat.data,
+      model,
+    };
 
     return {
       data: {
-        id: params.id,
-        name: "Chat 1",
-        modelId,
-        model,
-        description: "Chat 1 description",
-        lastMessage: params.message,
+        ...chatWithModel,
       },
     };
   }
@@ -73,14 +79,22 @@ export class ChatController {
     const { modelId, message } = params;
     const model = await ModelController.getModel(_, { id: modelId });
 
+    const newChat = {
+      id: 'somenewid',
+      modelId,
+      lastMessage: message,
+    };
+
+    // mockChats.push(newChat);
+
+    const newChatWithModel = {
+      ...newChat,
+      model,
+    };
+
     return {
       data: {
-        id: 'somenewid',
-        name: "Chat 1",
-        modelId,
-        model,
-        description: "Chat 1 description",
-        lastMessage: message,
+        ...newChatWithModel,
       },
     };
   }
@@ -89,11 +103,27 @@ export class ChatController {
     _: IpcMainInvokeEvent,
     params: { id: string },
   ) {
-    const chat = ChatController.getChat(_, { id: params.id });
+    const chat = await ChatController.getChat(_, { id: params.id });
+    const modelId = chat.data.modelId;
+
+    if (!modelId) {
+      return {
+        error: {
+          message: "Chat not found",
+        },
+      };
+    }
+
+    const model = await ModelController.getModel(_, { id: modelId });
+
+    const newChatWithModel = {
+      ...chat,
+      model,
+    };
 
     return {
       data: {
-        ...chat,
+        ...newChatWithModel,
       },
     };
   }

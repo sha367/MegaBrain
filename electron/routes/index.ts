@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron';
 import { ChatController } from './../controllers/ChatController';
 import { ModelController } from './../controllers/ModelController';
+import { MessagesController } from './../controllers/MessagesControler';
 
 export const startRouter = () => {
   // Chats API
@@ -14,4 +15,7 @@ export const startRouter = () => {
   ipcMain.handle('models:get', ModelController.getModels);
   ipcMain.handle('model:download', ModelController.downloadModel);
   ipcMain.handle('model:delete', ModelController.deleteModel);
+
+  // Messages API
+  ipcMain.handle('messages:get', MessagesController.getChatMessages);
 };

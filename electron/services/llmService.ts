@@ -6,7 +6,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import { exec } from 'node:child_process';
 import { runCommand } from "./childProcessService";
-import { WinContentProvider } from "electron/providers/winContentProvider";
+import { WinContentProvider } from "./../providers/winContentProvider";
 
 // Создание Modelfile, если его нет
 function createModelfileIfNeeded() {

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import MyIconButton from '../shared/MyIconButton.vue';
-import { TModelFile } from './models.types';
+import { TModel } from './models.types';
 
 const props = defineProps<{
-  item: TModelFile;
+  item: TModel;
 }>();
 </script>
 

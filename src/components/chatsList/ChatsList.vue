@@ -2,9 +2,9 @@
 import { computed, onMounted, ref } from 'vue';
 import ChatsListItem from './ChatsListItem.vue';
 import { TChat } from './chatsList.types';
-// import { mockChatsList } from '@/mock/chatsList';
 import { useRoute } from 'vue-router';
 import { chatApi } from '@/api/chatApi';
+import { checkResponse } from '@/utils/checkResponse';
 
 const route = useRoute();
 const currentChatId = computed(() => {
@@ -16,14 +16,11 @@ const currentChatId = computed(() => {
 });
 const chats = ref<TChat[]>([]);
 
-onMounted(() => {
-  loadModels();
-});
-
-const loadModels = async () => {
+/** Load list of existed chats */
+const loadChats = async () => {
   try {
     const res = await chatApi.getChats();
-    console.log(res);
+    console.log('loadChats', res);
 
     if (res.error || !res.data) {
       throw new Error('Couldn\'t load chats');
@@ -34,6 +31,24 @@ const loadModels = async () => {
     console.log(err);
   }
 };
+
+/** Delete chat from the list */
+const deleteChat = async (id: string) => {
+  try {
+    const res = await chatApi.deleteChat({ id });
+    console.log('deleteChat', res);
+
+    checkResponse(res);
+
+    chats.value = chats.value.filter((chat) => chat.id !== id);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+onMounted(() => {
+  loadChats();
+});
 </script>
 
 <template>
@@ -43,6 +58,7 @@ const loadModels = async () => {
       :key='chat.id'
       :item='chat'
       :active='!!chat.id && chat.id === currentChatId'
+      @on-delete='deleteChat(chat.id)'
     />
   </div>
 </template>

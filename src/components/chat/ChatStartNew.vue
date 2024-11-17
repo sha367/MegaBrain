@@ -1,16 +1,13 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
 import { TModel } from '../models/models.types';
-import { mockModels } from '@/mock/models';
 import ModelCard from '../models/ModelCard.vue';
 
-const models = ref<TModel[]>([]);
-const selectedModel = ref<TModel | null>(null);
+const props = defineProps<{
+  models: TModel[];
+  selectedModel: TModel | null;
+}>();
 
-onMounted(() => {
-  models.value = mockModels;
-  selectedModel.value = models.value[0];
-});
+const emit = defineEmits(['select-model']);
 </script>
 
 <template>
@@ -19,11 +16,11 @@ onMounted(() => {
 
     <div class='p-2 max-h-full w-full overflow-y-auto flex flex-wrap items-center justify-center gap-2'>
       <ModelCard
-        v-for='model in models'
+        v-for='model in props.models'
         :key='model.id'
         :model='model'
         :active='!!model.id && model.id === selectedModel?.id'
-        @on-click='selectedModel = model'
+        @on-click='() => emit("select-model", model)'
       />
     </div>
   </div>

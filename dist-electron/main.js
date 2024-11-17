@@ -460,46 +460,87 @@ const _LOG = class _LOG {
 };
 __publicField(_LOG, "getWin");
 let LOG = _LOG;
+const getMockChats = async () => [
+  {
+    id: "1",
+    modelId: "1",
+    lastMessage: "Chat 1 last message"
+  },
+  {
+    id: "2",
+    modelId: "2",
+    lastMessage: "Chat 1 last message"
+  }
+];
+const getMockMessages = async () => [
+  {
+    id: "1",
+    chatId: "1",
+    message: "Message 1",
+    createdAt: /* @__PURE__ */ new Date()
+  },
+  {
+    id: "2",
+    chatId: "1",
+    message: "Message 2",
+    createdAt: /* @__PURE__ */ new Date()
+  },
+  {
+    id: "3",
+    chatId: "2",
+    message: "Message 3",
+    createdAt: /* @__PURE__ */ new Date()
+  },
+  {
+    id: "4",
+    chatId: "2",
+    message: "Message 3",
+    createdAt: /* @__PURE__ */ new Date()
+  }
+];
+const getMockModels = async () => [
+  {
+    id: "1",
+    name: "Model 1",
+    description: "Model 1 description",
+    avatar: path$1.join(process.env.VITE_PUBLIC, "images", "ollama-avatar.svg"),
+    url: "https://www.google.com",
+    downloadUrl: "https://www.google.com"
+  },
+  {
+    id: "2",
+    name: "Model 2",
+    description: "Model 2 description",
+    avatar: path$1.join(process.env.VITE_PUBLIC, "images", "ollama-avatar.svg"),
+    url: "https://www.google.com",
+    downloadUrl: "https://www.google.com"
+  },
+  {
+    id: "3",
+    name: "Model 3",
+    description: "Model 3 description",
+    avatar: path$1.join(process.env.VITE_PUBLIC, "images", "ollama-avatar.svg"),
+    url: "https://www.google.com",
+    downloadUrl: "https://www.google.com"
+  }
+];
 class ModelController {
-  static async getModels(_) {
+  static async getModels(_, params) {
+    const models = (await getMockModels()).filter((params == null ? void 0 : params.ids) ? (model) => {
+      var _a;
+      return (_a = params == null ? void 0 : params.ids) == null ? void 0 : _a.includes(model.id);
+    } : () => Boolean);
     return {
       data: [
-        {
-          id: "1",
-          name: "Model 1",
-          description: "Model 1 description",
-          avatar: path$1.join(ConfigProvider.configs.VITE_PUBLIC, "images", "ollama-avatar.svg"),
-          url: "https://www.google.com",
-          downloadUrl: "https://www.google.com"
-        },
-        {
-          id: "2",
-          name: "Model 2",
-          description: "Model 2 description",
-          avatar: path$1.join(ConfigProvider.configs.VITE_PUBLIC, "images", "ollama-avatar.svg"),
-          url: "https://www.google.com",
-          downloadUrl: "https://www.google.com"
-        },
-        {
-          id: "3",
-          name: "Model 3",
-          description: "Model 3 description",
-          avatar: path$1.join(ConfigProvider.configs.VITE_PUBLIC, "images", "ollama-avatar.svg"),
-          url: "https://www.google.com",
-          downloadUrl: "https://www.google.com"
-        }
+        ...models
       ]
     };
   }
   static async getModel(_, params) {
+    const model = (await getMockModels()).find((model2) => model2.id === params.id);
     return {
       data: {
-        id: params.id,
-        name: "Model 1",
-        description: "Model 1 description",
-        avatar: path$1.join(ConfigProvider.configs.VITE_PUBLIC, "images", "ollama-avatar.svg"),
-        url: "https://www.google.com",
-        downloadUrl: "https://www.google.com"
+        ...model
       }
     };
   }
@@ -520,77 +561,104 @@ class ModelController {
 }
 class ChatController {
   static async getChats(_) {
-    const modelId = "llama1";
-    const model = await ModelController.getModel(_, { id: modelId });
+    const chats = await getMockChats();
+    const modelIds = chats.map((chat) => chat.modelId);
+    const models = await ModelController.getModels(_, { ids: modelIds });
+    const chatsWithModels = chats.map((chat) => {
+      const model = models.data.find((model2) => model2.id === chat.modelId);
+      return {
+        ...chat,
+        model
+      };
+    });
     return {
       data: [
-        {
-          id: "1",
-          name: "Chat 1",
-          modelId,
-          model,
-          description: "Chat 1 description",
-          lastMessage: "Chat 1 last message"
-        },
-        {
-          id: "2",
-          name: "Chat 1",
-          modelId,
-          model,
-          description: "Chat 1 description",
-          lastMessage: "Chat 1 last message"
-        }
+        ...chatsWithModels
       ]
     };
   }
   static async getChat(_, params) {
     const modelId = "llama1";
     const model = await ModelController.getModel(_, { id: modelId });
+    const chat = (await getMockChats()).find((chat2) => chat2.id === params.id);
+    const chatWithModel = {
+      ...chat,
+      model
+    };
     return {
       data: {
-        id: params.id,
-        name: "Chat 1",
-        modelId,
-        model,
-        description: "Chat 1 description",
-        lastMessage: "Chat 1 last message"
+        ...chatWithModel
       }
     };
   }
   static async updateChat(_, params) {
-    const modelId = "llama1";
+    const chat = await ChatController.getChat(_, { id: params.id });
+    const modelId = chat.data.modelId;
+    if (!modelId) {
+      return {
+        error: {
+          message: "Model not found"
+        }
+      };
+    }
     const model = await ModelController.getModel(_, { id: modelId });
+    const chatWithModel = {
+      ...chat.data,
+      model
+    };
     return {
       data: {
-        id: params.id,
-        name: "Chat 1",
-        modelId,
-        model,
-        description: "Chat 1 description",
-        lastMessage: params.message
+        ...chatWithModel
       }
     };
   }
   static async createNewChat(_, params) {
     const { modelId, message } = params;
     const model = await ModelController.getModel(_, { id: modelId });
+    const newChat = {
+      id: "somenewid",
+      modelId,
+      lastMessage: message
+    };
+    const newChatWithModel = {
+      ...newChat,
+      model
+    };
     return {
       data: {
-        id: "somenewid",
-        name: "Chat 1",
-        modelId,
-        model,
-        description: "Chat 1 description",
-        lastMessage: message
+        ...newChatWithModel
       }
     };
   }
   static async deleteChat(_, params) {
-    const chat = ChatController.getChat(_, { id: params.id });
+    const chat = await ChatController.getChat(_, { id: params.id });
+    const modelId = chat.data.modelId;
+    if (!modelId) {
+      return {
+        error: {
+          message: "Chat not found"
+        }
+      };
+    }
+    const model = await ModelController.getModel(_, { id: modelId });
+    const newChatWithModel = {
+      ...chat,
+      model
+    };
     return {
       data: {
-        ...chat
+        ...newChatWithModel
       }
+    };
+  }
+}
+class MessagesController {
+  static async getChatMessages(_, params) {
+    const messages = (await getMockMessages()).filter((message) => message.chatId === params.chatId);
+    return {
+      data: [
+        ...messages
+      ]
     };
   }
 }
@@ -603,6 +671,7 @@ const startRouter = () => {
   ipcMain.handle("models:get", ModelController.getModels);
   ipcMain.handle("model:download", ModelController.downloadModel);
   ipcMain.handle("model:delete", ModelController.deleteModel);
+  ipcMain.handle("messages:get", MessagesController.getChatMessages);
 };
 class RouterProvider {
   static init() {
@@ -622,11 +691,23 @@ const runCommand = (command, args, detached = false) => {
     }
   });
 };
+const _WinContentProvider = class _WinContentProvider {
+  static init(getWin) {
+    _WinContentProvider.getWin = getWin;
+  }
+  static send(channel, message) {
+    var _a, _b;
+    (_b = (_a = _WinContentProvider.getWin) == null ? void 0 : _a.call(_WinContentProvider)) == null ? void 0 : _b.webContents.send(channel, message);
+  }
+};
+__publicField(_WinContentProvider, "getWin");
+let WinContentProvider = _WinContentProvider;
 function createModelfileIfNeeded() {
   if (fs$1.existsSync(ConfigProvider.configs.MODEL_FILE_PATH)) return;
   const files = fs$1.readdirSync(ConfigProvider.configs.OLLAMA_MODELS);
   const ggufFile = files.find((file) => file.endsWith(".gguf"));
   if (!ggufFile) {
+    WinContentProvider.send("main-process-loading-status", "error");
     throw new Error("No .gguf model file found in ollama_models directory.");
   }
   const modelfileContent = `FROM ${path$1.join(ConfigProvider.configs.OLLAMA_MODELS, ggufFile)}`;
@@ -643,14 +724,18 @@ async function runLLM() {
 async function _runLLM() {
   if (!ConfigProvider.configs.RUN_LLM) return;
   LOG.info("Trying to run LLM...");
+  WinContentProvider.send("main-process-loading-status", "init_llm");
   await createModelfileIfNeeded();
+  WinContentProvider.send("main-process-loading-status", "launch_llm");
   if (!fs$1.existsSync(ConfigProvider.configs.LLM_PATH)) {
     LOG.error(`LLM executable not found at path: ${ConfigProvider.configs.LLM_PATH}`);
+    WinContentProvider.send("main-process-loading-status", "error");
     throw new Error(`LLM executable not found at ${ConfigProvider.configs.LLM_PATH}`);
   }
   await runCommand(`${ConfigProvider.configs.LLM_PATH}`, ["serve"], true);
   LOG.info("LLM serve started.");
   await waitForLLMServer();
+  WinContentProvider.send("main-process-loading-status", "wait_for_llm");
   const modelExists = await checkModelExists("defaultModel");
   if (!modelExists) {
     LOG.info("Creating model...");
@@ -663,6 +748,8 @@ async function _runLLM() {
   } else {
     LOG.warn("Model already exists. Skipping creation.");
   }
+  LOG.info("LLM started successfully");
+  WinContentProvider.send("main-process-loading-status", "completed");
 }
 async function stopLLM() {
   exec(`pkill -f ${ConfigProvider.configs.LLM_PATH}`, (error) => {
@@ -705,17 +792,6 @@ function waitForLLMServer() {
     }, 15e3);
   });
 }
-const _WinContentProvider = class _WinContentProvider {
-  static init(getWin) {
-    _WinContentProvider.getWin = getWin;
-  }
-  static send(channel, message) {
-    var _a, _b;
-    (_b = (_a = _WinContentProvider.getWin) == null ? void 0 : _a.call(_WinContentProvider)) == null ? void 0 : _b.webContents.send(channel, message);
-  }
-};
-__publicField(_WinContentProvider, "getWin");
-let WinContentProvider = _WinContentProvider;
 dotenv.config();
 const __dirname = path$1.dirname(fileURLToPath(import.meta.url));
 {
