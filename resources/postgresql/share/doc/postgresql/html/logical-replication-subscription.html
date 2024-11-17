@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>29.2. Subscription</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="logical-replication-publication.html" title="29.1. Publication" /><link rel="next" href="logical-replication-failover.html" title="29.3. Logical Replication Failover" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">29.2. Subscription</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="logical-replication-publication.html" title="29.1. Publication">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="logical-replication.html" title="Chapter 29. Logical Replication">Up</a></td><th width="60%" align="center">Chapter 29. Logical Replication</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="logical-replication-failover.html" title="29.3. Logical Replication Failover">Next</a></td></tr></table><hr /></div><div class="sect1" id="LOGICAL-REPLICATION-SUBSCRIPTION"><div class="titlepage"><div><div><h2 class="title" style="clear: both">29.2. Subscription <a href="#LOGICAL-REPLICATION-SUBSCRIPTION" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="logical-replication-subscription.html#LOGICAL-REPLICATION-SUBSCRIPTION-SLOT">29.2.1. Replication Slot Management</a></span></dt><dt><span class="sect2"><a href="logical-replication-subscription.html#LOGICAL-REPLICATION-SUBSCRIPTION-EXAMPLES">29.2.2. Examples: Set Up Logical Replication</a></span></dt><dt><span class="sect2"><a href="logical-replication-subscription.html#LOGICAL-REPLICATION-SUBSCRIPTION-EXAMPLES-DEFERRED-SLOT">29.2.3. Examples: Deferred Replication Slot Creation</a></span></dt></dl></div><p>
+   A <em class="firstterm">subscription</em> is the downstream side of logical
+   replication.  The node where a subscription is defined is referred to as
+   the <em class="firstterm">subscriber</em>.  A subscription defines the connection
+   to another database and set of publications (one or more) to which it wants
+   to subscribe.
+  </p><p>
+   The subscriber database behaves in the same way as any other PostgreSQL
+   instance and can be used as a publisher for other databases by defining its
+   own publications.
+  </p><p>
+   A subscriber node may have multiple subscriptions if desired.  It is
+   possible to define multiple subscriptions between a single
+   publisher-subscriber pair, in which case care must be taken to ensure
+   that the subscribed publication objects don't overlap.
+  </p><p>
+   Each subscription will receive changes via one replication slot (see
+   <a class="xref" href="warm-standby.html#STREAMING-REPLICATION-SLOTS" title="26.2.6. Replication Slots">Section 26.2.6</a>).  Additional replication
+   slots may be required for the initial data synchronization of
+   pre-existing table data and those will be dropped at the end of data
+   synchronization.
+  </p><p>
+   A logical replication subscription can be a standby for synchronous
+   replication (see <a class="xref" href="warm-standby.html#SYNCHRONOUS-REPLICATION" title="26.2.8. Synchronous Replication">Section 26.2.8</a>).  The standby
+   name is by default the subscription name.  An alternative name can be
+   specified as <code class="literal">application_name</code> in the connection
+   information of the subscription.
+  </p><p>
+   Subscriptions are dumped by <code class="command">pg_dump</code> if the current user
+   is a superuser.  Otherwise a warning is written and subscriptions are
+   skipped, because non-superusers cannot read all subscription information
+   from the <code class="structname">pg_subscription</code> catalog.
+  </p><p>
+   The subscription is added using <a class="link" href="sql-createsubscription.html" title="CREATE SUBSCRIPTION"><code class="command">CREATE SUBSCRIPTION</code></a> and
+   can be stopped/resumed at any time using the
+   <a class="link" href="sql-altersubscription.html" title="ALTER SUBSCRIPTION"><code class="command">ALTER SUBSCRIPTION</code></a> command and removed using
+   <a class="link" href="sql-dropsubscription.html" title="DROP SUBSCRIPTION"><code class="command">DROP SUBSCRIPTION</code></a>.
+  </p><p>
+   When a subscription is dropped and recreated, the synchronization
+   information is lost.  This means that the data has to be resynchronized
+   afterwards.
+  </p><p>
+   The schema definitions are not replicated, and the published tables must
+   exist on the subscriber.  Only regular tables may be
+   the target of replication.  For example, you can't replicate to a view.
+  </p><p>
+   The tables are matched between the publisher and the subscriber using the
+   fully qualified table name.  Replication to differently-named tables on the
+   subscriber is not supported.
+  </p><p>
+   Columns of a table are also matched by name.  The order of columns in the
+   subscriber table does not need to match that of the publisher.  The data
+   types of the columns do not need to match, as long as the text
+   representation of the data can be converted to the target type.  For
+   example, you can replicate from a column of type <code class="type">integer</code> to a
+   column of type <code class="type">bigint</code>.  The target table can also have
+   additional columns not provided by the published table.  Any such columns
+   will be filled with the default value as specified in the definition of the
+   target table. However, logical replication in binary format is more
+   restrictive. See the
+   <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-BINARY"><code class="literal">binary</code></a>
+   option of <code class="command">CREATE SUBSCRIPTION</code> for details.
+  </p><div class="sect2" id="LOGICAL-REPLICATION-SUBSCRIPTION-SLOT"><div class="titlepage"><div><div><h3 class="title">29.2.1. Replication Slot Management <a href="#LOGICAL-REPLICATION-SUBSCRIPTION-SLOT" class="id_link">#</a></h3></div></div></div><p>
+    As mentioned earlier, each (active) subscription receives changes from a
+    replication slot on the remote (publishing) side.
+   </p><p>
+    Additional table synchronization slots are normally transient, created
+    internally to perform initial table synchronization and dropped
+    automatically when they are no longer needed. These table synchronization
+    slots have generated names: <span class="quote">“<span class="quote"><code class="literal">pg_%u_sync_%u_%llu</code></span>”</span>
+    (parameters: Subscription <em class="parameter"><code>oid</code></em>,
+    Table <em class="parameter"><code>relid</code></em>, system identifier <em class="parameter"><code>sysid</code></em>)
+   </p><p>
+    Normally, the remote replication slot is created automatically when the
+    subscription is created using <a class="link" href="sql-createsubscription.html" title="CREATE SUBSCRIPTION">
+    <code class="command">CREATE SUBSCRIPTION</code></a> and it
+    is dropped automatically when the subscription is dropped using
+    <a class="link" href="sql-dropsubscription.html" title="DROP SUBSCRIPTION"><code class="command">DROP SUBSCRIPTION</code></a>.
+    In some situations, however, it can
+    be useful or necessary to manipulate the subscription and the underlying
+    replication slot separately.  Here are some scenarios:
+
+    </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+       When creating a subscription, the replication slot already exists.  In
+       that case, the subscription can be created using
+       the <code class="literal">create_slot = false</code> option to associate with the
+       existing slot.
+      </p></li><li class="listitem"><p>
+       When creating a subscription, the remote host is not reachable or in an
+       unclear state.  In that case, the subscription can be created using
+       the <code class="literal">connect = false</code> option.  The remote host will then not
+       be contacted at all.  This is what <span class="application">pg_dump</span>
+       uses.  The remote replication slot will then have to be created
+       manually before the subscription can be activated.
+      </p></li><li class="listitem"><p>
+       When dropping a subscription, the replication slot should be kept.
+       This could be useful when the subscriber database is being moved to a
+       different host and will be activated from there.  In that case,
+       disassociate the slot from the subscription using
+       <a class="link" href="sql-altersubscription.html" title="ALTER SUBSCRIPTION"><code class="command">ALTER SUBSCRIPTION</code></a>
+       before attempting to drop the subscription.
+      </p></li><li class="listitem"><p>
+       When dropping a subscription, the remote host is not reachable.  In
+       that case, disassociate the slot from the subscription
+       using <code class="command">ALTER SUBSCRIPTION</code> before attempting to drop
+       the subscription.  If the remote database instance no longer exists, no
+       further action is then necessary.  If, however, the remote database
+       instance is just unreachable, the replication slot (and any still
+       remaining table synchronization slots) should then be
+       dropped manually; otherwise it/they would continue to reserve WAL and might
+       eventually cause the disk to fill up.  Such cases should be carefully
+       investigated.
+      </p></li></ul></div><p>
+   </p></div><div class="sect2" id="LOGICAL-REPLICATION-SUBSCRIPTION-EXAMPLES"><div class="titlepage"><div><div><h3 class="title">29.2.2. Examples: Set Up Logical Replication <a href="#LOGICAL-REPLICATION-SUBSCRIPTION-EXAMPLES" class="id_link">#</a></h3></div></div></div><p>
+     Create some test tables on the publisher.
+</p><pre class="programlisting">
+test_pub=# CREATE TABLE t1(a int, b text, PRIMARY KEY(a));
+CREATE TABLE
+test_pub=# CREATE TABLE t2(c int, d text, PRIMARY KEY(c));
+CREATE TABLE
+test_pub=# CREATE TABLE t3(e int, f text, PRIMARY KEY(e));
+CREATE TABLE
+</pre><p>
+     Create the same tables on the subscriber.
+</p><pre class="programlisting">
+test_sub=# CREATE TABLE t1(a int, b text, PRIMARY KEY(a));
+CREATE TABLE
+test_sub=# CREATE TABLE t2(c int, d text, PRIMARY KEY(c));
+CREATE TABLE
+test_sub=# CREATE TABLE t3(e int, f text, PRIMARY KEY(e));
+CREATE TABLE
+</pre><p>
+     Insert data to the tables at the publisher side.
+</p><pre class="programlisting">
+test_pub=# INSERT INTO t1 VALUES (1, 'one'), (2, 'two'), (3, 'three');
+INSERT 0 3
+test_pub=# INSERT INTO t2 VALUES (1, 'A'), (2, 'B'), (3, 'C');
+INSERT 0 3
+test_pub=# INSERT INTO t3 VALUES (1, 'i'), (2, 'ii'), (3, 'iii');
+INSERT 0 3
+</pre><p>
+     Create publications for the tables. The publications <code class="literal">pub2</code>
+     and <code class="literal">pub3a</code> disallow some
+     <a class="link" href="sql-createpublication.html#SQL-CREATEPUBLICATION-PARAMS-WITH-PUBLISH"><code class="literal">publish</code></a>
+     operations. The publication <code class="literal">pub3b</code> has a row filter (see
+     <a class="xref" href="logical-replication-row-filter.html" title="29.4. Row Filters">Section 29.4</a>).
+</p><pre class="programlisting">
+test_pub=# CREATE PUBLICATION pub1 FOR TABLE t1;
+CREATE PUBLICATION
+test_pub=# CREATE PUBLICATION pub2 FOR TABLE t2 WITH (publish = 'truncate');
+CREATE PUBLICATION
+test_pub=# CREATE PUBLICATION pub3a FOR TABLE t3 WITH (publish = 'truncate');
+CREATE PUBLICATION
+test_pub=# CREATE PUBLICATION pub3b FOR TABLE t3 WHERE (e &gt; 5);
+CREATE PUBLICATION
+</pre><p>
+     Create subscriptions for the publications. The subscription
+     <code class="literal">sub3</code> subscribes to both <code class="literal">pub3a</code> and
+     <code class="literal">pub3b</code>. All subscriptions will copy initial data by default.
+</p><pre class="programlisting">
+test_sub=# CREATE SUBSCRIPTION sub1
+test_sub-# CONNECTION 'host=localhost dbname=test_pub application_name=sub1'
+test_sub-# PUBLICATION pub1;
+CREATE SUBSCRIPTION
+test_sub=# CREATE SUBSCRIPTION sub2
+test_sub-# CONNECTION 'host=localhost dbname=test_pub application_name=sub2'
+test_sub-# PUBLICATION pub2;
+CREATE SUBSCRIPTION
+test_sub=# CREATE SUBSCRIPTION sub3
+test_sub-# CONNECTION 'host=localhost dbname=test_pub application_name=sub3'
+test_sub-# PUBLICATION pub3a, pub3b;
+CREATE SUBSCRIPTION
+</pre><p>
+     Observe that initial table data is copied, regardless of the
+     <code class="literal">publish</code> operation of the publication.
+</p><pre class="programlisting">
+test_sub=# SELECT * FROM t1;
+ a |   b
+---+-------
+ 1 | one
+ 2 | two
+ 3 | three
+(3 rows)
+
+test_sub=# SELECT * FROM t2;
+ c | d
+---+---
+ 1 | A
+ 2 | B
+ 3 | C
+(3 rows)
+</pre><p>
+     Furthermore, because the initial data copy ignores the <code class="literal">publish</code>
+     operation, and because publication <code class="literal">pub3a</code> has no row filter,
+     it means the copied table <code class="literal">t3</code> contains all rows even when
+     they do not match the row filter of publication <code class="literal">pub3b</code>.
+</p><pre class="programlisting">
+test_sub=# SELECT * FROM t3;
+ e |  f
+---+-----
+ 1 | i
+ 2 | ii
+ 3 | iii
+(3 rows)
+</pre><p>
+    Insert more data to the tables at the publisher side.
+</p><pre class="programlisting">
+test_pub=# INSERT INTO t1 VALUES (4, 'four'), (5, 'five'), (6, 'six');
+INSERT 0 3
+test_pub=# INSERT INTO t2 VALUES (4, 'D'), (5, 'E'), (6, 'F');
+INSERT 0 3
+test_pub=# INSERT INTO t3 VALUES (4, 'iv'), (5, 'v'), (6, 'vi');
+INSERT 0 3
+</pre><p>
+    Now the publisher side data looks like:
+</p><pre class="programlisting">
+test_pub=# SELECT * FROM t1;
+ a |   b
+---+-------
+ 1 | one
+ 2 | two
+ 3 | three
+ 4 | four
+ 5 | five
+ 6 | six
+(6 rows)
+
+test_pub=# SELECT * FROM t2;
+ c | d
+---+---
+ 1 | A
+ 2 | B
+ 3 | C
+ 4 | D
+ 5 | E
+ 6 | F
+(6 rows)
+
+test_pub=# SELECT * FROM t3;
+ e |  f
+---+-----
+ 1 | i
+ 2 | ii
+ 3 | iii
+ 4 | iv
+ 5 | v
+ 6 | vi
+(6 rows)
+</pre><p>
+    Observe that during normal replication the appropriate
+    <code class="literal">publish</code> operations are used. This means publications
+    <code class="literal">pub2</code> and <code class="literal">pub3a</code> will not replicate the
+    <code class="literal">INSERT</code>. Also, publication <code class="literal">pub3b</code> will
+    only replicate data that matches the row filter of <code class="literal">pub3b</code>.
+    Now the subscriber side data looks like:
+</p><pre class="programlisting">
+test_sub=# SELECT * FROM t1;
+ a |   b
+---+-------
+ 1 | one
+ 2 | two
+ 3 | three
+ 4 | four
+ 5 | five
+ 6 | six
+(6 rows)
+
+test_sub=# SELECT * FROM t2;
+ c | d
+---+---
+ 1 | A
+ 2 | B
+ 3 | C
+(3 rows)
+
+test_sub=# SELECT * FROM t3;
+ e |  f
+---+-----
+ 1 | i
+ 2 | ii
+ 3 | iii
+ 6 | vi
+(4 rows)
+</pre></div><div class="sect2" id="LOGICAL-REPLICATION-SUBSCRIPTION-EXAMPLES-DEFERRED-SLOT"><div class="titlepage"><div><div><h3 class="title">29.2.3. Examples: Deferred Replication Slot Creation <a href="#LOGICAL-REPLICATION-SUBSCRIPTION-EXAMPLES-DEFERRED-SLOT" class="id_link">#</a></h3></div></div></div><p>
+    There are some cases (e.g.
+    <a class="xref" href="logical-replication-subscription.html#LOGICAL-REPLICATION-SUBSCRIPTION-SLOT" title="29.2.1. Replication Slot Management">Section 29.2.1</a>) where, if the
+    remote replication slot was not created automatically, the user must create
+    it manually before the subscription can be activated. The steps to create
+    the slot and activate the subscription are shown in the following examples.
+    These examples specify the standard logical decoding output plugin
+    (<code class="literal">pgoutput</code>), which is what the built-in logical
+    replication uses.
+   </p><p>
+    First, create a publication for the examples to use.
+</p><pre class="programlisting">
+test_pub=# CREATE PUBLICATION pub1 FOR ALL TABLES;
+CREATE PUBLICATION
+</pre><p>
+    Example 1: Where the subscription says <code class="literal">connect = false</code>
+   </p><p>
+    </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+       Create the subscription.
+</p><pre class="programlisting">
+test_sub=# CREATE SUBSCRIPTION sub1
+test_sub-# CONNECTION 'host=localhost dbname=test_pub'
+test_sub-# PUBLICATION pub1
+test_sub-# WITH (connect=false);
+WARNING:  subscription was created, but is not connected
+HINT:  To initiate replication, you must manually create the replication slot, enable the subscription, and refresh the subscription.
+CREATE SUBSCRIPTION
+</pre></li><li class="listitem"><p>
+       On the publisher, manually create a slot. Because the name was not
+       specified during <code class="literal">CREATE SUBSCRIPTION</code>, the name of the
+       slot to create is same as the subscription name, e.g. "sub1".
+</p><pre class="programlisting">
+test_pub=# SELECT * FROM pg_create_logical_replication_slot('sub1', 'pgoutput');
+ slot_name |    lsn
+-----------+-----------
+ sub1      | 0/19404D0
+(1 row)
+</pre></li><li class="listitem"><p>
+       On the subscriber, complete the activation of the subscription. After
+       this the tables of <code class="literal">pub1</code> will start replicating.
+</p><pre class="programlisting">
+test_sub=# ALTER SUBSCRIPTION sub1 ENABLE;
+ALTER SUBSCRIPTION
+test_sub=# ALTER SUBSCRIPTION sub1 REFRESH PUBLICATION;
+ALTER SUBSCRIPTION
+</pre></li></ul></div><p>
+   </p><p>
+    Example 2: Where the subscription says <code class="literal">connect = false</code>,
+    but also specifies the
+    <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-SLOT-NAME"><code class="literal">slot_name</code></a>
+    option.
+    </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+       Create the subscription.
+</p><pre class="programlisting">
+test_sub=# CREATE SUBSCRIPTION sub1
+test_sub-# CONNECTION 'host=localhost dbname=test_pub'
+test_sub-# PUBLICATION pub1
+test_sub-# WITH (connect=false, slot_name='myslot');
+WARNING:  subscription was created, but is not connected
+HINT:  To initiate replication, you must manually create the replication slot, enable the subscription, and refresh the subscription.
+CREATE SUBSCRIPTION
+</pre></li><li class="listitem"><p>
+       On the publisher, manually create a slot using the same name that was
+       specified during <code class="literal">CREATE SUBSCRIPTION</code>, e.g. "myslot".
+</p><pre class="programlisting">
+test_pub=# SELECT * FROM pg_create_logical_replication_slot('myslot', 'pgoutput');
+ slot_name |    lsn
+-----------+-----------
+ myslot    | 0/19059A0
+(1 row)
+</pre></li><li class="listitem"><p>
+       On the subscriber, the remaining subscription activation steps are the
+       same as before.
+</p><pre class="programlisting">
+test_sub=# ALTER SUBSCRIPTION sub1 ENABLE;
+ALTER SUBSCRIPTION
+test_sub=# ALTER SUBSCRIPTION sub1 REFRESH PUBLICATION;
+ALTER SUBSCRIPTION
+</pre></li></ul></div><p>
+   </p><p>
+    Example 3: Where the subscription specifies <code class="literal">slot_name = NONE</code>
+    </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+       Create the subscription. When <code class="literal">slot_name = NONE</code> then
+       <code class="literal">enabled = false</code>, and
+       <code class="literal">create_slot = false</code> are also needed.
+</p><pre class="programlisting">
+test_sub=# CREATE SUBSCRIPTION sub1
+test_sub-# CONNECTION 'host=localhost dbname=test_pub'
+test_sub-# PUBLICATION pub1
+test_sub-# WITH (slot_name=NONE, enabled=false, create_slot=false);
+CREATE SUBSCRIPTION
+</pre></li><li class="listitem"><p>
+       On the publisher, manually create a slot using any name, e.g. "myslot".
+</p><pre class="programlisting">
+test_pub=# SELECT * FROM pg_create_logical_replication_slot('myslot', 'pgoutput');
+ slot_name |    lsn
+-----------+-----------
+ myslot    | 0/1905930
+(1 row)
+</pre></li><li class="listitem"><p>
+       On the subscriber, associate the subscription with the slot name just
+       created.
+</p><pre class="programlisting">
+test_sub=# ALTER SUBSCRIPTION sub1 SET (slot_name='myslot');
+ALTER SUBSCRIPTION
+</pre></li><li class="listitem"><p>
+       The remaining subscription activation steps are same as before.
+</p><pre class="programlisting">
+test_sub=# ALTER SUBSCRIPTION sub1 ENABLE;
+ALTER SUBSCRIPTION
+test_sub=# ALTER SUBSCRIPTION sub1 REFRESH PUBLICATION;
+ALTER SUBSCRIPTION
+</pre></li></ul></div><p>
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="logical-replication-publication.html" title="29.1. Publication">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="logical-replication.html" title="Chapter 29. Logical Replication">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="logical-replication-failover.html" title="29.3. Logical Replication Failover">Next</a></td></tr><tr><td width="40%" align="left" valign="top">29.1. Publication </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 29.3. Logical Replication Failover</td></tr></table></div></body></html>

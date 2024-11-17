@@ -53,11 +53,11 @@ const sendMessage = () => {
 
 <style scoped lang='scss'>
 .chat-bottom-pannel__textarea {
-  :deep textarea {
+  :deep(textarea) {
     @apply rounded-3xl;
   }
 
-  :deep textarea {
+  :deep(textarea) {
     @apply p-3 pr-20 text-base;
   }
 }

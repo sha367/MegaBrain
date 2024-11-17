@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>49.2. Archive Module Callbacks</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="archive-module-init.html" title="49.1. Initialization Functions" /><link rel="next" href="reference.html" title="Part VI. Reference" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">49.2. Archive Module Callbacks</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="archive-module-init.html" title="49.1. Initialization Functions">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="archive-modules.html" title="Chapter 49. Archive Modules">Up</a></td><th width="60%" align="center">Chapter 49. Archive Modules</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="reference.html" title="Part VI. Reference">Next</a></td></tr></table><hr /></div><div class="sect1" id="ARCHIVE-MODULE-CALLBACKS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">49.2. Archive Module Callbacks <a href="#ARCHIVE-MODULE-CALLBACKS" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="archive-module-callbacks.html#ARCHIVE-MODULE-STARTUP">49.2.1. Startup Callback</a></span></dt><dt><span class="sect2"><a href="archive-module-callbacks.html#ARCHIVE-MODULE-CHECK">49.2.2. Check Callback</a></span></dt><dt><span class="sect2"><a href="archive-module-callbacks.html#ARCHIVE-MODULE-ARCHIVE">49.2.3. Archive Callback</a></span></dt><dt><span class="sect2"><a href="archive-module-callbacks.html#ARCHIVE-MODULE-SHUTDOWN">49.2.4. Shutdown Callback</a></span></dt></dl></div><p>
+   The archive callbacks define the actual archiving behavior of the module.
+   The server will call them as required to process each individual WAL file.
+  </p><div class="sect2" id="ARCHIVE-MODULE-STARTUP"><div class="titlepage"><div><div><h3 class="title">49.2.1. Startup Callback <a href="#ARCHIVE-MODULE-STARTUP" class="id_link">#</a></h3></div></div></div><p>
+    The <code class="function">startup_cb</code> callback is called shortly after the
+    module is loaded.  This callback can be used to perform any additional
+    initialization required.  If the archive module has any state, it can use
+    <code class="structfield">state-&gt;private_data</code> to store it.
+
+</p><pre class="programlisting">
+typedef void (*ArchiveStartupCB) (ArchiveModuleState *state);
+</pre><p>
+   </p></div><div class="sect2" id="ARCHIVE-MODULE-CHECK"><div class="titlepage"><div><div><h3 class="title">49.2.2. Check Callback <a href="#ARCHIVE-MODULE-CHECK" class="id_link">#</a></h3></div></div></div><p>
+    The <code class="function">check_configured_cb</code> callback is called to determine
+    whether the module is fully configured and ready to accept WAL files (e.g.,
+    its configuration parameters are set to valid values).  If no
+    <code class="function">check_configured_cb</code> is defined, the server always
+    assumes the module is configured.
+
+</p><pre class="programlisting">
+typedef bool (*ArchiveCheckConfiguredCB) (ArchiveModuleState *state);
+</pre><p>
+
+    If <code class="literal">true</code> is returned, the server will proceed with
+    archiving the file by calling the <code class="function">archive_file_cb</code>
+    callback.  If <code class="literal">false</code> is returned, archiving will not
+    proceed, and the archiver will emit the following message to the server log:
+</p><pre class="screen">
+WARNING:  archive_mode enabled, yet archiving is not configured
+</pre><p>
+    In the latter case, the server will periodically call this function, and
+    archiving will proceed only when it returns <code class="literal">true</code>.
+   </p><div class="note"><h3 class="title">Note</h3><p>
+     When returning <code class="literal">false</code>, it may be useful to append some
+     additional information to the generic warning message.  To do that, provide
+     a message to the <code class="function">arch_module_check_errdetail</code> macro
+     before returning <code class="literal">false</code>.  Like
+     <code class="function">errdetail()</code>, this macro accepts a format string
+     followed by an optional list of arguments.  The resulting string will be
+     emitted as the <code class="literal">DETAIL</code> line of the warning message.
+    </p></div></div><div class="sect2" id="ARCHIVE-MODULE-ARCHIVE"><div class="titlepage"><div><div><h3 class="title">49.2.3. Archive Callback <a href="#ARCHIVE-MODULE-ARCHIVE" class="id_link">#</a></h3></div></div></div><p>
+    The <code class="function">archive_file_cb</code> callback is called to archive a
+    single WAL file.
+
+</p><pre class="programlisting">
+typedef bool (*ArchiveFileCB) (ArchiveModuleState *state, const char *file, const char *path);
+</pre><p>
+
+    If <code class="literal">true</code> is returned, the server proceeds as if the file
+    was successfully archived, which may include recycling or removing the
+    original WAL file.  If <code class="literal">false</code> is returned or an error is thrown, the server will
+    keep the original WAL file and retry archiving later.
+    <em class="replaceable"><code>file</code></em> will contain just the file name of the WAL
+    file to archive, while <em class="replaceable"><code>path</code></em> contains the full
+    path of the WAL file (including the file name).
+   </p><div class="note"><h3 class="title">Note</h3><p>
+     The <code class="function">archive_file_cb</code> callback is called in a
+     short-lived memory context that will be reset between invocations.  If you
+     need longer-lived storage, create a memory context in the module's
+     <code class="function">startup_cb</code> callback.
+    </p></div></div><div class="sect2" id="ARCHIVE-MODULE-SHUTDOWN"><div class="titlepage"><div><div><h3 class="title">49.2.4. Shutdown Callback <a href="#ARCHIVE-MODULE-SHUTDOWN" class="id_link">#</a></h3></div></div></div><p>
+    The <code class="function">shutdown_cb</code> callback is called when the archiver
+    process exits (e.g., after an error) or the value of
+    <a class="xref" href="runtime-config-wal.html#GUC-ARCHIVE-LIBRARY">archive_library</a> changes.  If no
+    <code class="function">shutdown_cb</code> is defined, no special action is taken in
+    these situations.  If the archive module has any state, this callback should
+    free it to avoid leaks.
+
+</p><pre class="programlisting">
+typedef void (*ArchiveShutdownCB) (ArchiveModuleState *state);
+</pre><p>
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="archive-module-init.html" title="49.1. Initialization Functions">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="archive-modules.html" title="Chapter 49. Archive Modules">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="reference.html" title="Part VI. Reference">Next</a></td></tr><tr><td width="40%" align="left" valign="top">49.1. Initialization Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> Part VI. Reference</td></tr></table></div></body></html>

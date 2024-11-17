@@ -1,0 +1,188 @@
+'\" t
+.\"     Title: ALTER OPERATOR
+.\"    Author: The PostgreSQL Global Development Group
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 17.1 Documentation
+.\"    Source: PostgreSQL 17.1
+.\"  Language: English
+.\"
+.TH "ALTER OPERATOR" "7" "2024" "PostgreSQL 17.1" "PostgreSQL 17.1 Documentation"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+ALTER_OPERATOR \- change the definition of an operator
+.SH "SYNOPSIS"
+.sp
+.nf
+ALTER OPERATOR \fIname\fR ( { \fIleft_type\fR | NONE } , \fIright_type\fR )
+    OWNER TO { \fInew_owner\fR | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
+
+ALTER OPERATOR \fIname\fR ( { \fIleft_type\fR | NONE } , \fIright_type\fR )
+    SET SCHEMA \fInew_schema\fR
+
+ALTER OPERATOR \fIname\fR ( { \fIleft_type\fR | NONE } , \fIright_type\fR )
+    SET ( {  RESTRICT = { \fIres_proc\fR | NONE }
+           | JOIN = { \fIjoin_proc\fR | NONE }
+           | COMMUTATOR = \fIcom_op\fR
+           | NEGATOR = \fIneg_op\fR
+           | HASHES
+           | MERGES
+          } [, \&.\&.\&. ] )
+.fi
+.SH "DESCRIPTION"
+.PP
+\fBALTER OPERATOR\fR
+changes the definition of an operator\&.
+.PP
+You must own the operator to use
+\fBALTER OPERATOR\fR\&. To alter the owner, you must be able to
+SET ROLE
+to the new owning role, and that role must have
+CREATE
+privilege on the operator\*(Aqs schema\&. (These restrictions enforce that altering the owner doesn\*(Aqt do anything you couldn\*(Aqt do by dropping and recreating the operator\&. However, a superuser can alter ownership of any operator anyway\&.)
+.SH "PARAMETERS"
+.PP
+\fIname\fR
+.RS 4
+The name (optionally schema\-qualified) of an existing operator\&.
+.RE
+.PP
+\fIleft_type\fR
+.RS 4
+The data type of the operator\*(Aqs left operand; write
+NONE
+if the operator has no left operand\&.
+.RE
+.PP
+\fIright_type\fR
+.RS 4
+The data type of the operator\*(Aqs right operand\&.
+.RE
+.PP
+\fInew_owner\fR
+.RS 4
+The new owner of the operator\&.
+.RE
+.PP
+\fInew_schema\fR
+.RS 4
+The new schema for the operator\&.
+.RE
+.PP
+\fIres_proc\fR
+.RS 4
+The restriction selectivity estimator function for this operator; write NONE to remove existing selectivity estimator\&.
+.RE
+.PP
+\fIjoin_proc\fR
+.RS 4
+The join selectivity estimator function for this operator; write NONE to remove existing selectivity estimator\&.
+.RE
+.PP
+\fIcom_op\fR
+.RS 4
+The commutator of this operator\&. Can only be changed if the operator does not have an existing commutator\&.
+.RE
+.PP
+\fIneg_op\fR
+.RS 4
+The negator of this operator\&. Can only be changed if the operator does not have an existing negator\&.
+.RE
+.PP
+HASHES
+.RS 4
+Indicates this operator can support a hash join\&. Can only be enabled and not disabled\&.
+.RE
+.PP
+MERGES
+.RS 4
+Indicates this operator can support a merge join\&. Can only be enabled and not disabled\&.
+.RE
+.SH "NOTES"
+.PP
+Refer to
+Section\ \&36.14
+and
+Section\ \&36.15
+for further information\&.
+.PP
+Since commutators come in pairs that are commutators of each other,
+ALTER OPERATOR SET COMMUTATOR
+will also set the commutator of the
+\fIcom_op\fR
+to be the target operator\&. Likewise,
+ALTER OPERATOR SET NEGATOR
+will also set the negator of the
+\fIneg_op\fR
+to be the target operator\&. Therefore, you must own the commutator or negator operator as well as the target operator\&.
+.SH "EXAMPLES"
+.PP
+Change the owner of a custom operator
+a @@ b
+for type
+text:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+ALTER OPERATOR @@ (text, text) OWNER TO joe;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Change the restriction and join selectivity estimator functions of a custom operator
+a && b
+for type
+int[]:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+ALTER OPERATOR && (int[], int[]) SET (RESTRICT = _int_contsel, JOIN = _int_contjoinsel);
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Mark the
+&&
+operator as being its own commutator:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+ALTER OPERATOR && (int[], int[]) SET (COMMUTATOR = &&);
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.SH "COMPATIBILITY"
+.PP
+There is no
+\fBALTER OPERATOR\fR
+statement in the SQL standard\&.
+.SH "SEE ALSO"
+CREATE OPERATOR (\fBCREATE_OPERATOR\fR(7)), DROP OPERATOR (\fBDROP_OPERATOR\fR(7))

@@ -1,0 +1,351 @@
+'\" t
+.\"     Title: CREATE PUBLICATION
+.\"    Author: The PostgreSQL Global Development Group
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 17.1 Documentation
+.\"    Source: PostgreSQL 17.1
+.\"  Language: English
+.\"
+.TH "CREATE PUBLICATION" "7" "2024" "PostgreSQL 17.1" "PostgreSQL 17.1 Documentation"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+CREATE_PUBLICATION \- define a new publication
+.SH "SYNOPSIS"
+.sp
+.nf
+CREATE PUBLICATION \fIname\fR
+    [ FOR ALL TABLES
+      | FOR \fIpublication_object\fR [, \&.\&.\&. ] ]
+    [ WITH ( \fIpublication_parameter\fR [= \fIvalue\fR] [, \&.\&.\&. ] ) ]
+
+where \fIpublication_object\fR is one of:
+
+    TABLE [ ONLY ] \fItable_name\fR [ * ] [ ( \fIcolumn_name\fR [, \&.\&.\&. ] ) ] [ WHERE ( \fIexpression\fR ) ] [, \&.\&.\&. ]
+    TABLES IN SCHEMA { \fIschema_name\fR | CURRENT_SCHEMA } [, \&.\&.\&. ]
+.fi
+.SH "DESCRIPTION"
+.PP
+\fBCREATE PUBLICATION\fR
+adds a new publication into the current database\&. The publication name must be distinct from the name of any existing publication in the current database\&.
+.PP
+A publication is essentially a group of tables whose data changes are intended to be replicated through logical replication\&. See
+Section\ \&29.1
+for details about how publications fit into the logical replication setup\&.
+.SH "PARAMETERS"
+.PP
+\fIname\fR
+.RS 4
+The name of the new publication\&.
+.RE
+.PP
+FOR TABLE
+.RS 4
+Specifies a list of tables to add to the publication\&. If
+ONLY
+is specified before the table name, only that table is added to the publication\&. If
+ONLY
+is not specified, the table and all its descendant tables (if any) are added\&. Optionally,
+*
+can be specified after the table name to explicitly indicate that descendant tables are included\&. This does not apply to a partitioned table, however\&. The partitions of a partitioned table are always implicitly considered part of the publication, so they are never explicitly added to the publication\&.
+.sp
+If the optional
+WHERE
+clause is specified, it defines a
+row filter
+expression\&. Rows for which the
+\fIexpression\fR
+evaluates to false or null will not be published\&. Note that parentheses are required around the expression\&. It has no effect on
+TRUNCATE
+commands\&.
+.sp
+When a column list is specified, only the named columns are replicated\&. If no column list is specified, all columns of the table are replicated through this publication, including any columns added later\&. It has no effect on
+TRUNCATE
+commands\&. See
+Section\ \&29.5
+for details about column lists\&.
+.sp
+Only persistent base tables and partitioned tables can be part of a publication\&. Temporary tables, unlogged tables, foreign tables, materialized views, and regular views cannot be part of a publication\&.
+.sp
+Specifying a column list when the publication also publishes
+FOR TABLES IN SCHEMA
+is not supported\&.
+.sp
+When a partitioned table is added to a publication, all of its existing and future partitions are implicitly considered to be part of the publication\&. So, even operations that are performed directly on a partition are also published via publications that its ancestors are part of\&.
+.RE
+.PP
+FOR ALL TABLES
+.RS 4
+Marks the publication as one that replicates changes for all tables in the database, including tables created in the future\&.
+.RE
+.PP
+FOR TABLES IN SCHEMA
+.RS 4
+Marks the publication as one that replicates changes for all tables in the specified list of schemas, including tables created in the future\&.
+.sp
+Specifying a schema when the publication also publishes a table with a column list is not supported\&.
+.sp
+Only persistent base tables and partitioned tables present in the schema will be included as part of the publication\&. Temporary tables, unlogged tables, foreign tables, materialized views, and regular views from the schema will not be part of the publication\&.
+.sp
+When a partitioned table is published via schema level publication, all of its existing and future partitions are implicitly considered to be part of the publication, regardless of whether they are from the publication schema or not\&. So, even operations that are performed directly on a partition are also published via publications that its ancestors are part of\&.
+.RE
+.PP
+WITH ( \fIpublication_parameter\fR [= \fIvalue\fR] [, \&.\&.\&. ] )
+.RS 4
+This clause specifies optional parameters for a publication\&. The following parameters are supported:
+.PP
+publish (string)
+.RS 4
+This parameter determines which DML operations will be published by the new publication to the subscribers\&. The value is comma\-separated list of operations\&. The allowed operations are
+insert,
+update,
+delete, and
+truncate\&. The default is to publish all actions, and so the default value for this option is
+\*(Aqinsert, update, delete, truncate\*(Aq\&.
+.sp
+This parameter only affects DML operations\&. In particular, the initial data synchronization (see
+Section\ \&29.8.1) for logical replication does not take this parameter into account when copying existing table data\&.
+.RE
+.PP
+publish_via_partition_root (boolean)
+.RS 4
+This parameter determines whether changes in a partitioned table (or on its partitions) contained in the publication will be published using the identity and schema of the partitioned table rather than that of the individual partitions that are actually changed; the latter is the default\&. Enabling this allows the changes to be replicated into a non\-partitioned table or a partitioned table consisting of a different set of partitions\&.
+.sp
+There can be a case where a subscription combines multiple publications\&. If a partitioned table is published by any subscribed publications which set
+publish_via_partition_root = true, changes on this partitioned table (or on its partitions) will be published using the identity and schema of this partitioned table rather than that of the individual partitions\&.
+.sp
+This parameter also affects how row filters and column lists are chosen for partitions; see below for details\&.
+.sp
+If this is enabled,
+TRUNCATE
+operations performed directly on partitions are not replicated\&.
+.RE
+.RE
+.PP
+When specifying a parameter of type
+boolean, the
+=
+\fIvalue\fR
+part can be omitted, which is equivalent to specifying
+TRUE\&.
+.SH "NOTES"
+.PP
+If
+FOR TABLE,
+FOR ALL TABLES
+or
+FOR TABLES IN SCHEMA
+are not specified, then the publication starts out with an empty set of tables\&. That is useful if tables or schemas are to be added later\&.
+.PP
+The creation of a publication does not start replication\&. It only defines a grouping and filtering logic for future subscribers\&.
+.PP
+To create a publication, the invoking user must have the
+CREATE
+privilege for the current database\&. (Of course, superusers bypass this check\&.)
+.PP
+To add a table to a publication, the invoking user must have ownership rights on the table\&. The
+\fBFOR ALL TABLES\fR
+and
+\fBFOR TABLES IN SCHEMA\fR
+clauses require the invoking user to be a superuser\&.
+.PP
+The tables added to a publication that publishes
+\fBUPDATE\fR
+and/or
+\fBDELETE\fR
+operations must have
+REPLICA IDENTITY
+defined\&. Otherwise those operations will be disallowed on those tables\&.
+.PP
+Any column list must include the
+REPLICA IDENTITY
+columns in order for
+\fBUPDATE\fR
+or
+\fBDELETE\fR
+operations to be published\&. There are no column list restrictions if the publication publishes only
+\fBINSERT\fR
+operations\&.
+.PP
+A row filter expression (i\&.e\&., the
+WHERE
+clause) must contain only columns that are covered by the
+REPLICA IDENTITY, in order for
+\fBUPDATE\fR
+and
+\fBDELETE\fR
+operations to be published\&. For publication of
+\fBINSERT\fR
+operations, any column may be used in the
+WHERE
+expression\&. The row filter allows simple expressions that don\*(Aqt have user\-defined functions, user\-defined operators, user\-defined types, user\-defined collations, non\-immutable built\-in functions, or references to system columns\&.
+.PP
+The row filter on a table becomes redundant if
+FOR TABLES IN SCHEMA
+is specified and the table belongs to the referred schema\&.
+.PP
+For published partitioned tables, the row filter for each partition is taken from the published partitioned table if the publication parameter
+publish_via_partition_root
+is true, or from the partition itself if it is false (the default)\&. See
+Section\ \&29.4
+for details about row filters\&. Similarly, for published partitioned tables, the column list for each partition is taken from the published partitioned table if the publication parameter
+publish_via_partition_root
+is true, or from the partition itself if it is false\&.
+.PP
+For an
+\fBINSERT \&.\&.\&. ON CONFLICT\fR
+command, the publication will publish the operation that results from the command\&. Depending on the outcome, it may be published as either
+\fBINSERT\fR
+or
+\fBUPDATE\fR, or it may not be published at all\&.
+.PP
+For a
+\fBMERGE\fR
+command, the publication will publish an
+\fBINSERT\fR,
+\fBUPDATE\fR, or
+\fBDELETE\fR
+for each row inserted, updated, or deleted\&.
+.PP
+\fBATTACH\fRing a table into a partition tree whose root is published using a publication with
+publish_via_partition_root
+set to
+true
+does not result in the table\*(Aqs existing contents being replicated\&.
+.PP
+\fBCOPY \&.\&.\&. FROM\fR
+commands are published as
+\fBINSERT\fR
+operations\&.
+.PP
+DDL
+operations are not published\&.
+.PP
+The
+WHERE
+clause expression is executed with the role used for the replication connection\&.
+.SH "EXAMPLES"
+.PP
+Create a publication that publishes all changes in two tables:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE PUBLICATION mypublication FOR TABLE users, departments;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Create a publication that publishes all changes from active departments:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE PUBLICATION active_departments FOR TABLE departments WHERE (active IS TRUE);
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Create a publication that publishes all changes in all tables:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE PUBLICATION alltables FOR ALL TABLES;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Create a publication that only publishes
+\fBINSERT\fR
+operations in one table:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE PUBLICATION insert_only FOR TABLE mydata
+    WITH (publish = \*(Aqinsert\*(Aq);
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Create a publication that publishes all changes for tables
+users,
+departments
+and all changes for all the tables present in the schema
+production:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE PUBLICATION production_publication FOR TABLE users, departments, TABLES IN SCHEMA production;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Create a publication that publishes all changes for all the tables present in the schemas
+marketing
+and
+sales:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE PUBLICATION sales_publication FOR TABLES IN SCHEMA marketing, sales;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Create a publication that publishes all changes for table
+users, but replicates only columns
+user_id
+and
+firstname:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE PUBLICATION users_filtered FOR TABLE users (user_id, firstname);
+.fi
+.if n \{\
+.RE
+.\}
+.SH "COMPATIBILITY"
+.PP
+\fBCREATE PUBLICATION\fR
+is a
+PostgreSQL
+extension\&.
+.SH "SEE ALSO"
+ALTER PUBLICATION (\fBALTER_PUBLICATION\fR(7)), DROP PUBLICATION (\fBDROP_PUBLICATION\fR(7)), CREATE SUBSCRIPTION (\fBCREATE_SUBSCRIPTION\fR(7)), ALTER SUBSCRIPTION (\fBALTER_SUBSCRIPTION\fR(7))

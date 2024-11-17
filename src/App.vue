@@ -15,7 +15,10 @@ commonStore.initLoadingStatusHandler();
 
     <AppHeader />
 
-    <div class='flex flex-grow overflow-hidden'>
+    <div
+      v-if='commonStore.loadingStatus === "completed"'
+      class='flex flex-grow overflow-hidden'
+    >
       <AppSidebar />
 
       <main class='flex-grow flex flex-col bg-white'>

@@ -1,0 +1,621 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>PostGIS SFCGAL Cheat Sheet</title>
+<style type="text/css">
+table { page-break-inside:avoid; page-break-after:auto }
+tr    { page-break-inside:avoid; page-break-after:avoid }
+thead { display:table-header-group }
+tfoot { display:table-footer-group }
+body {
+	font-family: Arial, sans-serif;
+	font-size: 8.5pt;
+}
+@media print { a , a:hover, a:focus, a:active{text-decoration: none;color:black} }
+@media screen { a , a:hover, a:focus, a:active{text-decoration: underline} }
+
+.comment {font-size:x-small;color:green;font-family:"courier new"}
+.notes {
+	font-size:x-small;
+	color:#dd1111;
+	font-weight:500;
+	font-family:verdana;
+}
+#example_heading {
+	border-bottom: 1px solid #000;
+	margin: 10px 15px 10px 85px;
+	color: #B0C4DE;font-size: 7.5pt;
+}
+
+
+#content_functions {
+	width:100%;
+	float: left;
+}
+
+#content_functions_left {
+	width:100%;
+	float: left;
+}
+
+#content_functions_right {
+	width: 100%;
+	float: right;
+}
+
+
+#content_examples {
+	float: left;
+	width: 100%;
+}
+
+.section {
+	border: 1px solid #000;
+	margin: 4px;
+
+	width: 100%;
+
+	float: left;
+}
+
+.example {
+	border: 1px solid #000;
+	margin: 4px;
+	width: 100%;
+	float:left;
+}
+
+.example b {font-size: 7.5pt}
+.example th {
+	border: 1px solid #000;
+	color: #000;
+	background-color: #ddd;
+	font-size: 8.0pt;
+}
+
+.section th {
+	border: 1px solid #000;
+	color: #fff;
+	background-color: #FF9900;
+	font-size: 9.5pt;
+
+}
+.section td {
+	font-family: Arial, sans-serif;
+	font-size: 8.5pt;
+	vertical-align: top;
+	border: 0;
+}
+
+.func {font-weight: 600}
+.func {font-weight: 600}
+.func_args {font-size: 8pt;font-family:"courier new";float:left}
+
+.evenrow {
+	background-color: #eee;
+}
+
+.oddrow {
+	background-color: #fff;
+}
+
+h1 {
+	margin: 0px;
+	padding: 0px;
+	font-size: 14pt;
+}
+code {font-size: 8pt}
+			</style>
+</head>
+<body>
+<h1 style="text-align:center">PostGIS  3.5 SFCGAL Cheatsheet</h1>
+<span class="notes">
+            New in this release
+        <sup>1</sup>
+            Enhanced in this release
+        <sup>2</sup>  
+				
+				Requires SFCGAL 1.5 or higher
+        <sup>cg1.5</sup>
+				Aggregate
+        <sup>agg</sup>   
+				
+				Window function
+        <sup>W</sup>  
+				
+				2.5/3D support
+        <sup>3d</sup>  
+				SQL-MM<sup>mm</sup>  
+			</span><div id="content_functions"><div id="content_functions_left">
+<table class="section">
+<tr><th colspan="2">SFCGAL Management Functions</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/postgis_sfcgal_version.html">postgis_sfcgal_version</a></span>
+			()
+		
+
+		  
+		Returns the version of SFCGAL in use</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/postgis_sfcgal_full_version.html">postgis_sfcgal_full_version</a></span>
+			()
+		
+
+		  
+		Returns the full version of SFCGAL in use including CGAL and Boost versions</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">SFCGAL Accessors and Setters</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_ForceLHR.html">CG_ForceLHR</a></span>
+			 <sup>1</sup>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Force LHR orientation</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_IsPlanar.html">CG_IsPlanar</a></span>
+			 <sup>1</sup>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Check if a surface is or not planar</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_IsSolid.html">CG_IsSolid</a></span>
+			 <sup>1</sup>
+			 <sup>3d</sup>
+			(geom1)
+		
+
+		  
+		Test if the geometry is a solid. No validity check is performed.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_MakeSolid.html">CG_MakeSolid</a></span>
+			 <sup>1</sup>
+			 <sup>3d</sup>
+			(geom1)
+		
+
+		  
+		Cast the geometry into a solid. No check is performed. To obtain a valid solid, the input geometry must be a closed Polyhedral Surface or a closed TIN.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_Orientation.html">CG_Orientation</a></span>
+			 <sup>1</sup>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Determine surface orientation</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_Area.html">CG_Area</a></span>
+			 <sup>1</sup>
+			(geom)
+		
+
+		  
+		Calculates the area of a geometry</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_3DArea.html">CG_3DArea</a></span>
+			 <sup>1</sup>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(geom1)
+		
+
+		  
+		Computes area of 3D surface geometries.  Will return 0 for solids.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_Volume.html">CG_Volume</a></span>
+			 <sup>1</sup>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(geom1)
+		
+
+		  
+		Computes the volume of a 3D solid. If applied to surface (even closed) geometries will return 0.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ForceLHR.html">ST_ForceLHR</a></span>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Force LHR orientation</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_IsPlanar.html">ST_IsPlanar</a></span>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Check if a surface is or not planar</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_IsSolid.html">ST_IsSolid</a></span>
+			 <sup>3d</sup>
+			(geom1)
+		
+
+		  
+		Test if the geometry is a solid. No validity check is performed.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MakeSolid.html">ST_MakeSolid</a></span>
+			 <sup>3d</sup>
+			(geom1)
+		
+
+		  
+		Cast the geometry into a solid. No check is performed. To obtain a valid solid, the input geometry must be a closed Polyhedral Surface or a closed TIN.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Orientation.html">ST_Orientation</a></span>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Determine surface orientation</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_3DArea.html">ST_3DArea</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(geom1)
+		
+
+		  
+		Computes area of 3D surface geometries.  Will return 0 for solids.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Volume.html">ST_Volume</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(geom1)
+		
+
+		  
+		Computes the volume of a 3D solid. If applied to surface (even closed) geometries will return 0.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">SFCGAL Processing and Relationship Functions</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_Intersection.html">CG_Intersection</a></span>
+			 <sup>1</sup>
+			(geomA, geomB)
+		
+
+		  
+		Computes the intersection of two geometries</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_Intersects.html">CG_Intersects</a></span>
+			 <sup>1</sup>
+			(geomA, geomB)
+		
+
+		  
+		Tests if two geometries intersect (they have at least one point in common)</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_3DIntersects.html">CG_3DIntersects</a></span>
+			 <sup>1</sup>
+			(geomA, geomB)
+		
+
+		  
+		Tests if two 3D geometries intersect</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_Difference.html">CG_Difference</a></span>
+			 <sup>1</sup>
+			(geomA, geomB)
+		
+
+		  
+		Computes the geometric difference between two geometries</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_3DDifference.html">ST_3DDifference</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(geom1, geom2)
+		
+
+		  
+		Perform 3D difference</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_3DDifference.html">CG_3DDifference</a></span>
+			 <sup>1</sup>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(geom1, geom2)
+		
+
+		  
+		Perform 3D difference</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_Distance.html">CG_Distance</a></span>
+			 <sup>1</sup>
+			(geomA, geomB)
+		
+
+		  
+		Computes the minimum distance between two geometries</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_3DDistance.html">CG_3DDistance</a></span>
+			 <sup>1</sup>
+			(geomA, geomB)
+		
+
+		  
+		Computes the minimum 3D distance between two geometries</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_3DConvexHull.html">ST_3DConvexHull</a></span>
+			 <sup>3d</sup>
+			(geom1)
+		
+
+		  
+		Computes the 3D convex hull of a geometry.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_3DConvexHull.html">CG_3DConvexHull</a></span>
+			 <sup>1</sup>
+			 <sup>3d</sup>
+			(geom1)
+		
+
+		  
+		Computes the 3D convex hull of a geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_3DIntersection.html">ST_3DIntersection</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(geom1, geom2)
+		
+
+		  
+		Perform 3D intersection</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_3DIntersection.html">CG_3DIntersection</a></span>
+			 <sup>1</sup>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(geom1, geom2)
+		
+
+		  
+		Perform 3D intersection</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_Union.html">CG_Union</a></span>
+			 <sup>1</sup>
+			(geomA, geomB)
+		
+
+		  
+		Computes the union of two geometries</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_3DUnion.html">ST_3DUnion</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+
+		  
+		Perform 3D union.<span class="func_args"><ol>
+<li>geom1, geom2</li>
+<li>g1field<sup> agg</sup>
+</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_3DUnion.html">CG_3DUnion</a></span>
+			 <sup>1</sup>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+
+		  
+		Perform 3D union using postgis_sfcgal.<span class="func_args"><ol>
+<li>geom1, geom2</li>
+<li>g1field<sup> agg</sup>
+</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AlphaShape.html">ST_AlphaShape</a></span>
+			(geom, alpha, allow_holes = false)
+		
+
+		  
+		Computes an Alpha-shape enclosing a geometry</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_AlphaShape.html">CG_AlphaShape</a></span>
+			 <sup>1</sup>
+			(geom, alpha, allow_holes = false)
+		
+
+		  
+		Computes an Alpha-shape enclosing a geometry</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_ApproxConvexPartition.html">CG_ApproxConvexPartition</a></span>
+			 <sup>1</sup>
+			 <sup>cg1.5</sup>
+			(geom)
+		
+
+		  
+		Computes approximal convex partition of the polygon geometry</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ApproximateMedialAxis.html">ST_ApproximateMedialAxis</a></span>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Compute the approximate medial axis of an areal geometry.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_ApproximateMedialAxis.html">CG_ApproximateMedialAxis</a></span>
+			 <sup>1</sup>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Compute the approximate medial axis of an areal geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ConstrainedDelaunayTriangles.html">ST_ConstrainedDelaunayTriangles</a></span>
+			 <sup>3d</sup>
+			(g1)
+		
+
+		  
+		
+                Return a constrained Delaunay triangulation around the given input geometry.
+            </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_ConstrainedDelaunayTriangles.html">CG_ConstrainedDelaunayTriangles</a></span>
+			 <sup>3d</sup>
+			(g1)
+		
+
+		  
+		
+                Return a constrained Delaunay triangulation around the given input geometry.
+            </td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Extrude.html">ST_Extrude</a></span>
+			 <sup>3d</sup>
+			(geom, x, y, z)
+		
+
+		  
+		Extrude a surface to a related volume</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_Extrude.html">CG_Extrude</a></span>
+			 <sup>1</sup>
+			 <sup>3d</sup>
+			(geom, x, y, z)
+		
+
+		  
+		Extrude a surface to a related volume</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_ExtrudeStraightSkeleton.html">CG_ExtrudeStraightSkeleton</a></span>
+			 <sup>1</sup>
+			 <sup>cg1.5</sup>
+			(geom, roof_height, body_height = 0)
+		
+
+		  
+		Straight Skeleton Extrusion</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_GreeneApproxConvexPartition.html">CG_GreeneApproxConvexPartition</a></span>
+			 <sup>1</sup>
+			 <sup>cg1.5</sup>
+			(geom)
+		
+
+		  
+		Computes approximal convex partition of the polygon geometry</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MinkowskiSum.html">ST_MinkowskiSum</a></span>
+			(geom1, geom2)
+		
+
+		  
+		Performs Minkowski sum</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_MinkowskiSum.html">CG_MinkowskiSum</a></span>
+			 <sup>1</sup>
+			(geom1, geom2)
+		
+
+		  
+		Performs Minkowski sum</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_OptimalAlphaShape.html">ST_OptimalAlphaShape</a></span>
+			(geom, allow_holes = false, nb_components = 1)
+		
+
+		  
+		Computes an Alpha-shape enclosing a geometry using an "optimal" alpha value.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_OptimalAlphaShape.html">CG_OptimalAlphaShape</a></span>
+			 <sup>1</sup>
+			(geom, allow_holes = false, nb_components = 1)
+		
+
+		  
+		Computes an Alpha-shape enclosing a geometry using an "optimal" alpha value.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_OptimalConvexPartition.html">CG_OptimalConvexPartition</a></span>
+			 <sup>1</sup>
+			 <sup>cg1.5</sup>
+			(geom)
+		
+
+		  
+		Computes an optimal convex partition of the polygon geometry</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_StraightSkeleton.html">CG_StraightSkeleton</a></span>
+			 <sup>1</sup>
+			 <sup>3d</sup>
+			(geom, use_distance_as_m = false)
+		
+
+		  
+		Compute a straight skeleton from a geometry</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_StraightSkeleton.html">ST_StraightSkeleton</a></span>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Compute a straight skeleton from a geometry</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Tesselate.html">ST_Tesselate</a></span>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Perform surface Tessellation of a polygon or polyhedralsurface and returns as a TIN or collection of TINS</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_Tesselate.html">CG_Tesselate</a></span>
+			 <sup>1</sup>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Perform surface Tessellation of a polygon or polyhedralsurface and returns as a TIN or collection of TINS</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_Triangulate.html">CG_Triangulate</a></span>
+			 <sup>1</sup>
+			(geom)
+		
+
+		  
+		Triangulates a polygonal geometry</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_Visibility.html">CG_Visibility</a></span>
+			 <sup>1</sup>
+			 <sup>cg1.5</sup>
+			 <sup>3d</sup>
+
+		  
+		Compute a visibility polygon from a point or a segment in a polygon geometry<span class="func_args"><ol>
+<li>polygon, point</li>
+<li>polygon, pointA, pointB</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CG_YMonotonePartition.html">CG_YMonotonePartition</a></span>
+			 <sup>1</sup>
+			 <sup>cg1.5</sup>
+			(geom)
+		
+
+		  
+		Computes y-monotone partition of the polygon geometry</td></tr>
+</table>
+<br>
+</div></div>
+</body>
+</html>

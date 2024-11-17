@@ -1,0 +1,88 @@
+'\" t
+.\"     Title: pg_walsummary
+.\"    Author: The PostgreSQL Global Development Group
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 17.1 Documentation
+.\"    Source: PostgreSQL 17.1
+.\"  Language: English
+.\"
+.TH "PG_WALSUMMARY" "1" "2024" "PostgreSQL 17.1" "PostgreSQL 17.1 Documentation"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+pg_walsummary \- print contents of WAL summary files
+.SH "SYNOPSIS"
+.HP \w'\fBpg_walsummary\fR\ 'u
+\fBpg_walsummary\fR [\fIoption\fR...] [\fIfile\fR...]
+.SH "DESCRIPTION"
+.PP
+pg_walsummary
+is used to print the contents of WAL summary files\&. These binary files are found with the
+pg_wal/summaries
+subdirectory of the data directory, and can be converted to text using this tool\&. This is not ordinarily necessary, since WAL summary files primarily exist to support
+incremental backup, but it may be useful for debugging purposes\&.
+.PP
+A WAL summary file is indexed by tablespace OID, relation OID, and relation fork\&. For each relation fork, it stores the list of blocks that were modified by WAL within the range summarized in the file\&. It can also store a "limit block," which is 0 if the relation fork was created or truncated within the relevant WAL range, and otherwise the shortest length to which the relation fork was truncated\&. If the relation fork was not created, deleted, or truncated within the relevant WAL range, the limit block is undefined or infinite and will not be printed by this tool\&.
+.SH "OPTIONS"
+.PP
+.PP
+\fB\-i\fR
+.br
+\fB\-\-individual\fR
+.RS 4
+By default,
+pg_walsummary
+prints one line of output for each range of one or more consecutive modified blocks\&. This can make the output a lot briefer, since a relation where all blocks from 0 through 999 were modified will produce only one line of output rather than 1000 separate lines\&. This option requests a separate line of output for every modified block\&.
+.RE
+.PP
+\fB\-q\fR
+.br
+\fB\-\-quiet\fR
+.RS 4
+Do not print any output, except for errors\&. This can be useful when you want to know whether a WAL summary file can be successfully parsed but don\*(Aqt care about the contents\&.
+.RE
+.PP
+\fB\-V\fR
+.br
+\fB\-\-version\fR
+.RS 4
+Display version information, then exit\&.
+.RE
+.PP
+\fB\-?\fR
+.br
+\fB\-\-help\fR
+.RS 4
+Shows help about
+pg_walsummary
+command line arguments, and exits\&.
+.RE
+.SH "ENVIRONMENT"
+.PP
+The environment variable
+\fBPG_COLOR\fR
+specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
+.SH "SEE ALSO"
+\fBpg_basebackup\fR(1), \fBpg_combinebackup\fR(1)

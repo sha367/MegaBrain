@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>initdb</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="reference-server.html" title="PostgreSQL Server Applications" /><link rel="next" href="pgarchivecleanup.html" title="pg_archivecleanup" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center"><span class="application">initdb</span></th></tr><tr><td width="10%" align="left"><a accesskey="p" href="reference-server.html" title="PostgreSQL Server Applications">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="reference-server.html" title="PostgreSQL Server Applications">Up</a></td><th width="60%" align="center">PostgreSQL Server Applications</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="pgarchivecleanup.html" title="pg_archivecleanup">Next</a></td></tr></table><hr /></div><div class="refentry" id="APP-INITDB"><div class="titlepage"></div><a id="id-1.9.5.3.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle"><span class="application">initdb</span></span></h2><p>initdb — create a new <span class="productname">PostgreSQL</span> database cluster</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p id="id-1.9.5.3.4.1"><code class="command">initdb</code> [<em class="replaceable"><code>option</code></em>...]  [ <code class="option">--pgdata</code>  |   <code class="option">-D</code> ]<em class="replaceable"><code> directory</code></em> </p></div></div><div class="refsect1" id="R1-APP-INITDB-1"><h2>Description</h2><p>
+   <code class="command">initdb</code> creates a new
+   <span class="productname">PostgreSQL</span> <a class="glossterm" href="glossary.html#GLOSSARY-DB-CLUSTER"><em class="glossterm"><a class="glossterm" href="glossary.html#GLOSSARY-DB-CLUSTER" title="Database cluster">database cluster</a></em></a>.
+  </p><p>
+   Creating a database cluster consists of creating the
+   <a class="glossterm" href="glossary.html#GLOSSARY-DATA-DIRECTORY"><em class="glossterm"><a class="glossterm" href="glossary.html#GLOSSARY-DATA-DIRECTORY" title="Data directory">directories</a></em></a> in
+   which the cluster data will live, generating the shared catalog
+   tables (tables that belong to the whole cluster rather than to any
+   particular database), and creating the <code class="literal">postgres</code>,
+   <code class="literal">template1</code>, and <code class="literal">template0</code> databases.
+   The <code class="literal">postgres</code> database is a default database meant
+   for use by users, utilities and third party applications.
+   <code class="literal">template1</code> and <code class="literal">template0</code> are
+   meant as source databases to be copied by later <code class="command">CREATE
+   DATABASE</code> commands.  <code class="literal">template0</code> should never
+   be modified, but you can add objects to <code class="literal">template1</code>,
+   which by default will be copied into databases created later.  See
+   <a class="xref" href="manage-ag-templatedbs.html" title="22.3. Template Databases">Section 22.3</a> for more details.
+  </p><p>
+   Although <code class="command">initdb</code> will attempt to create the
+   specified data directory, it might not have permission if the parent
+   directory of the desired data directory is root-owned. To initialize
+   in such a setup, create an empty data directory as root, then use
+   <code class="command">chown</code> to assign ownership of that directory to the
+   database user account, then <code class="command">su</code> to become the
+   database user to run <code class="command">initdb</code>.
+  </p><p>
+   <code class="command">initdb</code> must be run as the user that will own the
+   server process, because the server needs to have access to the
+   files and directories that <code class="command">initdb</code> creates.
+   Since the server cannot be run as root, you must not run
+   <code class="command">initdb</code> as root either.  (It will in fact refuse
+   to do so.)
+  </p><p>
+    For security reasons the new cluster created by <code class="command">initdb</code>
+    will only be accessible by the cluster owner by default.  The
+    <code class="option">--allow-group-access</code> option allows any user in the same
+    group as the cluster owner to read files in the cluster.  This is useful
+    for performing backups as a non-privileged user.
+  </p><p>
+   <code class="command">initdb</code> initializes the database cluster's default locale
+   and character set encoding. These can also be set separately for each
+   database when it is created. <code class="command">initdb</code> determines those
+   settings for the template databases, which will serve as the default for
+   all other databases.
+  </p><p>
+   By default, <code class="command">initdb</code> uses the locale provider
+   <code class="literal">libc</code> (see <a class="xref" href="locale.html#LOCALE-PROVIDERS" title="23.1.4. Locale Providers">Section 23.1.4</a>). The
+   <code class="literal">libc</code> locale provider takes the locale settings from the
+   environment, and determines the encoding from the locale settings.
+  </p><p>
+   To choose a different locale for the cluster, use the option
+   <code class="option">--locale</code>.  There are also individual options
+   <code class="option">--lc-*</code> and <code class="option">--icu-locale</code> (see below) to
+   set values for the individual locale categories.  Note that inconsistent
+   settings for different locale categories can give nonsensical results, so
+   this should be used with care.
+  </p><p>
+   Alternatively, <code class="command">initdb</code> can use the ICU library to provide
+   locale services by specifying <code class="literal">--locale-provider=icu</code>. The
+   server must be built with ICU support. To choose the specific ICU locale ID
+   to apply, use the option <code class="option">--icu-locale</code>.  Note that for
+   implementation reasons and to support legacy code,
+   <code class="command">initdb</code> will still select and initialize libc locale
+   settings when the ICU locale provider is used.
+  </p><p>
+   When <code class="command">initdb</code> runs, it will print out the locale settings
+   it has chosen.  If you have complex requirements or specified multiple
+   options, it is advisable to check that the result matches what was
+   intended.
+  </p><p>
+   More details about locale settings can be found in <a class="xref" href="locale.html" title="23.1. Locale Support">Section 23.1</a>.
+  </p><p>
+   To alter the default encoding, use the <code class="option">--encoding</code>.
+   More details can be found in <a class="xref" href="multibyte.html" title="23.3. Character Set Support">Section 23.3</a>.
+  </p></div><div class="refsect1" id="id-1.9.5.3.6"><h2>Options</h2><p>
+    </p><div class="variablelist"><dl class="variablelist"><dt id="APP-INITDB-OPTION-AUTH"><span class="term"><code class="option">-A <em class="replaceable"><code>authmethod</code></em></code><br /></span><span class="term"><code class="option">--auth=<em class="replaceable"><code>authmethod</code></em></code></span> <a href="#APP-INITDB-OPTION-AUTH" class="id_link">#</a></dt><dd><p>
+        This option specifies the default authentication method for local
+        users used in <code class="filename">pg_hba.conf</code> (<code class="literal">host</code>
+        and <code class="literal">local</code> lines).  See <a class="xref" href="auth-pg-hba-conf.html" title="20.1. The pg_hba.conf File">Section 20.1</a>
+        for an overview of valid values.
+       </p><p>
+        <code class="command">initdb</code> will
+        prepopulate <code class="filename">pg_hba.conf</code> entries using the
+        specified authentication method for non-replication as well as
+        replication connections.
+       </p><p>
+        Do not use <code class="literal">trust</code> unless you trust all local users on your
+        system.  <code class="literal">trust</code> is the default for ease of installation.
+       </p></dd><dt id="APP-INITDB-OPTION-AUTH-HOST"><span class="term"><code class="option">--auth-host=<em class="replaceable"><code>authmethod</code></em></code></span> <a href="#APP-INITDB-OPTION-AUTH-HOST" class="id_link">#</a></dt><dd><p>
+        This option specifies the authentication method for local users via
+        TCP/IP connections used in <code class="filename">pg_hba.conf</code>
+        (<code class="literal">host</code> lines).
+       </p></dd><dt id="APP-INITDB-OPTION-AUTH-LOCAL"><span class="term"><code class="option">--auth-local=<em class="replaceable"><code>authmethod</code></em></code></span> <a href="#APP-INITDB-OPTION-AUTH-LOCAL" class="id_link">#</a></dt><dd><p>
+        This option specifies the authentication method for local users via
+        Unix-domain socket connections used in <code class="filename">pg_hba.conf</code>
+        (<code class="literal">local</code> lines).
+       </p></dd><dt id="APP-INITDB-OPTION-PGDATA"><span class="term"><code class="option">-D <em class="replaceable"><code>directory</code></em></code><br /></span><span class="term"><code class="option">--pgdata=<em class="replaceable"><code>directory</code></em></code></span> <a href="#APP-INITDB-OPTION-PGDATA" class="id_link">#</a></dt><dd><p>
+        This option specifies the directory where the database cluster
+        should be stored. This is the only information required by
+        <code class="command">initdb</code>, but you can avoid writing it by
+        setting the <code class="envar">PGDATA</code> environment variable, which
+        can be convenient since the database server
+        (<code class="command">postgres</code>) can find the data
+        directory later by the same variable.
+       </p></dd><dt id="APP-INITDB-OPTION-ENCODING"><span class="term"><code class="option">-E <em class="replaceable"><code>encoding</code></em></code><br /></span><span class="term"><code class="option">--encoding=<em class="replaceable"><code>encoding</code></em></code></span> <a href="#APP-INITDB-OPTION-ENCODING" class="id_link">#</a></dt><dd><p>
+        Selects the encoding of the template databases. This will also be the
+        default encoding of any database you create later, unless you override
+        it then. The character sets supported by the
+        <span class="productname">PostgreSQL</span> server are described in <a class="xref" href="multibyte.html#MULTIBYTE-CHARSET-SUPPORTED" title="23.3.1. Supported Character Sets">Section 23.3.1</a>.
+       </p><p>
+        By default, the template database encoding is derived from the
+        locale. If <a class="xref" href="app-initdb.html#APP-INITDB-OPTION-NO-LOCALE"><code class="option">--no-locale</code></a> is specified
+        (or equivalently, if the locale is <code class="literal">C</code> or
+        <code class="literal">POSIX</code>), then the default is <code class="literal">UTF8</code>
+        for the ICU provider and <code class="literal">SQL_ASCII</code> for the
+        <code class="literal">libc</code> provider.
+       </p></dd><dt id="APP-INITDB-ALLOW-GROUP-ACCESS"><span class="term"><code class="option">-g</code><br /></span><span class="term"><code class="option">--allow-group-access</code></span> <a href="#APP-INITDB-ALLOW-GROUP-ACCESS" class="id_link">#</a></dt><dd><p>
+        Allows users in the same group as the cluster owner to read all cluster
+        files created by <code class="command">initdb</code>.  This option is ignored
+        on <span class="productname">Windows</span> as it does not support
+        <acronym class="acronym">POSIX</acronym>-style group permissions.
+       </p></dd><dt id="APP-INITDB-ICU-LOCALE"><span class="term"><code class="option">--icu-locale=<em class="replaceable"><code>locale</code></em></code></span> <a href="#APP-INITDB-ICU-LOCALE" class="id_link">#</a></dt><dd><p>
+        Specifies the ICU locale when the ICU provider is used. Locale support
+        is described in <a class="xref" href="locale.html" title="23.1. Locale Support">Section 23.1</a>.
+       </p></dd><dt id="APP-INITDB-ICU-RULES"><span class="term"><code class="option">--icu-rules=<em class="replaceable"><code>rules</code></em></code></span> <a href="#APP-INITDB-ICU-RULES" class="id_link">#</a></dt><dd><p>
+        Specifies additional collation rules to customize the behavior of the
+        default collation.  This is supported for ICU only.
+       </p></dd><dt id="APP-INITDB-DATA-CHECKSUMS"><span class="term"><code class="option">-k</code><br /></span><span class="term"><code class="option">--data-checksums</code></span> <a href="#APP-INITDB-DATA-CHECKSUMS" class="id_link">#</a></dt><dd><p>
+        Use checksums on data pages to help detect corruption by the
+        I/O system that would otherwise be silent. Enabling checksums
+        may incur a noticeable performance penalty. If set, checksums
+        are calculated for all objects, in all databases. All checksum
+        failures will be reported in the
+        <a class="link" href="monitoring-stats.html#MONITORING-PG-STAT-DATABASE-VIEW" title="27.2.17. pg_stat_database">
+        <code class="structname">pg_stat_database</code></a> view.
+        See <a class="xref" href="checksums.html" title="28.2. Data Checksums">Section 28.2</a> for details.
+       </p></dd><dt id="APP-INITDB-OPTION-LOCALE"><span class="term"><code class="option">--locale=<em class="replaceable"><code>locale</code></em></code></span> <a href="#APP-INITDB-OPTION-LOCALE" class="id_link">#</a></dt><dd><p>
+        Sets the default locale for the database cluster.  If this
+        option is not specified, the locale is inherited from the
+        environment that <code class="command">initdb</code> runs in. Locale
+        support is described in <a class="xref" href="locale.html" title="23.1. Locale Support">Section 23.1</a>.
+       </p><p>
+        If <code class="option">--locale-provider</code> is <code class="literal">builtin</code>,
+        <code class="option">--locale</code> or <code class="option">--builtin-locale</code> must be
+        specified and set to <code class="literal">C</code> or
+        <code class="literal">C.UTF-8</code>.
+       </p></dd><dt id="APP-INITDB-OPTION-LC-COLLATE"><span class="term"><code class="option">--lc-collate=<em class="replaceable"><code>locale</code></em></code><br /></span><span class="term"><code class="option">--lc-ctype=<em class="replaceable"><code>locale</code></em></code><br /></span><span class="term"><code class="option">--lc-messages=<em class="replaceable"><code>locale</code></em></code><br /></span><span class="term"><code class="option">--lc-monetary=<em class="replaceable"><code>locale</code></em></code><br /></span><span class="term"><code class="option">--lc-numeric=<em class="replaceable"><code>locale</code></em></code><br /></span><span class="term"><code class="option">--lc-time=<em class="replaceable"><code>locale</code></em></code></span> <a href="#APP-INITDB-OPTION-LC-COLLATE" class="id_link">#</a></dt><dd><p>
+        Like <code class="option">--locale</code>, but only sets the locale in
+        the specified category.
+       </p></dd><dt id="APP-INITDB-OPTION-NO-LOCALE"><span class="term"><code class="option">--no-locale</code></span> <a href="#APP-INITDB-OPTION-NO-LOCALE" class="id_link">#</a></dt><dd><p>
+        Equivalent to <code class="option">--locale=C</code>.
+       </p></dd><dt id="APP-INITDB-BUILTIN-LOCALE"><span class="term"><code class="option">--builtin-locale=<em class="replaceable"><code>locale</code></em></code></span> <a href="#APP-INITDB-BUILTIN-LOCALE" class="id_link">#</a></dt><dd><p>
+        Specifies the locale name when the builtin provider is used. Locale support
+        is described in <a class="xref" href="locale.html" title="23.1. Locale Support">Section 23.1</a>.
+       </p></dd><dt id="APP-INITDB-OPTION-LOCALE-PROVIDER"><span class="term"><code class="option">--locale-provider={<code class="literal">builtin</code>|<code class="literal">libc</code>|<code class="literal">icu</code>}</code></span> <a href="#APP-INITDB-OPTION-LOCALE-PROVIDER" class="id_link">#</a></dt><dd><p>
+        This option sets the locale provider for databases created in the new
+        cluster.  It can be overridden in the <code class="command">CREATE
+        DATABASE</code> command when new databases are subsequently
+        created.  The default is <code class="literal">libc</code> (see <a class="xref" href="locale.html#LOCALE-PROVIDERS" title="23.1.4. Locale Providers">Section 23.1.4</a>).
+       </p></dd><dt id="APP-INITDB-OPTION-PWFILE"><span class="term"><code class="option">--pwfile=<em class="replaceable"><code>filename</code></em></code></span> <a href="#APP-INITDB-OPTION-PWFILE" class="id_link">#</a></dt><dd><p>
+        Makes <code class="command">initdb</code> read the bootstrap superuser's password
+        from a file.  The first line of the file is taken as the password.
+       </p></dd><dt id="APP-INITDB-OPTION-TEXT-SEARCH-CONFIG"><span class="term"><code class="option">-T <em class="replaceable"><code>config</code></em></code><br /></span><span class="term"><code class="option">--text-search-config=<em class="replaceable"><code>config</code></em></code></span> <a href="#APP-INITDB-OPTION-TEXT-SEARCH-CONFIG" class="id_link">#</a></dt><dd><p>
+        Sets the default text search configuration.
+        See <a class="xref" href="runtime-config-client.html#GUC-DEFAULT-TEXT-SEARCH-CONFIG">default_text_search_config</a> for further information.
+       </p></dd><dt id="APP-INITDB-OPTION-USERNAME"><span class="term"><code class="option">-U <em class="replaceable"><code>username</code></em></code><br /></span><span class="term"><code class="option">--username=<em class="replaceable"><code>username</code></em></code></span> <a href="#APP-INITDB-OPTION-USERNAME" class="id_link">#</a></dt><dd><p>
+        Sets the user name of the
+        <a class="glossterm" href="glossary.html#GLOSSARY-BOOTSTRAP-SUPERUSER"><em class="glossterm"><a class="glossterm" href="glossary.html#GLOSSARY-BOOTSTRAP-SUPERUSER" title="Bootstrap superuser">bootstrap superuser</a></em></a>.
+        This defaults to the name of the operating-system user running
+        <code class="command">initdb</code>.
+       </p></dd><dt id="APP-INITDB-OPTION-PWPROMPT"><span class="term"><code class="option">-W</code><br /></span><span class="term"><code class="option">--pwprompt</code></span> <a href="#APP-INITDB-OPTION-PWPROMPT" class="id_link">#</a></dt><dd><p>
+        Makes <code class="command">initdb</code> prompt for a password
+        to give the bootstrap superuser. If you don't plan on using password
+        authentication, this is not important.  Otherwise you won't be
+        able to use password authentication until you have a password
+        set up.
+       </p></dd><dt id="APP-INITDB-OPTION-WALDIR"><span class="term"><code class="option">-X <em class="replaceable"><code>directory</code></em></code><br /></span><span class="term"><code class="option">--waldir=<em class="replaceable"><code>directory</code></em></code></span> <a href="#APP-INITDB-OPTION-WALDIR" class="id_link">#</a></dt><dd><p>
+        This option specifies the directory where the write-ahead log
+        should be stored.
+       </p></dd><dt id="APP-INITDB-OPTION-WAL-SEGSIZE"><span class="term"><code class="option">--wal-segsize=<em class="replaceable"><code>size</code></em></code></span> <a href="#APP-INITDB-OPTION-WAL-SEGSIZE" class="id_link">#</a></dt><dd><p>
+        Set the <em class="firstterm">WAL segment size</em>, in megabytes.  This
+        is the size of each individual file in the WAL log.  The default size
+        is 16 megabytes.  The value must be a power of 2 between 1 and 1024
+        (megabytes).  This option can only be set during initialization, and
+        cannot be changed later.
+       </p><p>
+        It may be useful to adjust this size to control the granularity of
+        WAL log shipping or archiving.  Also, in databases with a high volume
+        of WAL, the sheer number of WAL files per directory can become a
+        performance and management problem.  Increasing the WAL file size
+        will reduce the number of WAL files.
+       </p></dd></dl></div><p>
+   </p><p>
+    Other, less commonly used, options are also available:
+
+    </p><div class="variablelist"><dl class="variablelist"><dt id="APP-INITDB-OPTION-SET"><span class="term"><code class="option">-c <em class="replaceable"><code>name</code></em>=<em class="replaceable"><code>value</code></em></code><br /></span><span class="term"><code class="option">--set <em class="replaceable"><code>name</code></em>=<em class="replaceable"><code>value</code></em></code></span> <a href="#APP-INITDB-OPTION-SET" class="id_link">#</a></dt><dd><p>
+        Forcibly set the server parameter <em class="replaceable"><code>name</code></em>
+        to <em class="replaceable"><code>value</code></em> during <code class="command">initdb</code>,
+        and also install that setting in the
+        generated <code class="filename">postgresql.conf</code> file,
+        so that it will apply during future server runs.
+        This option can be given more than once to set several parameters.
+        It is primarily useful when the environment is such that the server
+        will not start at all using the default parameters.
+       </p></dd><dt id="APP-INITDB-OPTION-DEBUG"><span class="term"><code class="option">-d</code><br /></span><span class="term"><code class="option">--debug</code></span> <a href="#APP-INITDB-OPTION-DEBUG" class="id_link">#</a></dt><dd><p>
+        Print debugging output from the bootstrap backend and a few other
+        messages of lesser interest for the general public.
+        The bootstrap backend is the program <code class="command">initdb</code>
+        uses to create the catalog tables.  This option generates a tremendous
+        amount of extremely boring output.
+       </p></dd><dt id="APP-INITDB-OPTION-DISCARD-CACHES"><span class="term"><code class="option">--discard-caches</code></span> <a href="#APP-INITDB-OPTION-DISCARD-CACHES" class="id_link">#</a></dt><dd><p>
+        Run the bootstrap backend with the
+        <code class="literal">debug_discard_caches=1</code> option.
+        This takes a very long time and is only of use for deep debugging.
+       </p></dd><dt id="APP-INITDB-OPTION-L"><span class="term"><code class="option">-L <em class="replaceable"><code>directory</code></em></code></span> <a href="#APP-INITDB-OPTION-L" class="id_link">#</a></dt><dd><p>
+        Specifies where <code class="command">initdb</code> should find
+        its input files to initialize the database cluster.  This is
+        normally not necessary.  You will be told if you need to
+        specify their location explicitly.
+       </p></dd><dt id="APP-INITDB-OPTION-NO-CLEAN"><span class="term"><code class="option">-n</code><br /></span><span class="term"><code class="option">--no-clean</code></span> <a href="#APP-INITDB-OPTION-NO-CLEAN" class="id_link">#</a></dt><dd><p>
+        By default, when <code class="command">initdb</code>
+        determines that an error prevented it from completely creating the database
+        cluster, it removes any files it might have created before discovering
+        that it cannot finish the job. This option inhibits tidying-up and is
+        thus useful for debugging.
+       </p></dd><dt id="APP-INITDB-OPTION-NO-SYNC"><span class="term"><code class="option">-N</code><br /></span><span class="term"><code class="option">--no-sync</code></span> <a href="#APP-INITDB-OPTION-NO-SYNC" class="id_link">#</a></dt><dd><p>
+        By default, <code class="command">initdb</code> will wait for all files to be
+        written safely to disk.  This option causes <code class="command">initdb</code>
+        to return without waiting, which is faster, but means that a
+        subsequent operating system crash can leave the data directory
+        corrupt.  Generally, this option is useful for testing, but should not
+        be used when creating a production installation.
+       </p></dd><dt id="APP-INITDB-OPTION-NO-INSTRUCTIONS"><span class="term"><code class="option">--no-instructions</code></span> <a href="#APP-INITDB-OPTION-NO-INSTRUCTIONS" class="id_link">#</a></dt><dd><p>
+        By default, <code class="command">initdb</code> will write instructions for how
+        to start the cluster at the end of its output. This option causes
+        those instructions to be left out. This is primarily intended for use
+        by tools that wrap <code class="command">initdb</code> in platform-specific
+        behavior, where those instructions are likely to be incorrect.
+       </p></dd><dt id="APP-INITDB-OPTION-SHOW"><span class="term"><code class="option">-s</code><br /></span><span class="term"><code class="option">--show</code></span> <a href="#APP-INITDB-OPTION-SHOW" class="id_link">#</a></dt><dd><p>
+        Show internal settings and exit, without doing anything else.  This
+        can be used to debug the <span class="application">initdb</span>
+        installation.
+       </p></dd><dt id="APP-INITDB-OPTION-SYNC-METHOD"><span class="term"><code class="option">--sync-method=<em class="replaceable"><code>method</code></em></code></span> <a href="#APP-INITDB-OPTION-SYNC-METHOD" class="id_link">#</a></dt><dd><p>
+        When set to <code class="literal">fsync</code>, which is the default,
+        <code class="command">initdb</code> will recursively open and synchronize all
+        files in the data directory.  The search for files will follow symbolic
+        links for the WAL directory and each configured tablespace.
+       </p><p>
+        On Linux, <code class="literal">syncfs</code> may be used instead to ask the
+        operating system to synchronize the whole file systems that contain the
+        data directory, the WAL files, and each tablespace.  See
+        <a class="xref" href="runtime-config-error-handling.html#GUC-RECOVERY-INIT-SYNC-METHOD">recovery_init_sync_method</a> for information about
+        the caveats to be aware of when using <code class="literal">syncfs</code>.
+       </p><p>
+        This option has no effect when <code class="option">--no-sync</code> is used.
+       </p></dd><dt id="APP-INITDB-OPTION-SYNC-ONLY"><span class="term"><code class="option">-S</code><br /></span><span class="term"><code class="option">--sync-only</code></span> <a href="#APP-INITDB-OPTION-SYNC-ONLY" class="id_link">#</a></dt><dd><p>
+        Safely write all database files to disk and exit.  This does not
+        perform any of the normal <span class="application">initdb</span> operations.
+        Generally, this option is useful for ensuring reliable recovery after
+        changing <a class="xref" href="runtime-config-wal.html#GUC-FSYNC">fsync</a> from <code class="literal">off</code> to
+        <code class="literal">on</code>.
+       </p></dd></dl></div><p>
+   </p><p>
+    Other options:
+
+    </p><div class="variablelist"><dl class="variablelist"><dt id="APP-INITDB-OPTION-VERSION"><span class="term"><code class="option">-V</code><br /></span><span class="term"><code class="option">--version</code></span> <a href="#APP-INITDB-OPTION-VERSION" class="id_link">#</a></dt><dd><p>
+       Print the <span class="application">initdb</span> version and exit.
+       </p></dd><dt id="APP-INITDB-OPTION-HELP"><span class="term"><code class="option">-?</code><br /></span><span class="term"><code class="option">--help</code></span> <a href="#APP-INITDB-OPTION-HELP" class="id_link">#</a></dt><dd><p>
+       Show help about <span class="application">initdb</span> command line
+       arguments, and exit.
+       </p></dd></dl></div><p>
+   </p></div><div class="refsect1" id="id-1.9.5.3.7"><h2>Environment</h2><div class="variablelist"><dl class="variablelist"><dt id="APP-INITDB-ENVIRONMENT-PGDATA"><span class="term"><code class="envar">PGDATA</code></span> <a href="#APP-INITDB-ENVIRONMENT-PGDATA" class="id_link">#</a></dt><dd><p>
+      Specifies the directory where the database cluster is to be
+      stored; can be overridden using the <code class="option">-D</code> option.
+     </p></dd><dt id="APP-INITDB-ENVIRONMENT-PG-COLOR"><span class="term"><code class="envar">PG_COLOR</code></span> <a href="#APP-INITDB-ENVIRONMENT-PG-COLOR" class="id_link">#</a></dt><dd><p>
+      Specifies whether to use color in diagnostic messages. Possible values
+      are <code class="literal">always</code>, <code class="literal">auto</code> and
+      <code class="literal">never</code>.
+     </p></dd><dt id="APP-INITDB-ENVIRONMENT-TZ"><span class="term"><code class="envar">TZ</code></span> <a href="#APP-INITDB-ENVIRONMENT-TZ" class="id_link">#</a></dt><dd><p>
+      Specifies the default time zone of the created database cluster.  The
+      value should be a full time zone name
+      (see <a class="xref" href="datatype-datetime.html#DATATYPE-TIMEZONES" title="8.5.3. Time Zones">Section 8.5.3</a>).
+     </p></dd></dl></div></div><div class="refsect1" id="id-1.9.5.3.8"><h2>Notes</h2><p>
+   <code class="command">initdb</code> can also be invoked via
+   <code class="command">pg_ctl initdb</code>.
+  </p></div><div class="refsect1" id="id-1.9.5.3.9"><h2>See Also</h2><span class="simplelist"><a class="xref" href="app-pg-ctl.html" title="pg_ctl"><span class="refentrytitle"><span class="application">pg_ctl</span></span></a>, <a class="xref" href="app-postgres.html" title="postgres"><span class="refentrytitle"><span class="application">postgres</span></span></a>, <a class="xref" href="auth-pg-hba-conf.html" title="20.1. The pg_hba.conf File">Section 20.1</a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="reference-server.html" title="PostgreSQL Server Applications">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="reference-server.html" title="PostgreSQL Server Applications">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="pgarchivecleanup.html" title="pg_archivecleanup">Next</a></td></tr><tr><td width="40%" align="left" valign="top">PostgreSQL Server Applications </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> <span class="application">pg_archivecleanup</span></td></tr></table></div></body></html>

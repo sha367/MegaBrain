@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>9.23. Merge Support Functions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="functions-window.html" title="9.22. Window Functions" /><link rel="next" href="functions-subquery.html" title="9.24. Subquery Expressions" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">9.23. Merge Support Functions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="functions-window.html" title="9.22. Window Functions">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="functions.html" title="Chapter 9. Functions and Operators">Up</a></td><th width="60%" align="center">Chapter 9. Functions and Operators</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="functions-subquery.html" title="9.24. Subquery Expressions">Next</a></td></tr></table><hr /></div><div class="sect1" id="FUNCTIONS-MERGE-SUPPORT"><div class="titlepage"><div><div><h2 class="title" style="clear: both">9.23. Merge Support Functions <a href="#FUNCTIONS-MERGE-SUPPORT" class="id_link">#</a></h2></div></div></div><a id="id-1.5.8.29.2" class="indexterm"></a><p>
+   <span class="productname">PostgreSQL</span> includes one merge support function
+   that may be used in the <code class="literal">RETURNING</code> list of a
+   <a class="xref" href="sql-merge.html" title="MERGE"><span class="refentrytitle">MERGE</span></a> command to identify the action taken for each
+   row; see <a class="xref" href="functions-merge-support.html#FUNCTIONS-MERGE-SUPPORT-TABLE" title="Table 9.66. Merge Support Functions">Table 9.66</a>.
+  </p><div class="table" id="FUNCTIONS-MERGE-SUPPORT-TABLE"><p class="title"><strong>Table 9.66. Merge Support Functions</strong></p><div class="table-contents"><table class="table" summary="Merge Support Functions" border="1"><colgroup><col /></colgroup><thead><tr><th class="func_table_entry"><p class="func_signature">
+       Function
+      </p>
+      <p>
+       Description
+      </p></th></tr></thead><tbody><tr><td id="MERGE-ACTION" class="func_table_entry"><p class="func_signature">
+       <a id="id-1.5.8.29.4.2.2.1.1.1.1" class="indexterm"></a>
+       <code class="function">merge_action</code> ( )
+       → <code class="returnvalue">text</code>
+      </p>
+      <p>
+       Returns the merge action command executed for the current row.  This
+       will be <code class="literal">'INSERT'</code>, <code class="literal">'UPDATE'</code>, or
+       <code class="literal">'DELETE'</code>.
+      </p></td></tr></tbody></table></div></div><br class="table-break" /><p>
+   Example:
+</p><pre class="screen">
+MERGE INTO products p
+  USING stock s ON p.product_id = s.product_id
+  WHEN MATCHED AND s.quantity &gt; 0 THEN
+    UPDATE SET in_stock = true, quantity = s.quantity
+  WHEN MATCHED THEN
+    UPDATE SET in_stock = false, quantity = 0
+  WHEN NOT MATCHED THEN
+    INSERT (product_id, in_stock, quantity)
+      VALUES (s.product_id, true, s.quantity)
+  RETURNING merge_action(), p.*;
+
+ merge_action | product_id | in_stock | quantity
+--------------+------------+----------+----------
+ UPDATE       |       1001 | t        |       50
+ UPDATE       |       1002 | f        |        0
+ INSERT       |       1003 | t        |       10
+</pre><p>
+  </p><p>
+   Note that this function can only be used in the <code class="literal">RETURNING</code>
+   list of a <code class="command">MERGE</code> command.  It is an error to use it in any
+   other part of a query.
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="functions-window.html" title="9.22. Window Functions">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="functions.html" title="Chapter 9. Functions and Operators">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="functions-subquery.html" title="9.24. Subquery Expressions">Next</a></td></tr><tr><td width="40%" align="left" valign="top">9.22. Window Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 9.24. Subquery Expressions</td></tr></table></div></body></html>

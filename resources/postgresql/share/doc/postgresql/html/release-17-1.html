@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>E.1. Release 17.1</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="release.html" title="Appendix E. Release Notes" /><link rel="next" href="release-17.html" title="E.2. Release 17" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">E.1. Release 17.1</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="release.html" title="Appendix E. Release Notes">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="release.html" title="Appendix E. Release Notes">Up</a></td><th width="60%" align="center">Appendix E. Release Notes</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="release-17.html" title="E.2. Release 17">Next</a></td></tr></table><hr /></div><div class="sect1" id="RELEASE-17-1"><div class="titlepage"><div><div><h2 class="title" style="clear: both">E.1. Release 17.1 <a href="#RELEASE-17-1" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="release-17-1.html#RELEASE-17-1-MIGRATION">E.1.1. Migration to Version 17.1</a></span></dt><dt><span class="sect2"><a href="release-17-1.html#RELEASE-17-1-CHANGES">E.1.2. Changes</a></span></dt></dl></div><p><strong>Release date: </strong>2024-11-14</p><p>
+   This release contains a variety of fixes from 17.0.
+   For information about new features in major release 17, see
+   <a class="xref" href="release-17.html" title="E.2. Release 17">Section E.2</a>.
+  </p><div class="sect2" id="RELEASE-17-1-MIGRATION"><div class="titlepage"><div><div><h3 class="title">E.1.1. Migration to Version 17.1 <a href="#RELEASE-17-1-MIGRATION" class="id_link">#</a></h3></div></div></div><p>
+    A dump/restore is not required for those running 17.X.
+   </p><p>
+    However, if you have ever detached a partition from a partitioned
+    table that has a foreign-key reference to another partitioned table,
+    and not dropped the former partition, then you may have catalog and/or
+    data corruption to repair, as detailed in the fifth changelog entry
+    below.
+   </p><p>
+    Also, in the uncommon case that a
+    database's <code class="varname">LC_CTYPE</code> setting is <code class="literal">C</code>
+    while its <code class="varname">LC_COLLATE</code> setting is some other locale,
+    indexes on textual columns should be reindexed, as described in the
+    sixth changelog entry below.
+   </p></div><div class="sect2" id="RELEASE-17-1-CHANGES"><div class="titlepage"><div><div><h3 class="title">E.1.2. Changes <a href="#RELEASE-17-1-CHANGES" class="id_link">#</a></h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+      Ensure cached plans are marked as dependent on the calling role when
+      RLS applies to a non-top-level table reference (Nathan Bossart)
+      <a class="ulink" href="https://postgr.es/c/edcda9bb4" target="_top">§</a>
+     </p><p>
+      If a CTE, subquery, sublink, security invoker view, or coercion
+      projection in a query references a table with row-level security
+      policies, we neglected to mark the resulting plan as potentially
+      dependent on which role is executing it.  This could lead to later
+      query executions in the same session using the wrong plan, and then
+      returning or hiding rows that should have been hidden or returned
+      instead.
+     </p><p>
+      The <span class="productname">PostgreSQL</span> Project thanks
+      Wolfgang Walther for reporting this problem.
+      (CVE-2024-10976)
+     </p></li><li class="listitem"><p>
+      Make <span class="application">libpq</span> discard error messages
+      received during SSL or GSS protocol negotiation (Jacob Champion)
+      <a class="ulink" href="https://postgr.es/c/a5cc4c667" target="_top">§</a>
+     </p><p>
+      An error message received before encryption negotiation is completed
+      might have been injected by a man-in-the-middle, rather than being
+      real server output.  Reporting it opens the door to various security
+      hazards; for example, the message might spoof a query result that a
+      careless user could mistake for correct output.  The best answer
+      seems to be to discard such data and rely only
+      on <span class="application">libpq</span>'s own report of the connection
+      failure.
+     </p><p>
+      The <span class="productname">PostgreSQL</span> Project thanks
+      Jacob Champion for reporting this problem.
+      (CVE-2024-10977)
+     </p></li><li class="listitem"><p>
+      Fix unintended interactions between <code class="command">SET SESSION
+      AUTHORIZATION</code> and <code class="command">SET ROLE</code> (Tom Lane)
+      <a class="ulink" href="https://postgr.es/c/cd82afdda" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/f4f5d27d8" target="_top">§</a>
+     </p><p>
+      The SQL standard mandates that <code class="command">SET SESSION
+      AUTHORIZATION</code> have a side-effect of doing <code class="command">SET
+      ROLE NONE</code>.  Our implementation of that was flawed,
+      creating more interaction between the two settings than intended.
+      Notably, rolling back a transaction that had done <code class="command">SET
+      SESSION AUTHORIZATION</code> would revert <code class="literal">ROLE</code>
+      to <code class="literal">NONE</code> even if that had not been the previous
+      state, so that the effective user ID might now be different from
+      what it had been before the transaction.  Transiently
+      setting <code class="varname">session_authorization</code> in a
+      function <code class="literal">SET</code> clause had a similar effect.
+      A related bug was that if a parallel worker
+      inspected <code class="literal">current_setting('role')</code>, it
+      saw <code class="literal">none</code> even when it should see something else.
+     </p><p>
+      The <span class="productname">PostgreSQL</span> Project thanks
+      Tom Lane for reporting this problem.
+      (CVE-2024-10978)
+     </p></li><li class="listitem"><p>
+      Prevent trusted PL/Perl code from changing environment variables
+      (Andrew Dunstan, Noah Misch)
+      <a class="ulink" href="https://postgr.es/c/3ebcfa54d" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/4cd4f3b97" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/8d19f3fea" target="_top">§</a>
+     </p><p>
+      The ability to manipulate process environment variables such
+      as <code class="literal">PATH</code> gives an attacker opportunities to
+      execute arbitrary code.  Therefore, <span class="quote">“<span class="quote">trusted</span>”</span> PLs must
+      not offer the ability to do that.  To fix <code class="literal">plperl</code>,
+      replace <code class="varname">%ENV</code> with a tied hash that rejects any
+      modification attempt with a warning.
+      Untrusted <code class="literal">plperlu</code> retains the ability to change
+      the environment.
+     </p><p>
+      The <span class="productname">PostgreSQL</span> Project thanks
+      Coby Abrams for reporting this problem.
+      (CVE-2024-10979)
+     </p></li><li class="listitem"><p>
+      Fix updates of catalog state for foreign-key constraints when
+      attaching or detaching table partitions (Jehan-Guillaume de
+      Rorthais, Tender Wang, Álvaro Herrera)
+      <a class="ulink" href="https://postgr.es/c/5914a22f6" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/936ab6de9" target="_top">§</a>
+     </p><p>
+      If the referenced table is partitioned, then different catalog
+      entries are needed for a referencing table that is stand-alone
+      versus one that is a partition.  <code class="literal">ATTACH/DETACH
+      PARTITION</code> commands failed to perform this conversion
+      correctly.  In particular, after <code class="literal">DETACH</code> the now
+      stand-alone table would be missing foreign-key enforcement triggers,
+      which could result in the table later containing rows that fail the
+      foreign-key constraint.  A subsequent re-<code class="literal">ATTACH</code>
+      could fail with surprising errors, too.
+     </p><p>
+      The way to fix this is to do <code class="command">ALTER TABLE DROP
+      CONSTRAINT</code> on the now stand-alone table for each faulty
+      constraint, and then re-add the constraint.  If re-adding the
+      constraint fails, then some erroneous data has crept in.  You will
+      need to manually re-establish consistency between the referencing
+      and referenced tables, then re-add the constraint.
+     </p><p>
+      This query can be used to identify broken constraints and construct
+      the commands needed to recreate them:
+</p><pre class="programlisting">
+SELECT conrelid::pg_catalog.regclass AS "constrained table",
+       conname AS constraint,
+       confrelid::pg_catalog.regclass AS "references",
+       pg_catalog.format('ALTER TABLE %s DROP CONSTRAINT %I;',
+                         conrelid::pg_catalog.regclass, conname) AS "drop",
+       pg_catalog.format('ALTER TABLE %s ADD CONSTRAINT %I %s;',
+                         conrelid::pg_catalog.regclass, conname,
+                         pg_catalog.pg_get_constraintdef(oid)) AS "add"
+FROM pg_catalog.pg_constraint c
+WHERE contype = 'f' AND conparentid = 0 AND
+   (SELECT count(*) FROM pg_catalog.pg_constraint c2
+    WHERE c2.conparentid = c.oid) &lt;&gt;
+   (SELECT count(*) FROM pg_catalog.pg_inherits i
+    WHERE (i.inhparent = c.conrelid OR i.inhparent = c.confrelid) AND
+      EXISTS (SELECT 1 FROM pg_catalog.pg_partitioned_table
+              WHERE partrelid = i.inhparent));
+</pre><p>
+      Since it is possible that one or more of the <code class="literal">ADD
+      CONSTRAINT</code> steps will fail, you should save the query's
+      output in a file and then attempt to perform each step.
+     </p></li><li class="listitem"><p>
+      Fix test for <code class="literal">C</code> locale
+      when <code class="varname">LC_COLLATE</code> is different
+      from <code class="varname">LC_CTYPE</code> (Jeff Davis)
+      <a class="ulink" href="https://postgr.es/c/8148e7124" target="_top">§</a>
+     </p><p>
+      When using <code class="literal">libc</code> as the default collation
+      provider, the test to see if <code class="literal">C</code> locale is in use
+      for collation accidentally checked <code class="varname">LC_CTYPE</code>
+      not <code class="varname">LC_COLLATE</code>.  This has no impact in the
+      typical case where those settings are the same, nor if both are
+      not <code class="literal">C</code> (nor its alias <code class="literal">POSIX</code>).
+      However, if <code class="varname">LC_CTYPE</code> is <code class="literal">C</code>
+      while <code class="varname">LC_COLLATE</code> is some other locale, wrong
+      query answers could ensue, and corruption of indexes on strings was
+      possible.  Users of databases with such settings should reindex
+      affected indexes after installing this update.
+      The converse case with <code class="varname">LC_COLLATE</code>
+      being <code class="literal">C</code> while <code class="varname">LC_CTYPE</code> is some
+      other locale would cause performance degradation, but no actual
+      errors.
+     </p></li><li class="listitem"><p>
+      Don't use partitionwise joins or grouping if the query's collation
+      for the key column doesn't match the partition key's collation (Jian
+      He, Webbo Han)
+      <a class="ulink" href="https://postgr.es/c/a0cdfc889" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/b6484ca95" target="_top">§</a>
+     </p><p>
+      Such plans could produce incorrect results.
+     </p></li><li class="listitem"><p>
+      Avoid planner failure after converting an <code class="literal">IS NULL</code>
+      test on a <code class="literal">NOT NULL</code> column to
+      constant <code class="literal">FALSE</code> (Richard Guo)
+      <a class="ulink" href="https://postgr.es/c/78b1c553b" target="_top">§</a>
+     </p><p>
+      This bug typically led to errors such as <span class="quote">“<span class="quote">variable not found
+      in subplan target lists</span>”</span>.
+     </p></li><li class="listitem"><p>
+      Avoid possible planner crash while inlining a SQL function whose
+      arguments contain certain array-related constructs (Tom Lane, Nathan
+      Bossart)
+      <a class="ulink" href="https://postgr.es/c/a3c4a91f1" target="_top">§</a>
+     </p></li><li class="listitem"><p>
+      Fix possible wrong answers or <span class="quote">“<span class="quote">wrong varnullingrels</span>”</span>
+      planner errors for <code class="literal">MERGE ... WHEN NOT MATCHED BY
+      SOURCE</code> actions (Dean Rasheed)
+      <a class="ulink" href="https://postgr.es/c/d7d297f84" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/34ae54af9" target="_top">§</a>
+     </p></li><li class="listitem"><p>
+      Fix possible <span class="quote">“<span class="quote">could not find pathkey item to sort</span>”</span>
+      error when the output of a <code class="literal">UNION ALL</code> member query
+      needs to be sorted, and the sort column is an expression (Andrei
+      Lepikhov, Tom Lane)
+      <a class="ulink" href="https://postgr.es/c/54889ea64" target="_top">§</a>
+     </p></li><li class="listitem"><p>
+      Fix edge case in B-tree ScalarArrayOp index scans (Peter Geoghegan)
+      <a class="ulink" href="https://postgr.es/c/c177726ae" target="_top">§</a>
+     </p><p>
+      When a scrollable cursor with a plan of this kind was backed up to its
+      starting point and then run forward again, wrong answers were
+      possible.
+     </p></li><li class="listitem"><p>
+      Fix assertion failure or confusing error message for <code class="literal">COPY
+      (<em class="replaceable"><code>query</code></em>) TO ...</code>, when
+      the <em class="replaceable"><code>query</code></em> is rewritten by a <code class="literal">DO
+      INSTEAD NOTIFY</code> rule (Tender Wang, Tom Lane)
+      <a class="ulink" href="https://postgr.es/c/3685ad618" target="_top">§</a>
+     </p></li><li class="listitem"><p>
+      Fix validation
+      of <code class="command">COPY</code>'s <code class="literal">FORCE_NOT_NULL</code>
+      and <code class="literal">FORCE_NULL</code> options (Joel Jacobson)
+      <a class="ulink" href="https://postgr.es/c/c06a4746b" target="_top">§</a>
+     </p><p>
+      Some incorrect usages are now rejected as they should be.
+     </p></li><li class="listitem"><p>
+      Fix server crash when a <code class="function">json_objectagg()</code> call
+      contains a volatile function (Amit Langote)
+      <a class="ulink" href="https://postgr.es/c/7148cb3e3" target="_top">§</a>
+     </p></li><li class="listitem"><p>
+      Fix detection of skewed data during parallel hash join (Thomas
+      Munro)
+      <a class="ulink" href="https://postgr.es/c/4ac5d33a8" target="_top">§</a>
+     </p><p>
+      After repartitioning the inner side of a hash join because one
+      partition has accumulated too many tuples, we check to see if all
+      the partition's tuples went into the same child partition, which
+      suggests that they all have the same hash value and further
+      repartitioning cannot improve matters.  This check malfunctioned in
+      some cases, allowing repeated futile repartitioning which would
+      eventually end in a resource-exhaustion error.
+     </p></li><li class="listitem"><p>
+      Avoid crash when <code class="command">ALTER DATABASE SET</code> is used to
+      set a server parameter that requires search-path-based lookup, such
+      as <code class="varname">default_text_search_config</code> (Jeff Davis)
+      <a class="ulink" href="https://postgr.es/c/2fe4167bc" target="_top">§</a>
+     </p></li><li class="listitem"><p>
+      Avoid repeated lookups of opclasses and collations while creating a
+      new index on a partitioned table (Tom Lane)
+      <a class="ulink" href="https://postgr.es/c/fee8cb947" target="_top">§</a>
+     </p><p>
+      This was problematic mainly because some of the lookups would be
+      done with a restricted <code class="varname">search_path</code>, leading to
+      unexpected failures if the <code class="command">CREATE INDEX</code> command
+      referenced objects outside <code class="literal">pg_catalog</code>.
+     </p><p>
+      This fix also prevents comments on the parent partitioned index from
+      being copied to child indexes.
+     </p></li><li class="listitem"><p>
+      Add missing dependency from a partitioned table to a non-built-in
+      access method specified in <code class="literal">CREATE TABLE ... USING</code>
+      (Michael Paquier)
+      <a class="ulink" href="https://postgr.es/c/bb584e831" target="_top">§</a>
+     </p><p>
+      Dropping the access method should be blocked when a table exists
+      that depends on it, but it was not, allowing subsequent odd
+      behavior.  Note that this fix only prevents problems for partitioned
+      tables created after this update.
+     </p></li><li class="listitem"><p>
+      Disallow locale names containing non-ASCII characters (Thomas Munro)
+      <a class="ulink" href="https://postgr.es/c/9c7acc333" target="_top">§</a>
+     </p><p>
+      This is only an issue on Windows, as such locale names are not used
+      elsewhere.  They are problematic because it's quite unclear what
+      encoding such names are represented in (since the locale itself
+      defines the encoding to use).  In
+      recent <span class="productname">PostgreSQL</span> releases, an abort in
+      the Windows runtime library could occur because of confusion about
+      that.
+     </p><p>
+      Anyone who encounters the new error message should either create a
+      new duplicated locale with an ASCII-only name using Windows Locale
+      Builder, or consider using BCP 47-compliant locale names
+      like <code class="literal">tr-TR</code>.
+     </p></li><li class="listitem"><p>
+      Fix race condition in committing a serializable transaction (Heikki
+      Linnakangas)
+      <a class="ulink" href="https://postgr.es/c/234f6d09e" target="_top">§</a>
+     </p><p>
+      Mis-processing of a recently committed transaction could lead to an
+      assertion failure or a <span class="quote">“<span class="quote">could not access status of
+      transaction</span>”</span> error.
+     </p></li><li class="listitem"><p>
+      Fix race condition in <code class="command">COMMIT PREPARED</code>
+      that resulted in orphaned 2PC files (wuchengwen)
+      <a class="ulink" href="https://postgr.es/c/f250cb29d" target="_top">§</a>
+     </p><p>
+      A concurrent <code class="command">PREPARE TRANSACTION</code> could
+      cause <code class="command">COMMIT PREPARED</code> to not remove the on-disk
+      two-phase state file for the completed transaction.  There was no
+      immediate ill effect, but a subsequent crash-and-recovery could fail
+      with <span class="quote">“<span class="quote">could not access status of transaction</span>”</span>,
+      requiring manual removal of the orphaned file to restore service.
+     </p></li><li class="listitem"><p>
+      Avoid invalid memory accesses after skipping an invalid toast index
+      during <code class="command">VACUUM FULL</code> (Tender Wang)
+      <a class="ulink" href="https://postgr.es/c/1532599a8" target="_top">§</a>
+     </p><p>
+      A list tracking yet-to-be-rebuilt indexes was not properly updated
+      in this code path, risking assertion failures or crashes later on.
+     </p></li><li class="listitem"><p>
+      Fix ways in which an <span class="quote">“<span class="quote">in place</span>”</span> catalog update could be
+      lost (Noah Misch)
+      <a class="ulink" href="https://postgr.es/c/fd27b878c" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/3b7a689e1" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/da99df15c" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/e11907682" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/9aef6f19a" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/0bcb9d079" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/54bc22fbf" target="_top">§</a>
+     </p><p>
+      Normal row updates write a new version of the row to preserve
+      rollback-ability of the transaction.  However, certain system
+      catalog updates are intentionally non-transactional and are done
+      with an in-place update of the row.  These patches fix race
+      conditions that could cause the effects of an in-place update to be
+      lost.  As an example, it was possible to forget having set
+      <code class="structname">pg_class</code>.<code class="structfield">relhasindex</code>
+      to true, preventing updates of the new index and thus causing index
+      corruption.
+     </p></li><li class="listitem"><p>
+      Reset catalog caches at end of recovery (Noah Misch)
+      <a class="ulink" href="https://postgr.es/c/a4668c99f" target="_top">§</a>
+     </p><p>
+      This prevents scenarios wherein an in-place catalog update could be
+      lost due to using stale data from a catalog cache.
+     </p></li><li class="listitem"><p>
+      Avoid using parallel query while holding off interrupts
+      (Francesco Degrassi, Noah Misch, Tom Lane)
+      <a class="ulink" href="https://postgr.es/c/2370582ab" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/943b65358" target="_top">§</a>
+     </p><p>
+      This situation cannot arise normally, but it can be reached with
+      test scenarios such as using a SQL-language function as B-tree
+      support (which would be far too slow for production usage).  If it
+      did occur it would result in an indefinite wait.
+     </p></li><li class="listitem"><p>
+      Ignore not-yet-defined Portals in
+      the <code class="structname">pg_cursors</code> view (Tom Lane)
+      <a class="ulink" href="https://postgr.es/c/3daeb539a" target="_top">§</a>
+     </p><p>
+      It is possible for user-defined code that inspects this view to be
+      called while a new cursor is being set up, and if that happens a
+      null pointer dereference would ensue.  Avoid the problem by defining
+      the view to exclude incompletely-set-up cursors.
+     </p></li><li class="listitem"><p>
+      Avoid <span class="quote">“<span class="quote">unexpected table_index_fetch_tuple call during logical
+      decoding</span>”</span> error while decoding a transaction involving
+      insertion of a column default value (Takeshi Ideriha, Hou Zhijie)
+      <a class="ulink" href="https://postgr.es/c/918107759" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/c4b8a916f" target="_top">§</a>
+     </p></li><li class="listitem"><p>
+      Reduce memory consumption of logical decoding (Masahiko Sawada)
+      <a class="ulink" href="https://postgr.es/c/eef9cc4dc" target="_top">§</a>
+     </p><p>
+      Use a smaller default block size to store tuple data received during
+      logical replication.  This reduces memory wastage, which has been
+      reported to be severe while processing long-running transactions,
+      even leading to out-of-memory failures.
+     </p></li><li class="listitem"><p>
+      Fix behavior of stable functions called from
+      a <code class="command">CALL</code> statement's argument list, when
+      the <code class="command">CALL</code> is within a
+      PL/pgSQL <code class="literal">EXCEPTION</code> block (Tom Lane)
+      <a class="ulink" href="https://postgr.es/c/b5eef7539" target="_top">§</a>
+     </p><p>
+      As with a similar fix in our previous quarterly releases, this case
+      allowed such functions to be passed the wrong snapshot, causing them
+      to see stale values of rows modified since the start of the outer
+      transaction.
+     </p></li><li class="listitem"><p>
+      Parse <span class="application">libpq</span>'s <code class="literal">keepalives</code>
+      connection option in the same way as other integer-valued options
+      (Yuto Sasaki)
+      <a class="ulink" href="https://postgr.es/c/c7a201053" target="_top">§</a>
+     </p><p>
+      The coding used here rejected trailing whitespace in the option
+      value, unlike other cases.  This turns out to be problematic
+      in <span class="application">ecpg</span>'s usage, for example.
+     </p></li><li class="listitem"><p>
+      In <span class="application">ecpglib</span>, fix out-of-bounds read when
+      parsing incorrect datetime input (Bruce Momjian, Pavel Nekrasov)
+      <a class="ulink" href="https://postgr.es/c/2c37cb26f" target="_top">§</a>
+     </p><p>
+      It was possible to try to read the location just before the start of
+      a constant array.  Real-world consequences seem minimal, though.
+     </p></li><li class="listitem"><p>
+      Fix <span class="application">psql</span>'s describe commands to again
+      work with pre-9.4 servers (Tom Lane)
+      <a class="ulink" href="https://postgr.es/c/923a71584" target="_top">§</a>
+     </p><p>
+      Commands involving display of an ACL (permissions) column failed
+      with very old <span class="productname">PostgreSQL</span> servers, due to
+      use of a function not present in those versions.
+     </p></li><li class="listitem"><p>
+      Avoid hanging if an interval less than 1ms is specified
+      in <span class="application">psql</span>'s <code class="literal">\watch</code>
+      command (Andrey Borodin, Michael Paquier)
+      <a class="ulink" href="https://postgr.es/c/8a6170860" target="_top">§</a>
+     </p><p>
+      Instead, treat this the same as an interval of zero (no wait between
+      executions).
+     </p></li><li class="listitem"><p>
+      Fix failure to find replication password
+      in <code class="filename">~/.pgpass</code> (Tom Lane)
+      <a class="ulink" href="https://postgr.es/c/e2a912909" target="_top">§</a>
+     </p><p>
+      <span class="application">pg_basebackup</span>
+      and <span class="application">pg_receivewal</span> failed to match an entry
+      in <code class="filename">~/.pgpass</code> that
+      had <code class="literal">replication</code> in the database name field, if
+      no <code class="option">-d</code> or <code class="option">--dbname</code> switch was
+      supplied.  This resulted in an unexpected prompt for password.
+     </p></li><li class="listitem"><p>
+      In <span class="application">pg_combinebackup</span>, throw an error if an
+      incremental backup file is present in a directory that is supposed to
+      contain a full backup (Robert Haas)
+      <a class="ulink" href="https://postgr.es/c/e36711442" target="_top">§</a>
+     </p></li><li class="listitem"><p>
+      In <span class="application">pg_combinebackup</span>, don't construct
+      filenames containing double slashes (Robert Haas)
+      <a class="ulink" href="https://postgr.es/c/0d635b615" target="_top">§</a>
+     </p><p>
+      This caused no functional problems, but the duplicate slashes were
+      visible in error messages, which could create confusion.
+     </p></li><li class="listitem"><p>
+      Avoid trying to reindex temporary tables and indexes
+      in <span class="application">vacuumdb</span> and in
+      parallel <span class="application">reindexdb</span> (VaibhaveS, Michael
+      Paquier, Fujii Masao, Nathan Bossart)
+      <a class="ulink" href="https://postgr.es/c/85cb21df6" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/77f154681" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/5bd26e652" target="_top">§</a>
+     </p><p>
+      Reindexing other sessions' temporary tables cannot work, but the
+      check to skip them was missing in some code paths, leading to
+      unwanted failures.
+     </p></li><li class="listitem"><p>
+      Fix incorrect LLVM-generated code on ARM64 platforms (Thomas
+      Munro, Anthonin Bonnefoy)
+      <a class="ulink" href="https://postgr.es/c/b7467ab71" target="_top">§</a>
+     </p><p>
+      When using JIT compilation on ARM platforms, the generated code
+      could not support relocation distances exceeding 32 bits, allowing
+      unlucky placement of generated code to cause server crashes on
+      large-memory systems.
+     </p></li><li class="listitem"><p>
+      Fix a few places that assumed that process start time (represented
+      as a <code class="type">time_t</code>) will fit into a <code class="type">long</code> value
+      (Max Johnson, Nathan Bossart)
+      <a class="ulink" href="https://postgr.es/c/a356d23fd" target="_top">§</a>
+     </p><p>
+      On platforms where <code class="type">long</code> is 32 bits (notably Windows),
+      this coding would fail after Y2038.  Most of the failures appear
+      only cosmetic, but notably <code class="literal">pg_ctl start</code> would
+      hang.
+     </p></li><li class="listitem"><p>
+      Update time zone data files to <span class="application">tzdata</span>
+      release 2024b (Tom Lane)
+      <a class="ulink" href="https://postgr.es/c/cad65907e" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/6283ff201" target="_top">§</a>
+     </p><p>
+      This <span class="application">tzdata</span> release changes the old
+      System-V-compatibility zone names to duplicate the corresponding
+      geographic zones; for example <code class="literal">PST8PDT</code> is now an
+      alias for <code class="literal">America/Los_Angeles</code>.  The main visible
+      consequence is that for timestamps before the introduction of
+      standardized time zones, the zone is considered to represent local
+      mean solar time for the named location.  For example,
+      in <code class="literal">PST8PDT</code>, <code class="type">timestamptz</code> input such
+      as <code class="literal">1801-01-01 00:00</code> would previously have been
+      rendered as <code class="literal">1801-01-01 00:00:00-08</code>, but now it is
+      rendered as <code class="literal">1801-01-01 00:00:00-07:52:58</code>.
+     </p><p>
+      Also, historical corrections for Mexico, Mongolia, and Portugal.
+      Notably, <code class="literal">Asia/Choibalsan</code> is now an alias
+      for <code class="literal">Asia/Ulaanbaatar</code> rather than being a separate
+      zone, mainly because the differences between those zones were found to
+      be based on untrustworthy data.
+     </p></li></ul></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="release.html" title="Appendix E. Release Notes">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="release.html" title="Appendix E. Release Notes">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="release-17.html" title="E.2. Release 17">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Appendix E. Release Notes </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> E.2. Release 17</td></tr></table></div></body></html>

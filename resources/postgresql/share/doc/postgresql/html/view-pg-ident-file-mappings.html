@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>52.10. pg_ident_file_mappings</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="view-pg-hba-file-rules.html" title="52.9. pg_hba_file_rules" /><link rel="next" href="view-pg-indexes.html" title="52.11. pg_indexes" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">52.10. <code class="structname">pg_ident_file_mappings</code></th></tr><tr><td width="10%" align="left"><a accesskey="p" href="view-pg-hba-file-rules.html" title="52.9. pg_hba_file_rules">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="views.html" title="Chapter 52. System Views">Up</a></td><th width="60%" align="center">Chapter 52. System Views</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="view-pg-indexes.html" title="52.11. pg_indexes">Next</a></td></tr></table><hr /></div><div class="sect1" id="VIEW-PG-IDENT-FILE-MAPPINGS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">52.10. <code class="structname">pg_ident_file_mappings</code> <a href="#VIEW-PG-IDENT-FILE-MAPPINGS" class="id_link">#</a></h2></div></div></div><a id="id-1.10.5.14.2" class="indexterm"></a><p>
+   The view <code class="structname">pg_ident_file_mappings</code> provides a summary
+   of the contents of the client user name mapping configuration file,
+   <a class="link" href="auth-username-maps.html" title="20.2. User Name Maps"><code class="filename">pg_ident.conf</code></a>.
+   A row appears in this view for each non-empty, non-comment line in the file,
+   with annotations indicating whether the map could be applied successfully.
+  </p><p>
+   This view can be helpful for checking whether planned changes in the
+   authentication configuration file will work, or for diagnosing a previous
+   failure.  Note that this view reports on the <span class="emphasis"><em>current</em></span>
+   contents of the file, not on what was last loaded by the server.
+  </p><p>
+   By default, the <code class="structname">pg_ident_file_mappings</code> view can be
+   read only by superusers.
+  </p><div class="table" id="id-1.10.5.14.6"><p class="title"><strong>Table 52.10. <code class="structname">pg_ident_file_mappings</code> Columns</strong></p><div class="table-contents"><table class="table" summary="pg_ident_file_mappings Columns" border="1"><colgroup><col /></colgroup><thead><tr><th class="catalog_table_entry"><p class="column_definition">
+       Column Type
+      </p>
+      <p>
+       Description
+      </p></th></tr></thead><tbody><tr><td class="catalog_table_entry"><p class="column_definition">
+       <code class="structfield">map_number</code> <code class="type">int4</code>
+      </p>
+      <p>
+       Number of this map, in priority order, if valid, otherwise
+       <code class="literal">NULL</code>
+      </p></td></tr><tr><td class="catalog_table_entry"><p class="column_definition">
+       <code class="structfield">file_name</code> <code class="type">text</code>
+      </p>
+      <p>
+       Name of the file containing this map
+      </p></td></tr><tr><td class="catalog_table_entry"><p class="column_definition">
+       <code class="structfield">line_number</code> <code class="type">int4</code>
+      </p>
+      <p>
+       Line number of this map in <code class="literal">file_name</code>
+      </p></td></tr><tr><td class="catalog_table_entry"><p class="column_definition">
+       <code class="structfield">map_name</code> <code class="type">text</code>
+      </p>
+      <p>
+       Name of the map
+      </p></td></tr><tr><td class="catalog_table_entry"><p class="column_definition">
+       <code class="structfield">sys_name</code> <code class="type">text</code>
+      </p>
+      <p>
+       Detected user name of the client
+      </p></td></tr><tr><td class="catalog_table_entry"><p class="column_definition">
+       <code class="structfield">pg_username</code> <code class="type">text</code>
+      </p>
+      <p>
+       Requested PostgreSQL user name
+      </p></td></tr><tr><td class="catalog_table_entry"><p class="column_definition">
+       <code class="structfield">error</code> <code class="type">text</code>
+      </p>
+      <p>
+       If not <code class="literal">NULL</code>, an error message indicating why this
+       line could not be processed
+      </p></td></tr></tbody></table></div></div><br class="table-break" /><p>
+   Usually, a row reflecting an incorrect entry will have values for only
+   the <code class="structfield">line_number</code> and <code class="structfield">error</code> fields.
+  </p><p>
+   See <a class="xref" href="client-authentication.html" title="Chapter 20. Client Authentication">Chapter 20</a> for more information about
+   client authentication configuration.
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="view-pg-hba-file-rules.html" title="52.9. pg_hba_file_rules">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="views.html" title="Chapter 52. System Views">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="view-pg-indexes.html" title="52.11. pg_indexes">Next</a></td></tr><tr><td width="40%" align="left" valign="top">52.9. <code class="structname">pg_hba_file_rules</code> </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 52.11. <code class="structname">pg_indexes</code></td></tr></table></div></body></html>

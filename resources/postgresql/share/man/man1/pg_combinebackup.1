@@ -1,0 +1,230 @@
+'\" t
+.\"     Title: pg_combinebackup
+.\"    Author: The PostgreSQL Global Development Group
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 17.1 Documentation
+.\"    Source: PostgreSQL 17.1
+.\"  Language: English
+.\"
+.TH "PG_COMBINEBACKUP" "1" "2024" "PostgreSQL 17.1" "PostgreSQL 17.1 Documentation"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+pg_combinebackup \- reconstruct a full backup from an incremental backup and dependent backups
+.SH "SYNOPSIS"
+.HP \w'\fBpg_combinebackup\fR\ 'u
+\fBpg_combinebackup\fR [\fIoption\fR...] [\fIbackup_directory\fR...]
+.SH "DESCRIPTION"
+.PP
+pg_combinebackup
+is used to reconstruct a synthetic full backup from an
+incremental backup
+and the earlier backups upon which it depends\&.
+.PP
+Specify all of the required backups on the command line from oldest to newest\&. That is, the first backup directory should be the path to the full backup, and the last should be the path to the final incremental backup that you wish to restore\&. The reconstructed backup will be written to the output directory specified by the
+\fB\-o\fR
+option\&.
+.PP
+pg_combinebackup
+will attempt to verify that the backups you specify form a legal backup chain from which a correct full backup can be reconstructed\&. However, it is not designed to help you keep track of which backups depend on which other backups\&. If you remove one or more of the previous backups upon which your incremental backup relies, you will not be able to restore it\&. Moreover,
+pg_combinebackup
+only attempts to verify that the backups have the correct relationship to each other, not that each individual backup is intact; for that, use
+\fBpg_verifybackup\fR(1)\&.
+.PP
+Since the output of
+pg_combinebackup
+is a synthetic full backup, it can be used as an input to a future invocation of
+pg_combinebackup\&. The synthetic full backup would be specified on the command line in lieu of the chain of backups from which it was reconstructed\&.
+.SH "OPTIONS"
+.PP
+.PP
+\fB\-d\fR
+.br
+\fB\-\-debug\fR
+.RS 4
+Print lots of debug logging output on
+stderr\&.
+.RE
+.PP
+\fB\-n\fR
+.br
+\fB\-\-dry\-run\fR
+.RS 4
+The
+\fB\-n\fR/\fB\-\-dry\-run\fR
+option instructs
+\fBpg_combinebackup\fR
+to figure out what would be done without actually creating the target directory or any output files\&. It is particularly useful in combination with
+\fB\-\-debug\fR\&.
+.RE
+.PP
+\fB\-N\fR
+.br
+\fB\-\-no\-sync\fR
+.RS 4
+By default,
+\fBpg_combinebackup\fR
+will wait for all files to be written safely to disk\&. This option causes
+\fBpg_combinebackup\fR
+to return without waiting, which is faster, but means that a subsequent operating system crash can leave the output backup corrupt\&. Generally, this option is useful for testing but should not be used when creating a production installation\&.
+.RE
+.PP
+\fB\-o \fR\fB\fIoutputdir\fR\fR
+.br
+\fB\-\-output=\fR\fB\fIoutputdir\fR\fR
+.RS 4
+Specifies the output directory to which the synthetic full backup should be written\&. Currently, this argument is required\&.
+.RE
+.PP
+\fB\-T \fR\fB\fIolddir\fR\fR\fB=\fR\fB\fInewdir\fR\fR
+.br
+\fB\-\-tablespace\-mapping=\fR\fB\fIolddir\fR\fR\fB=\fR\fB\fInewdir\fR\fR
+.RS 4
+Relocates the tablespace in directory
+\fIolddir\fR
+to
+\fInewdir\fR
+during the backup\&.
+\fIolddir\fR
+is the absolute path of the tablespace as it exists in the final backup specified on the command line, and
+\fInewdir\fR
+is the absolute path to use for the tablespace in the reconstructed backup\&. If either path needs to contain an equal sign (=), precede that with a backslash\&. This option can be specified multiple times for multiple tablespaces\&.
+.RE
+.PP
+\fB\-\-clone\fR
+.RS 4
+Use efficient file cloning (also known as
+\(lqreflinks\(rq
+on some systems) instead of copying files to the new data directory, which can result in near\-instantaneous copying of the data files\&.
+.sp
+If a backup manifest is not available or does not contain checksum of the right type, file cloning will be used to copy the file, but the file will be also read block\-by\-block for the checksum calculation\&.
+.sp
+File cloning is only supported on some operating systems and file systems\&. If it is selected but not supported, the
+pg_combinebackup
+run will error\&. At present, it is supported on Linux (kernel 4\&.5 or later) with Btrfs and XFS (on file systems created with reflink support), and on macOS with APFS\&.
+.RE
+.PP
+\fB\-\-copy\fR
+.RS 4
+Perform regular file copy\&. This is the default\&. (See also
+\fB\-\-copy\-file\-range\fR
+and
+\fB\-\-clone\fR\&.)
+.RE
+.PP
+\fB\-\-copy\-file\-range\fR
+.RS 4
+Use the
+\fBcopy_file_range\fR
+system call for efficient copying\&. On some file systems this gives results similar to
+\fB\-\-clone\fR, sharing physical disk blocks, while on others it may still copy blocks, but do so via an optimized path\&. At present, it is supported on Linux and FreeBSD\&.
+.sp
+If a backup manifest is not available or does not contain checksum of the right type,
+\fBcopy_file_range\fR
+will be used to copy the file, but the file will be also read block\-by\-block for the checksum calculation\&.
+.RE
+.PP
+\fB\-\-manifest\-checksums=\fR\fB\fIalgorithm\fR\fR
+.RS 4
+Like
+\fBpg_basebackup\fR(1),
+pg_combinebackup
+writes a backup manifest in the output directory\&. This option specifies the checksum algorithm that should be applied to each file included in the backup manifest\&. Currently, the available algorithms are
+NONE,
+CRC32C,
+SHA224,
+SHA256,
+SHA384, and
+SHA512\&. The default is
+CRC32C\&.
+.RE
+.PP
+\fB\-\-no\-manifest\fR
+.RS 4
+Disables generation of a backup manifest\&. If this option is not specified, a backup manifest for the reconstructed backup will be written to the output directory\&.
+.RE
+.PP
+\fB\-\-sync\-method=\fR\fB\fImethod\fR\fR
+.RS 4
+When set to
+fsync, which is the default,
+\fBpg_combinebackup\fR
+will recursively open and synchronize all files in the backup directory\&. When the plain format is used, the search for files will follow symbolic links for the WAL directory and each configured tablespace\&.
+.sp
+On Linux,
+syncfs
+may be used instead to ask the operating system to synchronize the whole file system that contains the backup directory\&. When the plain format is used,
+\fBpg_combinebackup\fR
+will also synchronize the file systems that contain the WAL files and each tablespace\&. See
+recovery_init_sync_method
+for information about the caveats to be aware of when using
+syncfs\&.
+.sp
+This option has no effect when
+\fB\-\-no\-sync\fR
+is used\&.
+.RE
+.PP
+\fB\-V\fR
+.br
+\fB\-\-version\fR
+.RS 4
+Prints the
+pg_combinebackup
+version and exits\&.
+.RE
+.PP
+\fB\-?\fR
+.br
+\fB\-\-help\fR
+.RS 4
+Shows help about
+pg_combinebackup
+command line arguments, and exits\&.
+.RE
+.SH "LIMITATIONS"
+.PP
+pg_combinebackup
+does not recompute page checksums when writing the output directory\&. Therefore, if any of the backups used for reconstruction were taken with checksums disabled, but the final backup was taken with checksums enabled, the resulting directory may contain pages with invalid checksums\&.
+.PP
+To avoid this problem, taking a new full backup after changing the checksum state of the cluster using
+\fBpg_checksums\fR(1)
+is recommended\&. Otherwise, you can disable and then optionally reenable checksums on the directory produced by
+pg_combinebackup
+in order to correct the problem\&.
+.SH "ENVIRONMENT"
+.PP
+This utility, like most other
+PostgreSQL
+utilities, uses the environment variables supported by
+libpq
+(see
+Section\ \&32.15)\&.
+.PP
+The environment variable
+\fBPG_COLOR\fR
+specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
+.SH "SEE ALSO"
+\fBpg_basebackup\fR(1)

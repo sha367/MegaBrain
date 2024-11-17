@@ -1,0 +1,108 @@
+'\" t
+.\"     Title: CALL
+.\"    Author: The PostgreSQL Global Development Group
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 17.1 Documentation
+.\"    Source: PostgreSQL 17.1
+.\"  Language: English
+.\"
+.TH "CALL" "7" "2024" "PostgreSQL 17.1" "PostgreSQL 17.1 Documentation"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+CALL \- invoke a procedure
+.SH "SYNOPSIS"
+.sp
+.nf
+CALL \fIname\fR ( [ \fIargument\fR ] [, \&.\&.\&.] )
+.fi
+.SH "DESCRIPTION"
+.PP
+\fBCALL\fR
+executes a procedure\&.
+.PP
+If the procedure has any output parameters, then a result row will be returned, containing the values of those parameters\&.
+.SH "PARAMETERS"
+.PP
+\fIname\fR
+.RS 4
+The name (optionally schema\-qualified) of the procedure\&.
+.RE
+.PP
+\fIargument\fR
+.RS 4
+An argument expression for the procedure call\&.
+.sp
+Arguments can include parameter names, using the syntax
+\fIname\fR => \fIvalue\fR\&. This works the same as in ordinary function calls; see
+Section\ \&4.3
+for details\&.
+.sp
+Arguments must be supplied for all procedure parameters that lack defaults, including
+OUT
+parameters\&. However, arguments matching
+OUT
+parameters are not evaluated, so it\*(Aqs customary to just write
+NULL
+for them\&. (Writing something else for an
+OUT
+parameter might cause compatibility problems with future
+PostgreSQL
+versions\&.)
+.RE
+.SH "NOTES"
+.PP
+The user must have
+EXECUTE
+privilege on the procedure in order to be allowed to invoke it\&.
+.PP
+To call a function (not a procedure), use
+\fBSELECT\fR
+instead\&.
+.PP
+If
+\fBCALL\fR
+is executed in a transaction block, then the called procedure cannot execute transaction control statements\&. Transaction control statements are only allowed if
+\fBCALL\fR
+is executed in its own transaction\&.
+.PP
+PL/pgSQL
+handles output parameters in
+\fBCALL\fR
+commands differently; see
+Section\ \&41.6.3\&.
+.SH "EXAMPLES"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CALL do_db_maintenance();
+.fi
+.if n \{\
+.RE
+.\}
+.SH "COMPATIBILITY"
+.PP
+\fBCALL\fR
+conforms to the SQL standard, except for the handling of output parameters\&. The standard says that users should write variables to receive the values of output parameters\&.
+.SH "SEE ALSO"
+CREATE PROCEDURE (\fBCREATE_PROCEDURE\fR(7))

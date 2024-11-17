@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>66.1. Transactions and Identifiers</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="transactions.html" title="Chapter 66. Transaction Processing" /><link rel="next" href="xact-locking.html" title="66.2. Transactions and Locking" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">66.1. Transactions and Identifiers</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="transactions.html" title="Chapter 66. Transaction Processing">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="transactions.html" title="Chapter 66. Transaction Processing">Up</a></td><th width="60%" align="center">Chapter 66. Transaction Processing</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="xact-locking.html" title="66.2. Transactions and Locking">Next</a></td></tr></table><hr /></div><div class="sect1" id="TRANSACTION-ID"><div class="titlepage"><div><div><h2 class="title" style="clear: both">66.1. Transactions and Identifiers <a href="#TRANSACTION-ID" class="id_link">#</a></h2></div></div></div><p>
+   Transactions can be created explicitly using <code class="command">BEGIN</code>
+   or <code class="command">START TRANSACTION</code> and ended using
+   <code class="command">COMMIT</code> or <code class="command">ROLLBACK</code>.  SQL
+   statements outside of explicit transactions automatically use
+   single-statement transactions.
+  </p><p>
+   Every transaction is identified by a unique
+   <code class="literal">VirtualTransactionId</code> (also called
+   <code class="literal">virtualXID</code> or <code class="literal">vxid</code>), which
+   is comprised of a backend's process number (or <code class="literal">procNumber</code>)
+   and a sequentially-assigned number local to each backend, known as
+   <code class="literal">localXID</code>.  For example, the virtual transaction
+   ID <code class="literal">4/12532</code> has a <code class="literal">procNumber</code>
+   of <code class="literal">4</code> and a <code class="literal">localXID</code> of
+   <code class="literal">12532</code>.
+  </p><p>
+   Non-virtual <code class="literal">TransactionId</code>s (or <code class="type">xid</code>),
+   e.g., <code class="literal">278394</code>, are assigned sequentially to
+   transactions from a global counter used by all databases within
+   the <span class="productname">PostgreSQL</span> cluster.  This assignment
+   happens when a transaction first writes to the database. This means
+   lower-numbered xids started writing before higher-numbered xids.
+   Note that the order in which transactions perform their first database
+   write might be different from the order in which the transactions
+   started, particularly if the transaction started with statements that
+   only performed database reads.
+  </p><p>
+   The internal transaction ID type <code class="type">xid</code> is 32 bits wide
+   and <a class="link" href="routine-vacuuming.html#VACUUM-FOR-WRAPAROUND" title="24.1.5. Preventing Transaction ID Wraparound Failures">wraps around</a> every
+   4 billion transactions. A 32-bit epoch is incremented during each
+   wraparound. There is also a 64-bit type <code class="type">xid8</code> which
+   includes this epoch and therefore does not wrap around during the
+   life of an installation;  it can be converted to xid by casting.
+   The functions in <a class="xref" href="functions-info.html#FUNCTIONS-PG-SNAPSHOT" title="Table 9.82. Transaction ID and Snapshot Information Functions">Table 9.82</a>
+   return <code class="type">xid8</code> values.  Xids are used as the
+   basis for <span class="productname">PostgreSQL</span>'s <a class="link" href="mvcc.html" title="Chapter 13. Concurrency Control">MVCC</a> concurrency mechanism and streaming
+   replication.
+  </p><p>
+   When a top-level transaction with a (non-virtual) xid commits,
+   it is marked as committed in the <code class="filename">pg_xact</code>
+   directory. Additional information is recorded in the
+   <code class="filename">pg_commit_ts</code> directory if <a class="xref" href="runtime-config-replication.html#GUC-TRACK-COMMIT-TIMESTAMP">track_commit_timestamp</a> is enabled.
+  </p><p>
+   In addition to <code class="literal">vxid</code> and <code class="literal">xid</code>,
+   prepared transactions are also assigned Global Transaction
+   Identifiers (<acronym class="acronym">GID</acronym>). GIDs are string literals up
+   to 200 bytes long, which must be unique amongst other currently
+   prepared transactions.  The mapping of GID to xid is shown in <a class="link" href="view-pg-prepared-xacts.html" title="52.16. pg_prepared_xacts"><code class="structname">pg_prepared_xacts</code></a>.
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="transactions.html" title="Chapter 66. Transaction Processing">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="transactions.html" title="Chapter 66. Transaction Processing">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="xact-locking.html" title="66.2. Transactions and Locking">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 66. Transaction Processing </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 66.2. Transactions and Locking</td></tr></table></div></body></html>

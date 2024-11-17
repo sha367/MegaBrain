@@ -1,0 +1,3343 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>PostGIS Cheat Sheet</title>
+<style type="text/css">
+table { page-break-inside:avoid; page-break-after:auto }
+tr    { page-break-inside:avoid; page-break-after:avoid }
+thead { display:table-header-group }
+tfoot { display:table-footer-group }
+body {
+	font-family: Arial, sans-serif;
+	font-size: 8.5pt;
+}
+@media print { a , a:hover, a:focus, a:active{text-decoration: none;color:black} }
+@media screen { a , a:hover, a:focus, a:active{text-decoration: underline} }
+
+.comment {font-size:x-small;color:green;font-family:"courier new"}
+.notes {
+	font-size:x-small;
+	color:#dd1111;
+	font-weight:500;
+	font-family:verdana;
+}
+#example_heading {
+	border-bottom: 1px solid #000;
+	margin: 10px 15px 10px 85px;
+	color: #4a124a;font-size: 7.5pt;
+}
+
+
+#content_functions {
+	width:100%;
+	float: left;
+}
+
+#content_functions_left {
+	width:100%;
+	float: left;
+}
+
+#content_functions_right {
+	width: 100%;
+	float: right;
+}
+
+
+#content_examples {
+	float: left;
+	width: 100%;
+}
+
+.section {
+	border: 1px solid #000;
+	margin: 4px;
+
+	width: 100%;
+
+	float: left;
+}
+
+.example {
+	border: 1px solid #000;
+	margin: 4px;
+	width: 100%;
+	float:left;
+}
+
+.example b {font-size: 7.5pt}
+.example th {
+	border: 1px solid #000;
+	color: #000;
+	background-color: #ddd;
+	font-size: 8.0pt;
+}
+
+.section th {
+	border: 1px solid #000;
+	color: #fff;
+	background-color: #FF9900;
+	font-size: 9.5pt;
+
+}
+.section td {
+	font-family: Arial, sans-serif;
+	font-size: 8.5pt;
+	vertical-align: top;
+	border: 0;
+}
+
+.func {font-weight: 600}
+.func {font-weight: 600}
+.func_args {font-size: 8pt;font-family:"courier new";float:left}
+
+.evenrow {
+	background-color: #eee;
+}
+
+.oddrow {
+	background-color: #fff;
+}
+
+h1 {
+	margin: 0px;
+	padding: 0px;
+	font-size: 14pt;
+}
+code {font-size: 8pt}
+			</style>
+</head>
+<body>
+<h1 style="text-align:center">PostGIS  3.5 Cheatsheet</h1>
+<span class="notes">
+            New in this release
+        <sup>1</sup>
+            Enhanced in this release
+        <sup>2</sup>  
+				
+				Aggregate
+        <sup>agg</sup>   
+				
+				Window function
+        <sup>W</sup>  
+				
+				Requires GEOS (3.9,3.10,3.11,3.12) or higher
+        <sup>g3.9</sup> <sup>g3.11</sup> <sup>g3.12</sup>
+				2.5/3D support
+        <sup>3d</sup>  
+				SQL-MM<sup>mm</sup>  
+				
+				Supports geography
+        <sup>G</sup></span><div id="content_functions"><div id="content_functions_left">
+<table class="section">
+<tr><th colspan="2">PostGIS Geometry/Geography/Box Data Types</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/box2d_type.html">box2d</a></span>
+
+		  
+		The type representing a 2-dimensional bounding box. </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/box3d_type.html">box3d</a></span>
+
+		  
+		The type representing a 3-dimensional bounding box. </td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/geometry.html">geometry</a></span>
+
+		  
+		The type representing spatial features with planar coordinate systems.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/geometry_dump.html">geometry_dump</a></span>
+
+		  
+		A composite type used to describe the parts of complex geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/geography.html">geography</a></span>
+
+		  
+		The type representing spatial features with geodetic (ellipsoidal) coordinate systems.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Table Management Functions</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/AddGeometryColumn.html">AddGeometryColumn</a></span>
+			 <sup>3d</sup>
+
+		  
+		Adds a geometry column to an existing table.<span class="func_args"><ol>
+<li>table_name, column_name, srid, type, dimension, use_typmod=true</li>
+<li>schema_name, table_name, column_name, srid, type, dimension, use_typmod=true</li>
+<li>catalog_name, schema_name, table_name, column_name, srid, type, dimension, use_typmod=true</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/DropGeometryColumn.html">DropGeometryColumn</a></span>
+			 <sup>3d</sup>
+
+		  
+		Removes a geometry column from a spatial
+		table.<span class="func_args"><ol>
+<li>table_name, column_name</li>
+<li>schema_name, table_name, column_name</li>
+<li>catalog_name, schema_name, table_name, column_name</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/DropGeometryTable.html">DropGeometryTable</a></span>
+
+		  
+		Drops a table and all its references in
+		geometry_columns.<span class="func_args"><ol>
+<li>table_name</li>
+<li>schema_name, table_name</li>
+<li>catalog_name, schema_name, table_name</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/Find_SRID.html">Find_SRID</a></span>
+			(a_schema_name, a_table_name, a_geomfield_name)
+		
+
+		  
+		Returns the SRID defined for a geometry column.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/Populate_Geometry_Columns.html">Populate_Geometry_Columns</a></span>
+
+		  
+		Ensures geometry columns are defined with type modifiers or have appropriate spatial constraints.<span class="func_args"><ol>
+<li>use_typmod=true</li>
+<li>relation_oid, use_typmod=true</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/UpdateGeometrySRID.html">UpdateGeometrySRID</a></span>
+			 <sup>3d</sup>
+
+		  
+		Updates the SRID of all features in a geometry
+		column, and the table metadata.
+		<span class="func_args"><ol>
+<li>table_name, column_name, srid</li>
+<li>schema_name, table_name, column_name, srid</li>
+<li>catalog_name, schema_name, table_name, column_name, srid</li>
+</ol></span>
+</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Geometry Constructors</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Collect.html">ST_Collect</a></span>
+			 <sup>3d</sup>
+
+		  
+		Creates a GeometryCollection or Multi* geometry from a set of geometries.<span class="func_args"><ol>
+<li>g1, g2</li>
+<li>g1_array</li>
+<li>g1field<sup> agg</sup>
+</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_LineFromMultiPoint.html">ST_LineFromMultiPoint</a></span>
+			 <sup>3d</sup>
+			(aMultiPoint)
+		
+
+		  
+		Creates a LineString from a MultiPoint geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MakeEnvelope.html">ST_MakeEnvelope</a></span>
+			(xmin, ymin, xmax, ymax, srid=unknown)
+		
+
+		  
+		Creates a rectangular Polygon from minimum and maximum coordinates.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MakeLine.html">ST_MakeLine</a></span>
+			 <sup>3d</sup>
+
+		  
+		Creates a LineString from Point, MultiPoint, or LineString geometries.<span class="func_args"><ol>
+<li>geom1, geom2</li>
+<li>geoms_array</li>
+<li>geoms<sup> agg</sup>
+</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MakePoint.html">ST_MakePoint</a></span>
+			 <sup>3d</sup>
+
+		  
+		Creates a 2D, 3DZ or 4D Point.<span class="func_args"><ol>
+<li>x, y</li>
+<li>x, y, z</li>
+<li>x, y, z, m</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MakePointM.html">ST_MakePointM</a></span>
+			(x, y, m)
+		
+
+		  
+		Creates a Point from X, Y and M values.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MakePolygon.html">ST_MakePolygon</a></span>
+			 <sup>3d</sup>
+
+		  
+		Creates a Polygon from a shell and optional list of holes.<span class="func_args"><ol>
+<li>linestring</li>
+<li>outerlinestring, interiorlinestrings</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Point.html">ST_Point</a></span>
+			 <sup>mm</sup>
+
+		  
+		Creates a Point with X, Y and SRID values.<span class="func_args"><ol>
+<li>x, y</li>
+<li>x, y, srid=unknown</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_PointZ.html">ST_PointZ</a></span>
+			(x, y, z, srid=unknown)
+		
+
+		  
+		Creates a Point with X, Y, Z and SRID values.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_PointM.html">ST_PointM</a></span>
+			(x, y, m, srid=unknown)
+		
+
+		  
+		Creates a Point with X, Y, M and SRID values.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_PointZM.html">ST_PointZM</a></span>
+			(x, y, z, m, srid=unknown)
+		
+
+		  
+		Creates a Point with X, Y, Z, M and SRID values.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Polygon.html">ST_Polygon</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(lineString, srid)
+		
+
+		  
+		Creates a Polygon from a LineString with a specified SRID.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_TileEnvelope.html">ST_TileEnvelope</a></span>
+			(tileZoom, tileX, tileY, bounds=SRID=3857;LINESTRING(-20037508.342789 -20037508.342789,20037508.342789 20037508.342789), margin=0.0)
+		
+
+		  
+		Creates a rectangular Polygon in Web Mercator (SRID:3857) using the XYZ tile system.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_HexagonGrid.html">ST_HexagonGrid</a></span>
+			(size, bounds)
+		
+
+		  
+		Returns a set of hexagons and cell indices that completely cover the bounds of the geometry argument.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Hexagon.html">ST_Hexagon</a></span>
+			(size, cell_i, cell_j, origin)
+		
+
+		  
+		Returns a single hexagon, using the provided edge size and
+			cell coordinate within the hexagon grid space.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_SquareGrid.html">ST_SquareGrid</a></span>
+			(size, bounds)
+		
+
+		  
+		Returns a set of grid squares and cell indices that completely cover the bounds of the geometry argument.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Square.html">ST_Square</a></span>
+			(size, cell_i, cell_j, origin)
+		
+
+		  
+		Returns a single square, using the provided edge size and
+			cell coordinate within the square grid space.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Letters.html">ST_Letters</a></span>
+			( letters,  font)
+		
+
+		  
+		Returns the input letters rendered as geometry with a default start position at the origin and default text height of 100.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Geometry Accessors</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/GeometryType.html">GeometryType</a></span>
+			 <sup>3d</sup>
+			(geomA)
+		
+
+		  
+		Returns the type of a geometry as text.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Boundary.html">ST_Boundary</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(geomA)
+		
+
+		  
+		Returns the boundary of a geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_BoundingDiagonal.html">ST_BoundingDiagonal</a></span>
+			 <sup>3d</sup>
+			(geom, fits=false)
+		
+
+		  
+		Returns the diagonal of a geometry's bounding box.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_CoordDim.html">ST_CoordDim</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(geomA)
+		
+
+		  
+		Return the coordinate dimension of a geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Dimension.html">ST_Dimension</a></span>
+			 <sup>mm</sup>
+			(g)
+		
+
+		  
+		Returns the topological dimension of a geometry. </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Dump.html">ST_Dump</a></span>
+			 <sup>3d</sup>
+			(g1)
+		
+
+		  
+		Returns a set of geometry_dump rows for the components of a geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_DumpPoints.html">ST_DumpPoints</a></span>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Returns a set of geometry_dump rows for the coordinates in a geometry.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_DumpSegments.html">ST_DumpSegments</a></span>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Returns a set of geometry_dump rows for the segments in a geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_DumpRings.html">ST_DumpRings</a></span>
+			 <sup>3d</sup>
+			(a_polygon)
+		
+
+		  
+		Returns a set of geometry_dump rows for
+			the exterior and interior rings of a Polygon.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_EndPoint.html">ST_EndPoint</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(g)
+		
+
+		  
+		Returns the last point of a LineString or CircularLineString.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Envelope.html">ST_Envelope</a></span>
+			 <sup>mm</sup>
+			(g1)
+		
+
+		  
+		Returns a geometry representing the bounding box of a geometry.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ExteriorRing.html">ST_ExteriorRing</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(a_polygon)
+		
+
+		  
+		Returns a LineString representing the exterior ring of a Polygon. </td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeometryN.html">ST_GeometryN</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(geomA, n)
+		
+
+		  
+		Return an element of a geometry collection.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeometryType.html">ST_GeometryType</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(g1)
+		
+
+		  
+		Returns the SQL-MM type of a geometry as text.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_HasArc.html">ST_HasArc</a></span>
+			 <sup>3d</sup>
+			(geomA)
+		
+
+		  
+		Tests if a geometry contains a circular arc</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_InteriorRingN.html">ST_InteriorRingN</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(a_polygon, n)
+		
+
+		  
+		Returns the Nth interior ring (hole) of a Polygon.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_NumCurves.html">ST_NumCurves</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(a_compoundcurve)
+		
+
+		  
+		Return the number of component curves in a CompoundCurve.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_CurveN.html">ST_CurveN</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(a_compoundcurve, index)
+		
+
+		  
+		Returns the Nth component curve geometry of a CompoundCurve.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_IsClosed.html">ST_IsClosed</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(g)
+		
+
+		  
+		Tests if a LineStrings's start and end points are coincident. For a PolyhedralSurface tests if it is closed (volumetric).
+		</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_IsCollection.html">ST_IsCollection</a></span>
+			 <sup>3d</sup>
+			(g)
+		
+
+		  
+		Tests if a geometry is a geometry collection type.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_IsEmpty.html">ST_IsEmpty</a></span>
+			 <sup>mm</sup>
+			(geomA)
+		
+
+		  
+		Tests if a geometry is empty.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_IsPolygonCCW.html">
+				ST_IsPolygonCCW
+			</a></span>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Tests if Polygons have exterior rings oriented counter-clockwise and interior rings oriented clockwise.
+			</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_IsPolygonCW.html">
+				ST_IsPolygonCW
+			</a></span>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Tests if Polygons have exterior rings oriented clockwise and interior rings oriented counter-clockwise.
+			</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_IsRing.html">ST_IsRing</a></span>
+			 <sup>mm</sup>
+			(g)
+		
+
+		  
+		Tests if a LineString is closed and simple.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_IsSimple.html">ST_IsSimple</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(geomA)
+		
+
+		  
+		Tests if a geometry has no points of self-intersection or self-tangency.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_M.html">ST_M</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(a_point)
+		
+
+		  
+		Returns the M coordinate of a Point.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MemSize.html">ST_MemSize</a></span>
+			 <sup>3d</sup>
+			(geomA)
+		
+
+		  
+		Returns the amount of memory space a geometry takes.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_NDims.html">ST_NDims</a></span>
+			 <sup>3d</sup>
+			(g1)
+		
+
+		  
+		Returns the coordinate dimension of a geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_NPoints.html">ST_NPoints</a></span>
+			 <sup>3d</sup>
+			(g1)
+		
+
+		  
+		Returns the number of points (vertices) in a geometry.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_NRings.html">ST_NRings</a></span>
+			 <sup>3d</sup>
+			(geomA)
+		
+
+		  
+		Returns the number of rings in a polygonal geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_NumGeometries.html">ST_NumGeometries</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Returns the number of elements in a geometry collection.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_NumInteriorRings.html">ST_NumInteriorRings</a></span>
+			 <sup>mm</sup>
+			(a_polygon)
+		
+
+		  
+		Returns the number of interior rings (holes) of a Polygon.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_NumInteriorRing.html">ST_NumInteriorRing</a></span>
+			(a_polygon)
+		
+
+		  
+		Returns the number of interior rings (holes) of a Polygon. Aias for ST_NumInteriorRings</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_NumPatches.html">ST_NumPatches</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(g1)
+		
+
+		  
+		Return the number of faces on a Polyhedral Surface.  Will return null for non-polyhedral geometries.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_NumPoints.html">ST_NumPoints</a></span>
+			 <sup>mm</sup>
+			(g1)
+		
+
+		  
+		Returns the number of points in a LineString or CircularString.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_PatchN.html">ST_PatchN</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(geomA, n)
+		
+
+		  
+		Returns the Nth geometry (face) of a PolyhedralSurface.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_PointN.html">ST_PointN</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(a_linestring, n)
+		
+
+		  
+		Returns the Nth point in the first LineString or circular LineString in a
+			geometry. </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Points.html">ST_Points</a></span>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Returns a MultiPoint containing the coordinates of a geometry.
+			</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_StartPoint.html">ST_StartPoint</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(geomA)
+		
+
+		  
+		Returns the first point of a LineString.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Summary.html">ST_Summary</a></span>
+			 <sup>G</sup>
+
+		  
+		Returns a text summary of the contents of a geometry.
+		<span class="func_args"><ol>
+<li>g</li>
+<li>g</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_X.html">ST_X</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(a_point)
+		
+
+		  
+		Returns the X coordinate of a Point.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Y.html">ST_Y</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(a_point)
+		
+
+		  
+		Returns the Y coordinate of a Point.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Z.html">ST_Z</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(a_point)
+		
+
+		  
+		Returns the Z coordinate of a Point.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Zmflag.html">ST_Zmflag</a></span>
+			 <sup>3d</sup>
+			(geomA)
+		
+
+		  
+		Returns a code indicating the ZM coordinate dimension of a geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_HasZ.html">ST_HasZ</a></span>
+			 <sup>1</sup>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Checks if a geometry has a Z dimension.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_HasM.html">ST_HasM</a></span>
+			 <sup>1</sup>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Checks if a geometry has an M (measure) dimension.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Geometry Editors</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AddPoint.html">ST_AddPoint</a></span>
+			 <sup>3d</sup>
+
+		  
+		Add a point to a LineString.<span class="func_args"><ol>
+<li>linestring, point</li>
+<li>linestring, point, position = -1</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_CollectionExtract.html">ST_CollectionExtract</a></span>
+
+		  
+		
+Given a geometry collection, returns a multi-geometry containing only elements of a specified type.
+			<span class="func_args"><ol>
+<li>collection</li>
+<li>collection, type</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_CollectionHomogenize.html">ST_CollectionHomogenize</a></span>
+			(collection)
+		
+
+		  
+		
+Returns the simplest representation of a geometry collection.
+            </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_CurveToLine.html">ST_CurveToLine</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(curveGeom, tolerance, tolerance_type, flags)
+		
+
+		  
+		Converts a geometry containing curves to a linear geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Scroll.html">ST_Scroll</a></span>
+			 <sup>3d</sup>
+			(linestring, point)
+		
+
+		  
+		Change start point of a closed LineString.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_FlipCoordinates.html">ST_FlipCoordinates</a></span>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Returns a version of a geometry with X and Y axis flipped. </td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Force2D.html">ST_Force2D</a></span>
+			 <sup>3d</sup>
+			(geomA)
+		
+
+		  
+		Force the geometries into a "2-dimensional mode".</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Force_3D.html">ST_Force3D</a></span>
+			 <sup>3d</sup>
+			(geomA, Zvalue = 0.0)
+		
+
+		  
+		Force the geometries into XYZ mode.  This is an alias for ST_Force3DZ.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Force_3DZ.html">ST_Force3DZ</a></span>
+			 <sup>3d</sup>
+			(geomA, Zvalue = 0.0)
+		
+
+		  
+		Force the geometries into XYZ mode.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Force_3DM.html">ST_Force3DM</a></span>
+			(geomA, Mvalue = 0.0)
+		
+
+		  
+		Force the geometries into XYM mode.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Force_4D.html">ST_Force4D</a></span>
+			 <sup>3d</sup>
+			(geomA, Zvalue = 0.0, Mvalue = 0.0)
+		
+
+		  
+		Force the geometries into XYZM mode.  </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Force_Collection.html">ST_ForceCollection</a></span>
+			 <sup>3d</sup>
+			(geomA)
+		
+
+		  
+		Convert the geometry into a GEOMETRYCOLLECTION.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ForceCurve.html">ST_ForceCurve</a></span>
+			 <sup>3d</sup>
+			(g)
+		
+
+		  
+		Upcast a geometry into its curved type, if applicable.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ForcePolygonCCW.html">
+				ST_ForcePolygonCCW
+			</a></span>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		
+				Orients all exterior rings counter-clockwise and all interior rings clockwise.
+			</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ForcePolygonCW.html">
+				ST_ForcePolygonCW
+			</a></span>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		
+				Orients all exterior rings clockwise and all interior rings counter-clockwise.
+			</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ForceSFS.html">ST_ForceSFS</a></span>
+			 <sup>3d</sup>
+
+		  
+		Force the geometries to use SFS 1.1 geometry types only.<span class="func_args"><ol>
+<li>geomA</li>
+<li>geomA, version</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ForceRHR.html">ST_ForceRHR</a></span>
+			 <sup>3d</sup>
+			(g)
+		
+
+		  
+		Force the orientation of the vertices in a polygon to follow the
+				Right-Hand-Rule.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_LineExtend.html">ST_LineExtend</a></span>
+			(line, distance_forward, distance_backward=0.0)
+		
+
+		  
+		Returns a line extended forwards and backwards by specified distances.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_LineToCurve.html">ST_LineToCurve</a></span>
+			 <sup>3d</sup>
+			(geomANoncircular)
+		
+
+		  
+		Converts a linear geometry to a curved geometry.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Multi.html">ST_Multi</a></span>
+			(geom)
+		
+
+		  
+		Return the geometry as a MULTI* geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Normalize.html">ST_Normalize</a></span>
+			(geom)
+		
+
+		  
+		Return the geometry in its canonical form.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Project.html">ST_Project</a></span>
+			 <sup>G</sup>
+
+		  
+		Returns a point projected from a start point by a distance and bearing (azimuth).<span class="func_args"><ol>
+<li>g1, distance, azimuth</li>
+<li>g1, g2, distance</li>
+<li>g1, distance, azimuth</li>
+<li>g1, g2, distance</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_QuantizeCoordinates.html">
+				ST_QuantizeCoordinates
+			</a></span>
+			(g, prec_x, prec_y, prec_z, prec_m)
+		
+
+		  
+		
+				Sets least significant bits of coordinates to zero
+			</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_RemovePoint.html">ST_RemovePoint</a></span>
+			 <sup>3d</sup>
+			(linestring, offset)
+		
+
+		  
+		Remove a point from a linestring.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_RemoveRepeatedPoints.html">ST_RemoveRepeatedPoints</a></span>
+			 <sup>3d</sup>
+			(geom, tolerance)
+		
+
+		  
+		Returns a version of a geometry with
+                duplicate points removed.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_RemoveIrrelevantPointsForView.html">ST_RemoveIrrelevantPointsForView</a></span>
+			 <sup>1</sup>
+			(geom, bounds, cartesian_hint = false)
+		
+
+		  
+		Removes points that are irrelevant for rendering a specific rectangluar view of a geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_RemoveSmallParts.html">ST_RemoveSmallParts</a></span>
+			 <sup>1</sup>
+			(geom, minSizeX, minSizeY)
+		
+
+		  
+		Removes small parts (polygon rings or linestrings) of a geometry.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Reverse.html">ST_Reverse</a></span>
+			 <sup>3d</sup>
+			(g1)
+		
+
+		  
+		Return the geometry with vertex order reversed.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Segmentize.html">ST_Segmentize</a></span>
+			 <sup>G</sup>
+
+		  
+		Returns a modified geometry/geography having no segment longer than a
+			given distance.<span class="func_args"><ol>
+<li>geom, max_segment_length</li>
+<li>geog, max_segment_length</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_SetPoint.html">ST_SetPoint</a></span>
+			 <sup>3d</sup>
+			(linestring, zerobasedposition, point)
+		
+
+		  
+		Replace point of a linestring with a given point.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ShiftLongitude.html">ST_ShiftLongitude</a></span>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Shifts the longitude coordinates of a geometry between -180..180 and 0..360.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_WrapX.html">ST_WrapX</a></span>
+			 <sup>3d</sup>
+			(geom, wrap, move)
+		
+
+		  
+		Wrap a geometry around an X value.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_SnapToGrid.html">ST_SnapToGrid</a></span>
+			 <sup>3d</sup>
+
+		  
+		
+		Snap all points of the input geometry to a regular grid.
+		<span class="func_args"><ol>
+<li>geomA, originX, originY, sizeX, sizeY</li>
+<li>geomA, sizeX, sizeY</li>
+<li>geomA, size</li>
+<li>geomA, pointOrigin, sizeX, sizeY, sizeZ, sizeM</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Snap.html">ST_Snap</a></span>
+			(input, reference, tolerance)
+		
+
+		  
+		
+	Snap segments and vertices of input geometry
+	to vertices of a reference geometry.
+		</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_SwapOrdinates.html">ST_SwapOrdinates</a></span>
+			 <sup>3d</sup>
+			(geom, ords)
+		
+
+		  
+		Returns a version of the given geometry with
+				given ordinate values swapped.
+    </td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Geometry Validation</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_IsValid.html">ST_IsValid</a></span>
+			 <sup>mm</sup>
+
+		  
+		Tests if a geometry is well-formed in 2D.
+		<span class="func_args"><ol>
+<li>g</li>
+<li>g, flags</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_IsValidDetail.html">ST_IsValidDetail</a></span>
+			(geom, flags)
+		
+
+		  
+		Returns a valid_detail row stating if a geometry is valid or if not a reason and a location.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_IsValidReason.html">ST_IsValidReason</a></span>
+
+		  
+		Returns text stating if a geometry is valid, or a reason for invalidity.<span class="func_args"><ol>
+<li>geomA</li>
+<li>geomA, flags</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MakeValid.html">ST_MakeValid</a></span>
+			 <sup>3d</sup>
+
+		  
+		Attempts to make an invalid geometry valid without losing vertices.<span class="func_args"><ol>
+<li>input</li>
+<li>input, params</li>
+</ol></span>
+</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Spatial Reference System Functions</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_InverseTransformPipeline.html">ST_InverseTransformPipeline</a></span>
+			(geom, pipeline, to_srid)
+		
+
+		  
+		Return a new geometry with coordinates transformed to
+      a different spatial reference system using the inverse of a defined coordinate
+      transformation pipeline.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_SetSRID.html">ST_SetSRID</a></span>
+			(geom, srid)
+		
+
+		  
+		Set the SRID on a geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_SRID.html">ST_SRID</a></span>
+			 <sup>mm</sup>
+			(g1)
+		
+
+		  
+		Returns the spatial reference identifier for a geometry.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Transform.html">ST_Transform</a></span>
+			 <sup>mm</sup>
+
+		  
+		Return a new geometry with coordinates transformed to
+      a different spatial reference system.<span class="func_args"><ol>
+<li>g1, srid</li>
+<li>geom, to_proj</li>
+<li>geom, from_proj, to_proj</li>
+<li>geom, from_proj, to_srid</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_TransformPipeline.html">ST_TransformPipeline</a></span>
+			(g1, pipeline, to_srid)
+		
+
+		  
+		Return a new geometry with coordinates transformed to
+      a different spatial reference system using a defined coordinate
+      transformation pipeline.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/postgis_srs_codes.html">postgis_srs_codes</a></span>
+			(auth_name)
+		
+
+		  
+		Return the list of SRS codes associated with the given authority.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/postgis_srs.html">postgis_srs</a></span>
+			(auth_name, auth_srid)
+		
+
+		  
+		Return a metadata record for the requested authority and srid.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/postgis_srs_all.html">postgis_srs_all</a></span>
+			()
+		
+
+		  
+		Return metadata records for every spatial reference system in the underlying Proj database.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/postgis_srs_search.html">postgis_srs_search</a></span>
+			(bounds, auth_name=EPSG)
+		
+
+		  
+		Return metadata records for projected coordinate systems that have areas of usage that fully contain the bounds parameter.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Geometry Input</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_BdPolyFromText.html">ST_BdPolyFromText</a></span>
+			(WKT, srid)
+		
+
+		  
+		Construct a Polygon given an arbitrary collection of closed
+			linestrings as a MultiLineString Well-Known text representation.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_BdMPolyFromText.html">ST_BdMPolyFromText</a></span>
+			(WKT, srid)
+		
+
+		  
+		Construct a MultiPolygon given an arbitrary collection of
+					closed linestrings as a MultiLineString text
+					representation Well-Known text representation.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeogFromText.html">ST_GeogFromText</a></span>
+			 <sup>G</sup>
+			(EWKT)
+		
+
+		  
+		Return a specified geography value from Well-Known Text representation or extended (WKT). </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeographyFromText.html">ST_GeographyFromText</a></span>
+			 <sup>G</sup>
+			(EWKT)
+		
+
+		  
+		Return a specified geography value from Well-Known Text representation or extended (WKT). </td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeomCollFromText.html">ST_GeomCollFromText</a></span>
+			 <sup>mm</sup>
+
+		  
+		Makes a collection Geometry from collection WKT with the given SRID. If SRID is
+			not given, it defaults to 0.<span class="func_args"><ol>
+<li>WKT, srid</li>
+<li>WKT</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeomFromEWKT.html">ST_GeomFromEWKT</a></span>
+			 <sup>3d</sup>
+			(EWKT)
+		
+
+		  
+		Return a specified ST_Geometry value from Extended Well-Known Text representation (EWKT).</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeomFromMARC21.html">ST_GeomFromMARC21</a></span>
+			(marcxml)
+		
+
+		  
+		Takes MARC21/XML geographic data as input and returns a PostGIS geometry object. </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeometryFromText.html">ST_GeometryFromText</a></span>
+			 <sup>mm</sup>
+
+		  
+		Return a specified ST_Geometry value from Well-Known Text representation (WKT).  This is an alias name for ST_GeomFromText<span class="func_args"><ol>
+<li>WKT</li>
+<li>WKT, srid</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeomFromText.html">ST_GeomFromText</a></span>
+			 <sup>mm</sup>
+
+		  
+		Return a specified ST_Geometry value from Well-Known Text representation (WKT).<span class="func_args"><ol>
+<li>WKT</li>
+<li>WKT, srid</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_LineFromText.html">ST_LineFromText</a></span>
+			 <sup>mm</sup>
+
+		  
+		Makes a Geometry from WKT representation with the given SRID. If SRID is
+				not given, it defaults to 0.<span class="func_args"><ol>
+<li>WKT</li>
+<li>WKT, srid</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MLineFromText.html">ST_MLineFromText</a></span>
+			 <sup>mm</sup>
+
+		  
+		Return a specified ST_MultiLineString value from WKT representation.<span class="func_args"><ol>
+<li>WKT, srid</li>
+<li>WKT</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MPointFromText.html">ST_MPointFromText</a></span>
+			 <sup>mm</sup>
+
+		  
+		Makes a Geometry from WKT with the given SRID. If SRID is
+			not given, it defaults to 0.<span class="func_args"><ol>
+<li>WKT, srid</li>
+<li>WKT</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MPolyFromText.html">ST_MPolyFromText</a></span>
+			 <sup>mm</sup>
+
+		  
+		Makes a MultiPolygon Geometry from WKT with the given SRID. If SRID is
+			not given, it defaults to 0.<span class="func_args"><ol>
+<li>WKT, srid</li>
+<li>WKT</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_PointFromText.html">ST_PointFromText</a></span>
+			 <sup>mm</sup>
+
+		  
+		Makes a point Geometry from WKT with the given SRID. If SRID is
+			not given, it defaults to unknown.<span class="func_args"><ol>
+<li>WKT</li>
+<li>WKT, srid</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_PolygonFromText.html">ST_PolygonFromText</a></span>
+			 <sup>mm</sup>
+
+		  
+		Makes a Geometry from WKT with the given SRID. If SRID is
+			not given, it defaults to 0.<span class="func_args"><ol>
+<li>WKT</li>
+<li>WKT, srid</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_WKTToSQL.html">ST_WKTToSQL</a></span>
+			 <sup>mm</sup>
+			(WKT)
+		
+
+		  
+		Return a specified ST_Geometry value from Well-Known Text representation (WKT).  This is an alias name for ST_GeomFromText</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeogFromWKB.html">ST_GeogFromWKB</a></span>
+			 <sup>G</sup>
+			(wkb)
+		
+
+		  
+		Creates a geography instance from a Well-Known Binary geometry
+		representation (WKB) or extended Well Known Binary (EWKB).</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeomFromEWKB.html">ST_GeomFromEWKB</a></span>
+			 <sup>3d</sup>
+			(EWKB)
+		
+
+		  
+		Return a specified ST_Geometry value from Extended Well-Known Binary representation (EWKB).</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeomFromWKB.html">ST_GeomFromWKB</a></span>
+			 <sup>mm</sup>
+
+		  
+		Creates a geometry instance from a Well-Known Binary geometry
+		representation (WKB) and optional SRID.<span class="func_args"><ol>
+<li>geom</li>
+<li>geom, srid</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_LineFromWKB.html">ST_LineFromWKB</a></span>
+			 <sup>mm</sup>
+
+		  
+		Makes a LINESTRING from WKB with the given SRID<span class="func_args"><ol>
+<li>WKB</li>
+<li>WKB, srid</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_LinestringFromWKB.html">ST_LinestringFromWKB</a></span>
+			 <sup>mm</sup>
+
+		  
+		Makes a geometry from WKB with the given SRID.<span class="func_args"><ol>
+<li>WKB</li>
+<li>WKB, srid</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_PointFromWKB.html">ST_PointFromWKB</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+
+		  
+		Makes a geometry from WKB with the given SRID<span class="func_args"><ol>
+<li>geom</li>
+<li>geom, srid</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_WKBToSQL.html">ST_WKBToSQL</a></span>
+			 <sup>mm</sup>
+			(WKB)
+		
+
+		  
+		Return a specified ST_Geometry value from Well-Known Binary representation (WKB).  This is an alias name for ST_GeomFromWKB that takes no srid</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Box2dFromGeoHash.html">ST_Box2dFromGeoHash</a></span>
+			(geohash, precision=full_precision_of_geohash)
+		
+
+		  
+		Return a BOX2D from a GeoHash string.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeomFromGeoHash.html">ST_GeomFromGeoHash</a></span>
+			(geohash, precision=full_precision_of_geohash)
+		
+
+		  
+		Return a geometry from a GeoHash string.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeomFromGML.html">ST_GeomFromGML</a></span>
+			 <sup>3d</sup>
+
+		  
+		Takes as input GML representation of geometry and outputs a PostGIS geometry object<span class="func_args"><ol>
+<li>geomgml</li>
+<li>geomgml, srid</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeomFromGeoJSON.html">ST_GeomFromGeoJSON</a></span>
+			 <sup>3d</sup>
+
+		  
+		Takes as input a geojson representation of a geometry and outputs a PostGIS geometry object<span class="func_args"><ol>
+<li>geomjson</li>
+<li>geomjson</li>
+<li>geomjson</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeomFromKML.html">ST_GeomFromKML</a></span>
+			 <sup>3d</sup>
+			(geomkml)
+		
+
+		  
+		Takes as input KML representation of geometry and outputs a PostGIS geometry object</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeomFromTWKB.html">ST_GeomFromTWKB</a></span>
+			(twkb)
+		
+
+		  
+		Creates a geometry instance from a TWKB ("Tiny Well-Known Binary") geometry
+		representation.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GMLToSQL.html">ST_GMLToSQL</a></span>
+			 <sup>mm</sup>
+
+		  
+		Return a specified ST_Geometry value from GML representation.  This is an alias name for ST_GeomFromGML<span class="func_args"><ol>
+<li>geomgml</li>
+<li>geomgml, srid</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_LineFromEncodedPolyline.html">ST_LineFromEncodedPolyline</a></span>
+			(polyline, precision=5)
+		
+
+		  
+		Creates a LineString from an Encoded Polyline.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_PointFromGeoHash.html">ST_PointFromGeoHash</a></span>
+			(geohash, precision=full_precision_of_geohash)
+		
+
+		  
+		Return a point from a GeoHash string.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_FromFlatGeobufToTable.html">ST_FromFlatGeobufToTable</a></span>
+			(schemaname, tablename, FlatGeobuf input data)
+		
+
+		  
+		Creates a table based on the structure of FlatGeobuf data.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_FromFlatGeobuf.html">ST_FromFlatGeobuf</a></span>
+			(Table reference, FlatGeobuf input data)
+		
+
+		  
+		Reads FlatGeobuf data.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Geometry Output</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AsEWKT.html">ST_AsEWKT</a></span>
+			 <sup>G</sup>
+			 <sup>3d</sup>
+
+		  
+		Return the Well-Known Text (WKT) representation of the geometry with SRID meta data.<span class="func_args"><ol>
+<li>g1</li>
+<li>g1, maxdecimaldigits=15</li>
+<li>g1</li>
+<li>g1, maxdecimaldigits=15</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AsText.html">ST_AsText</a></span>
+			 <sup>mm</sup>
+			 <sup>G</sup>
+
+		  
+		Return the Well-Known Text (WKT) representation of the geometry/geography without SRID metadata.<span class="func_args"><ol>
+<li>g1</li>
+<li>g1, maxdecimaldigits = 15</li>
+<li>g1</li>
+<li>g1, maxdecimaldigits = 15</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AsBinary.html">ST_AsBinary</a></span>
+			 <sup>mm</sup>
+			 <sup>G</sup>
+			 <sup>3d</sup>
+
+		  
+		Return the OGC/ISO Well-Known Binary (WKB) representation of the geometry/geography without SRID meta data.<span class="func_args"><ol>
+<li>g1</li>
+<li>g1, NDR_or_XDR</li>
+<li>g1</li>
+<li>g1, NDR_or_XDR</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AsEWKB.html">ST_AsEWKB</a></span>
+			 <sup>3d</sup>
+
+		  
+		Return the Extended Well-Known Binary (EWKB) representation of the geometry with SRID meta data.<span class="func_args"><ol>
+<li>g1</li>
+<li>g1, NDR_or_XDR</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AsHEXEWKB.html">ST_AsHEXEWKB</a></span>
+			 <sup>3d</sup>
+
+		  
+		Returns a Geometry in HEXEWKB format (as text) using either
+			little-endian (NDR) or big-endian (XDR) encoding.<span class="func_args"><ol>
+<li>g1, NDRorXDR</li>
+<li>g1</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AsEncodedPolyline.html">ST_AsEncodedPolyline</a></span>
+			(geom, precision=5)
+		
+
+		  
+		Returns an Encoded Polyline from a LineString geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AsFlatGeobuf.html">ST_AsFlatGeobuf</a></span>
+
+		  
+		Return a FlatGeobuf representation of a set of rows.<span class="func_args"><ol>
+<li>row<sup> agg</sup>
+</li>
+<li>row, index</li>
+<li>row, index, geom_name</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AsGeobuf.html">ST_AsGeobuf</a></span>
+
+		  
+		Return a Geobuf representation of a set of rows.<span class="func_args"><ol>
+<li>row<sup> agg</sup>
+</li>
+<li>row, geom_name</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AsGeoJSON.html">ST_AsGeoJSON</a></span>
+			 <sup>G</sup>
+			 <sup>3d</sup>
+
+		  
+		Return a geometry or feature in GeoJSON format.<span class="func_args"><ol>
+<li>feature, geom_column="", maxdecimaldigits=9, pretty_bool=false, id_column=''</li>
+<li>geom, maxdecimaldigits=9, options=8</li>
+<li>geog, maxdecimaldigits=9, options=0</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AsGML.html">ST_AsGML</a></span>
+			 <sup>mm</sup>
+			 <sup>G</sup>
+			 <sup>3d</sup>
+
+		  
+		Return the geometry as a GML version 2 or 3 element.<span class="func_args"><ol>
+<li>geom, maxdecimaldigits=15, options=0</li>
+<li>geog, maxdecimaldigits=15, options=0, nprefix=null, id=null</li>
+<li>version, geom, maxdecimaldigits=15, options=0, nprefix=null, id=null</li>
+<li>version, geog, maxdecimaldigits=15, options=0, nprefix=null, id=null</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AsKML.html">ST_AsKML</a></span>
+			 <sup>G</sup>
+			 <sup>3d</sup>
+
+		  
+		Return the geometry as a KML element.<span class="func_args"><ol>
+<li>geom, maxdecimaldigits=15, nprefix=NULL</li>
+<li>geog, maxdecimaldigits=15, nprefix=NULL</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AsLatLonText.html">ST_AsLatLonText</a></span>
+			(pt, format='')
+		
+
+		  
+		Return the Degrees, Minutes, Seconds representation of the given point.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AsMARC21.html">ST_AsMARC21</a></span>
+			(geom, format='hdddmmss')
+		
+
+		  
+		Returns geometry as a MARC21/XML record with a geographic datafield (034).</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AsMVTGeom.html">ST_AsMVTGeom</a></span>
+			(geom, bounds, extent=4096, buffer=256, clip_geom=true)
+		
+
+		  
+		Transforms a geometry into the coordinate space of a MVT tile.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AsMVT.html">ST_AsMVT</a></span>
+
+		  
+		Aggregate function returning a MVT representation of a set of rows.<span class="func_args"><ol>
+<li>row<sup> agg</sup>
+</li>
+<li>row, name</li>
+<li>row, name, extent</li>
+<li>row, name, extent, geom_name</li>
+<li>row, name, extent, geom_name, feature_id_name</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AsSVG.html">ST_AsSVG</a></span>
+			 <sup>G</sup>
+
+		  
+		Returns SVG path data for a geometry.<span class="func_args"><ol>
+<li>geom, rel=0, maxdecimaldigits=15</li>
+<li>geog, rel=0, maxdecimaldigits=15</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AsTWKB.html">ST_AsTWKB</a></span>
+
+		  
+		Returns the geometry as TWKB, aka "Tiny Well-Known Binary"<span class="func_args"><ol>
+<li>geom, prec=0, prec_z=0, prec_m=0, with_sizes=false, with_boxes=false</li>
+<li>geom, ids, prec=0, prec_z=0, prec_m=0, with_sizes=false, with_boxes=false</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AsX3D.html">ST_AsX3D</a></span>
+			 <sup>3d</sup>
+			(g1, maxdecimaldigits=15, options=0)
+		
+
+		  
+		Returns a Geometry in X3D xml node element format: ISO-IEC-19776-1.2-X3DEncodings-XML</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeoHash.html">ST_GeoHash</a></span>
+			(geom, maxchars=full_precision_of_point)
+		
+
+		  
+		Return a GeoHash representation of the geometry.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Operators</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/geometry_overlaps.html">&amp;&amp;</a></span>
+			 <sup>G</sup>
+
+		  
+		Returns TRUE if A's 2D bounding box intersects B's 2D bounding box.<span class="func_args"><ol>
+<li>A, B</li>
+<li>A, B</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/overlaps_geometry_box2df.html">&amp;&amp;(geometry,box2df)</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if a geometry's (cached) 2D bounding box intersects a 2D float precision bounding box (BOX2DF).</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/overlaps_box2df_geometry.html">&amp;&amp;(box2df,geometry)</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if a 2D float precision bounding box (BOX2DF) intersects a geometry's (cached) 2D bounding box.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/overlaps_box2df_box2df.html">&amp;&amp;(box2df,box2df)</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if two 2D float precision bounding boxes (BOX2DF) intersect each other.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/geometry_overlaps_nd.html">&amp;&amp;&amp;</a></span>
+			 <sup>3d</sup>
+			(A, B)
+		
+
+		  
+		Returns TRUE if A's n-D bounding box intersects B's n-D bounding box.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/overlaps_nd_geometry_gidx.html">&amp;&amp;&amp;(geometry,gidx)</a></span>
+			 <sup>3d</sup>
+			(A, B)
+		
+
+		  
+		Returns TRUE if a geometry's (cached) n-D bounding box intersects a n-D float precision bounding box (GIDX).</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/overlaps_nd_gidx_geometry.html">&amp;&amp;&amp;(gidx,geometry)</a></span>
+			 <sup>3d</sup>
+			(A, B)
+		
+
+		  
+		Returns TRUE if a n-D float precision bounding box (GIDX) intersects a geometry's (cached) n-D bounding box.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/overlaps_nd_gidx_gidx.html">&amp;&amp;&amp;(gidx,gidx)</a></span>
+			 <sup>3d</sup>
+			(A, B)
+		
+
+		  
+		Returns TRUE if two n-D float precision bounding boxes (GIDX) intersect each other.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Geometry_Overleft.html">&amp;&lt;</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if A's bounding box overlaps or is to the left of B's.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Geometry_Overbelow.html">&amp;&lt;|</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if A's bounding box overlaps or is below B's.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Geometry_Overright.html">&amp;&gt;</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if A' bounding box overlaps or is to the right of B's.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Geometry_Left.html">&lt;&lt;</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if A's bounding box is strictly to the left of B's.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Geometry_Below.html">&lt;&lt;|</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if A's bounding box is strictly below B's.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Geometry_EQ.html">=</a></span>
+			 <sup>G</sup>
+
+		  
+		Returns TRUE if the coordinates and coordinate order geometry/geography A
+			are the same as the coordinates and coordinate order of geometry/geography B.<span class="func_args"><ol>
+<li>A, B</li>
+<li>A, B</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Geometry_Right.html">&gt;&gt;</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if A's bounding box is strictly to the right of B's.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Geometry_Contained.html">@</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if A's bounding box is contained by B's.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/is_contained_geometry_box2df.html">@(geometry,box2df)</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if a geometry's 2D bounding box is contained into a 2D float precision bounding box (BOX2DF).</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/is_contained_box2df_geometry.html">@(box2df,geometry)</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if a 2D float precision bounding box (BOX2DF) is contained into a geometry's 2D bounding box.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/is_contained_box2df_box2df.html">@(box2df,box2df)</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if a 2D float precision bounding box (BOX2DF) is contained into another 2D float precision bounding box.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Geometry_Overabove.html">|&amp;&gt;</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if A's bounding box overlaps or is above B's.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Geometry_Above.html">|&gt;&gt;</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if A's bounding box is strictly above B's.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Geometry_Contain.html">~</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if A's bounding box contains B's.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/contains_geometry_box2df.html">~(geometry,box2df)</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if a geometry's 2D bonding box contains a 2D float precision bounding box (GIDX).</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/contains_box2df_geometry.html">~(box2df,geometry)</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if a 2D float precision bounding box (BOX2DF) contains a geometry's 2D bonding box.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/contains_box2df_box2df.html">~(box2df,box2df)</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if a 2D float precision bounding box (BOX2DF) contains another 2D float precision bounding box (BOX2DF).</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Geometry_Same.html">~=</a></span>
+			(A, B)
+		
+
+		  
+		Returns TRUE if A's bounding box is the same as B's.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/geometry_distance_knn.html">&lt;-&gt;</a></span>
+			 <sup>G</sup>
+
+		  
+		
+Returns the 2D distance between A and B.
+			<span class="func_args"><ol>
+<li>A, B</li>
+<li>A, B</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/geometry_distance_cpa.html">|=|</a></span>
+			(A, B)
+		
+
+		  
+		
+Returns the distance between A and B trajectories at their closest point of approach.
+			</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/geometry_distance_box.html">&lt;#&gt;</a></span>
+			(A, B)
+		
+
+		  
+		
+Returns the 2D distance between A and B bounding boxes.
+			</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/geometry_distance_centroid_nd.html">&lt;&lt;-&gt;&gt;</a></span>
+			(A, B)
+		
+
+		  
+		
+Returns the n-D distance between the A and B geometries or bounding boxes
+			</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Spatial Relationships</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_3DIntersects.html">ST_3DIntersects</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(geomA, geomB)
+		
+
+		  
+		Tests if two geometries spatially
+      intersect in 3D - only for points, linestrings, polygons, polyhedral surface (area)
+      </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Contains.html">ST_Contains</a></span>
+			 <sup>mm</sup>
+			(geomA, geomB)
+		
+
+		  
+		Tests if every point of B lies in A, and their interiors have a point in common</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ContainsProperly.html">ST_ContainsProperly</a></span>
+			(geomA, geomB)
+		
+
+		  
+		Tests if every point of B lies in the interior of A</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_CoveredBy.html">ST_CoveredBy</a></span>
+			 <sup>G</sup>
+
+		  
+		Tests if every point of A lies in B<span class="func_args"><ol>
+<li>geomA, geomB</li>
+<li>geogA, geogB</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Covers.html">ST_Covers</a></span>
+			 <sup>G</sup>
+
+		  
+		Tests if every point of B lies in A<span class="func_args"><ol>
+<li>geomA, geomB</li>
+<li>geogpolyA, geogpointB</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Crosses.html">ST_Crosses</a></span>
+			 <sup>mm</sup>
+			(g1, g2)
+		
+
+		  
+		Tests if two geometries have some, but not all, interior points in common</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Disjoint.html">ST_Disjoint</a></span>
+			 <sup>mm</sup>
+			(A, B)
+		
+
+		  
+		Tests if two geometries have no points in common </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Equals.html">ST_Equals</a></span>
+			 <sup>mm</sup>
+			(A, B)
+		
+
+		  
+		Tests if two geometries include the same set of points</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Intersects.html">ST_Intersects</a></span>
+			 <sup>mm</sup>
+			 <sup>G</sup>
+
+		  
+		Tests if two geometries intersect (they have at least one point in common)<span class="func_args"><ol>
+<li>geomA, geomB</li>
+<li>geogA, geogB</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_LineCrossingDirection.html">ST_LineCrossingDirection</a></span>
+			(linestringA, linestringB)
+		
+
+		  
+		Returns a number indicating the crossing behavior of two LineStrings</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_OrderingEquals.html">ST_OrderingEquals</a></span>
+			 <sup>mm</sup>
+			(A, B)
+		
+
+		  
+		Tests if two geometries represent the same geometry and have points in the same directional order</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Overlaps.html">ST_Overlaps</a></span>
+			 <sup>mm</sup>
+			(A, B)
+		
+
+		  
+		Tests if two geometries have the same dimension and intersect, but each has at least one point not in the other</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Relate.html">ST_Relate</a></span>
+			 <sup>mm</sup>
+
+		  
+		Tests if two geometries have a topological relationship
+            matching an Intersection Matrix pattern,
+            or computes their Intersection Matrix
+            <span class="func_args"><ol>
+<li>geomA, geomB, intersectionMatrixPattern</li>
+<li>geomA, geomB</li>
+<li>geomA, geomB, boundaryNodeRule</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_RelateMatch.html">ST_RelateMatch</a></span>
+			(intersectionMatrix, intersectionMatrixPattern)
+		
+
+		  
+		Tests if a DE-9IM Intersection Matrix matches an Intersection Matrix pattern
+        </td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Touches.html">ST_Touches</a></span>
+			 <sup>mm</sup>
+			(A, B)
+		
+
+		  
+		Tests if two geometries have at least one point in common,
+    but their interiors do not intersect</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Within.html">ST_Within</a></span>
+			 <sup>mm</sup>
+			(A, B)
+		
+
+		  
+		Tests if every point of A lies in B, and their interiors have a point in common</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_3DDWithin.html">ST_3DDWithin</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(g1, g2, distance_of_srid)
+		
+
+		  
+		Tests if two 3D geometries are within a given 3D distance</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_3DDFullyWithin.html">ST_3DDFullyWithin</a></span>
+			 <sup>3d</sup>
+			(g1, g2, distance)
+		
+
+		  
+		Tests if two 3D geometries are entirely within a given 3D distance</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_DFullyWithin.html">ST_DFullyWithin</a></span>
+			(g1, g2, distance)
+		
+
+		  
+		Tests if a geometry is entirely inside a distance of another</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_DWithin.html">ST_DWithin</a></span>
+			 <sup>G</sup>
+
+		  
+		Tests if two geometries are within a given distance<span class="func_args"><ol>
+<li>g1, g2, distance_of_srid</li>
+<li>gg1, gg2, distance_meters, use_spheroid = true</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_PointInsideCircle.html">ST_PointInsideCircle</a></span>
+			(a_point, center_x, center_y, radius)
+		
+
+		  
+		Tests if a point geometry is inside a circle defined by a center and radius</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Measurement Functions</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Area.html">ST_Area</a></span>
+			 <sup>mm</sup>
+			 <sup>G</sup>
+
+		  
+		Returns the area of a polygonal geometry.
+			<span class="func_args"><ol>
+<li>g1</li>
+<li>geog, use_spheroid = true</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Azimuth.html">ST_Azimuth</a></span>
+			 <sup>G</sup>
+
+		  
+		Returns the north-based azimuth of a line between two points.<span class="func_args"><ol>
+<li>origin, target</li>
+<li>origin, target</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Angle.html">ST_Angle</a></span>
+
+		  
+		Returns the angle between two vectors defined by 3 or 4 points, or 2 lines.<span class="func_args"><ol>
+<li>point1, point2, point3, point4</li>
+<li>line1, line2</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ClosestPoint.html">ST_ClosestPoint</a></span>
+			 <sup>G</sup>
+
+		  
+		Returns the 2D point on g1 that is closest to g2.  This is the first point of
+			the shortest line from one geometry to the other.<span class="func_args"><ol>
+<li>geom1, geom2</li>
+<li>geom1, geom2, use_spheroid = true</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_3DClosestPoint.html">ST_3DClosestPoint</a></span>
+			 <sup>3d</sup>
+			(g1, g2)
+		
+
+		  
+		Returns the 3D point on g1 that is closest to g2.  This is the first point of
+				the 3D shortest line.  </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Distance.html">ST_Distance</a></span>
+			 <sup>mm</sup>
+			 <sup>G</sup>
+
+		  
+		Returns the distance between two geometry or geography values.<span class="func_args"><ol>
+<li>g1, g2</li>
+<li>geog1, geog2, use_spheroid = true</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_3DDistance.html">ST_3DDistance</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(g1, g2)
+		
+
+		  
+		Returns the 3D cartesian minimum distance (based on spatial ref) between two geometries in
+		projected units. </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_DistanceSphere.html">ST_DistanceSphere</a></span>
+			(geomlonlatA, geomlonlatB, radius=6371008)
+		
+
+		  
+		Returns minimum distance in meters between two lon/lat
+				geometries using a spherical earth model.
+			</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Distance_Spheroid.html">ST_DistanceSpheroid</a></span>
+			(geomlonlatA, geomlonlatB, measurement_spheroid=WGS84)
+		
+
+		  
+		Returns the minimum distance between two lon/lat geometries
+		using a spheroidal earth model.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_FrechetDistance.html">ST_FrechetDistance</a></span>
+			(g1, g2, densifyFrac = -1)
+		
+
+		  
+		Returns the Fréchet distance between two geometries.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_HausdorffDistance.html">ST_HausdorffDistance</a></span>
+
+		  
+		Returns the Hausdorff distance between two geometries. <span class="func_args"><ol>
+<li>g1, g2</li>
+<li>g1, g2, densifyFrac</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Length.html">ST_Length</a></span>
+			 <sup>mm</sup>
+			 <sup>G</sup>
+
+		  
+		Returns the 2D length of a linear geometry.<span class="func_args"><ol>
+<li>a_2dlinestring</li>
+<li>geog, use_spheroid = true</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Length2D.html">ST_Length2D</a></span>
+			(a_2dlinestring)
+		
+
+		  
+		Returns the 2D length of a linear geometry. Alias for ST_Length</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_3DLength.html">ST_3DLength</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(a_3dlinestring)
+		
+
+		  
+		Returns the 3D length of a linear geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Length_Spheroid.html">ST_LengthSpheroid</a></span>
+			 <sup>3d</sup>
+			(a_geometry, a_spheroid)
+		
+
+		  
+		Returns the 2D or 3D length/perimeter of a lon/lat geometry on a spheroid.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_LongestLine.html">ST_LongestLine</a></span>
+			(g1, g2)
+		
+
+		  
+		Returns the 2D longest line between two geometries.
+		</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_3DLongestLine.html">ST_3DLongestLine</a></span>
+			 <sup>3d</sup>
+			(g1, g2)
+		
+
+		  
+		Returns the 3D longest line between two geometries</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MaxDistance.html">ST_MaxDistance</a></span>
+			(g1, g2)
+		
+
+		  
+		Returns the 2D largest distance between two geometries in
+		projected units.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_3DMaxDistance.html">ST_3DMaxDistance</a></span>
+			 <sup>3d</sup>
+			(g1, g2)
+		
+
+		  
+		Returns the 3D cartesian maximum distance (based on spatial ref) between two geometries in
+		projected units.  </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MinimumClearance.html">ST_MinimumClearance</a></span>
+			(g)
+		
+
+		  
+		Returns the minimum clearance of a geometry, a measure of a geometry's robustness.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MinimumClearanceLine.html">ST_MinimumClearanceLine</a></span>
+			(g)
+		
+
+		  
+		Returns the two-point LineString spanning a geometry's minimum clearance.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Perimeter.html">ST_Perimeter</a></span>
+			 <sup>mm</sup>
+			 <sup>G</sup>
+
+		  
+		Returns the length of the boundary of a polygonal geometry or geography.<span class="func_args"><ol>
+<li>g1</li>
+<li>geog, use_spheroid = true</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Perimeter2D.html">ST_Perimeter2D</a></span>
+			(geomA)
+		
+
+		  
+		Returns the 2D perimeter of a polygonal geometry.
+		Alias for ST_Perimeter.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_3DPerimeter.html">ST_3DPerimeter</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(geomA)
+		
+
+		  
+		Returns the 3D perimeter of a polygonal geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ShortestLine.html">ST_ShortestLine</a></span>
+			 <sup>G</sup>
+
+		  
+		Returns the 2D shortest line between two geometries<span class="func_args"><ol>
+<li>geom1, geom2</li>
+<li>geom1, geom2, use_spheroid = true</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_3DShortestLine.html">ST_3DShortestLine</a></span>
+			 <sup>3d</sup>
+			(g1, g2)
+		
+
+		  
+		Returns the 3D shortest line between two geometries</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Overlay Functions</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ClipByBox2D.html">ST_ClipByBox2D</a></span>
+			(geom, box)
+		
+
+		  
+		Computes the portion of a geometry falling within a rectangle.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Difference.html">ST_Difference</a></span>
+			 <sup>mm</sup>
+			 <sup>g3.9</sup>
+			 <sup>3d</sup>
+			(geomA, geomB, gridSize = -1)
+		
+
+		  
+		Computes a geometry representing the part of geometry A
+            that does not intersect geometry B.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Intersection.html">ST_Intersection</a></span>
+			 <sup>mm</sup>
+			 <sup>G</sup>
+			 <sup>g3.9</sup>
+			 <sup>3d</sup>
+
+		  
+		
+Computes a geometry representing the shared portion of geometries A and B.
+            <span class="func_args"><ol>
+<li>geomA, geomB, gridSize = -1</li>
+<li>geogA, geogB</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MemUnion.html">ST_MemUnion</a></span>
+			 <sup>3d</sup>
+			(geomfield)
+		
+
+		  
+		Aggregate function which unions geometries in a memory-efficent but slower way</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Node.html">ST_Node</a></span>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		
+Nodes a collection of lines.
+        </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Split.html">ST_Split</a></span>
+			(input, blade)
+		
+
+		  
+		Returns a collection of geometries created by splitting a geometry by another geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Subdivide.html">ST_Subdivide</a></span>
+			 <sup>g3.9</sup>
+			(geom, max_vertices=256, gridSize = -1)
+		
+
+		  
+		Computes a rectilinear subdivision of a geometry.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_SymDifference.html">ST_SymDifference</a></span>
+			 <sup>mm</sup>
+			 <sup>g3.9</sup>
+			 <sup>3d</sup>
+			(geomA, geomB, gridSize = -1)
+		
+
+		  
+		Computes a geometry representing the portions of geometries A and B
+            that do not intersect.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_UnaryUnion.html">ST_UnaryUnion</a></span>
+			 <sup>g3.9</sup>
+			 <sup>3d</sup>
+			(geom, gridSize = -1)
+		
+
+		  
+		Computes the union of the components of a single geometry.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Union.html">ST_Union</a></span>
+			 <sup>mm</sup>
+			 <sup>g3.9</sup>
+			 <sup>3d</sup>
+
+		  
+		Computes a geometry representing the point-set union of
+        the input geometries.<span class="func_args"><ol>
+<li>g1, g2</li>
+<li>g1, g2, gridSize</li>
+<li>g1_array</li>
+<li>g1field<sup> agg</sup>
+</li>
+<li>g1field, gridSize<sup> agg</sup>
+</li>
+</ol></span>
+</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Geometry Processing</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Buffer.html">ST_Buffer</a></span>
+			 <sup>mm</sup>
+			 <sup>G</sup>
+
+		  
+		
+Computes a geometry covering all points within a given distance from a geometry.
+            <span class="func_args"><ol>
+<li>g1, radius_of_buffer, buffer_style_parameters = ''</li>
+<li>g1, radius_of_buffer, num_seg_quarter_circle</li>
+<li>g1, radius_of_buffer, buffer_style_parameters</li>
+<li>g1, radius_of_buffer, num_seg_quarter_circle</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_BuildArea.html">ST_BuildArea</a></span>
+			(geom)
+		
+
+		  
+		Creates a polygonal geometry formed by the linework of a geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Centroid.html">ST_Centroid</a></span>
+			 <sup>mm</sup>
+			 <sup>G</sup>
+
+		  
+		Returns the geometric center of a geometry.<span class="func_args"><ol>
+<li>g1</li>
+<li>g1, use_spheroid = true</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ChaikinSmoothing.html">ST_ChaikinSmoothing</a></span>
+			 <sup>3d</sup>
+			(geom, nIterations = 1, preserveEndPoints = false)
+		
+
+		  
+		Returns a smoothed version of a geometry, using the Chaikin algorithm</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ConcaveHull.html">ST_ConcaveHull</a></span>
+			(param_geom, param_pctconvex, param_allow_holes = false)
+		
+
+		  
+		Computes a possibly concave geometry that contains all input geometry vertices</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ConvexHull.html">ST_ConvexHull</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(geomA)
+		
+
+		  
+		Computes the convex hull of a geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_DelaunayTriangles.html">ST_DelaunayTriangles</a></span>
+			 <sup>3d</sup>
+			(g1, tolerance = 0.0, flags = 0)
+		
+
+		  
+		
+Returns the Delaunay triangulation of the vertices of a geometry.
+            </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_FilterByM.html">ST_FilterByM</a></span>
+			(geom, min, max = null, returnM = false)
+		
+
+		  
+		Removes vertices based on their M value</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeneratePoints.html">ST_GeneratePoints</a></span>
+			(g, npoints, seed = 0)
+		
+
+		  
+		Generates a multipoint of random points contained in a Polygon or MultiPolygon.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GeometricMedian.html">
+              ST_GeometricMedian
+          </a></span>
+			 <sup>3d</sup>
+			(geom, tolerance = NULL, max_iter = 10000, fail_if_not_converged = false)
+		
+
+		  
+		
+            Returns the geometric median of a MultiPoint.
+        </td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_LineMerge.html">ST_LineMerge</a></span>
+			 <sup>g3.11</sup>
+
+		  
+		Return the lines formed by sewing together
+			a MultiLineString.<span class="func_args"><ol>
+<li>amultilinestring</li>
+<li>amultilinestring, directed</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MaximumInscribedCircle.html">ST_MaximumInscribedCircle</a></span>
+			 <sup>g3.9</sup>
+			(geom)
+		
+
+		  
+		Computes the largest circle contained within a geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_LargestEmptyCircle.html">ST_LargestEmptyCircle</a></span>
+			 <sup>g3.9</sup>
+			(geom, tolerance=0.0, boundary=POINT EMPTY)
+		
+
+		  
+		Computes the largest circle not overlapping a geometry.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MinimumBoundingCircle.html">ST_MinimumBoundingCircle</a></span>
+			(geomA, num_segs_per_qt_circ=48)
+		
+
+		  
+		Returns the smallest circle polygon that contains a geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MinimumBoundingRadius.html">ST_MinimumBoundingRadius</a></span>
+			(geom)
+		
+
+		  
+		Returns the center point and radius of the smallest circle that contains a geometry.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_OrientedEnvelope.html">ST_OrientedEnvelope</a></span>
+			(geom)
+		
+
+		  
+		Returns a minimum-area rectangle containing a geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_OffsetCurve.html">ST_OffsetCurve</a></span>
+			(line, signed_distance, style_parameters='')
+		
+
+		  
+		
+Returns an offset line at a given distance and side from an input line.
+        </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_PointOnSurface.html">ST_PointOnSurface</a></span>
+			 <sup>mm</sup>
+			 <sup>3d</sup>
+			(g1)
+		
+
+		  
+		Computes a point guaranteed to lie in a polygon, or on a geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Polygonize.html">ST_Polygonize</a></span>
+
+		  
+		Computes a collection of polygons formed from the linework of a set of geometries.
+            <span class="func_args"><ol>
+<li>geomfield<sup> agg</sup>
+</li>
+<li>geom_array</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ReducePrecision.html">ST_ReducePrecision</a></span>
+			 <sup>g3.9</sup>
+			(g, gridsize)
+		
+
+		  
+		Returns a valid geometry with points rounded to a grid tolerance.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_SharedPaths.html">ST_SharedPaths</a></span>
+			(lineal1, lineal2)
+		
+
+		  
+		Returns a collection containing paths shared by the two input linestrings/multilinestrings.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Simplify.html">ST_Simplify</a></span>
+
+		  
+		Returns a simplified representation of a geometry, using the Douglas-Peucker algorithm.<span class="func_args"><ol>
+<li>geom, tolerance</li>
+<li>geom, tolerance, preserveCollapsed</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_SimplifyPreserveTopology.html">ST_SimplifyPreserveTopology</a></span>
+			(geom, tolerance)
+		
+
+		  
+		Returns a simplified and valid representation of a geometry, using
+            the Douglas-Peucker algorithm.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_SimplifyPolygonHull.html">ST_SimplifyPolygonHull</a></span>
+			 <sup>g3.11</sup>
+			(param_geom, vertex_fraction, is_outer = true)
+		
+
+		  
+		Computes a simplifed topology-preserving outer or inner hull of a polygonal geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_SimplifyVW.html">ST_SimplifyVW</a></span>
+			(geom, tolerance)
+		
+
+		  
+		Returns a simplified representation of a geometry, using the Visvalingam-Whyatt algorithm</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_SetEffectiveArea.html">ST_SetEffectiveArea</a></span>
+			(geom, threshold = 0, set_area = 1)
+		
+
+		  
+		
+            Sets the effective area for each vertex, using the Visvalingam-Whyatt algorithm.
+        </td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_TriangulatePolygon.html">ST_TriangulatePolygon</a></span>
+			 <sup>g3.11</sup>
+			(geom)
+		
+
+		  
+		Computes the constrained Delaunay triangulation of polygons</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_VoronoiLines.html">ST_VoronoiLines</a></span>
+			(geom, tolerance = 0.0, extend_to = NULL)
+		
+
+		  
+		Returns the boundaries of the Voronoi diagram of the vertices of a geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_VoronoiPolygons.html">ST_VoronoiPolygons</a></span>
+			(geom, tolerance = 0.0, extend_to = NULL)
+		
+
+		  
+		Returns the cells of the Voronoi diagram of the vertices of a geometry.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Coverages</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_CoverageInvalidEdges.html">ST_CoverageInvalidEdges</a></span>
+			 <sup>g3.12</sup>
+			(geom, tolerance = 0)
+		
+
+		  
+		Window function that finds locations where polygons fail to form a valid coverage.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_CoverageSimplify.html">ST_CoverageSimplify</a></span>
+			 <sup>g3.12</sup>
+			(geom, tolerance, simplifyBoundary = true)
+		
+
+		  
+		Window function that simplifies the edges of a polygonal coverage.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_CoverageUnion.html">ST_CoverageUnion</a></span>
+			(geom)
+		
+
+		  
+		Computes the union of a set of polygons forming a coverage by removing shared edges.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Affine Transformations</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Affine.html">ST_Affine</a></span>
+			 <sup>3d</sup>
+
+		  
+		Apply a 3D affine transformation to a geometry.<span class="func_args"><ol>
+<li>geomA, a, b, c, d, e, f, g, h, i, xoff, yoff, zoff</li>
+<li>geomA, a, b, d, e, xoff, yoff</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Rotate.html">ST_Rotate</a></span>
+			 <sup>3d</sup>
+
+		  
+		Rotates a geometry about an origin point.<span class="func_args"><ol>
+<li>geomA, rotRadians</li>
+<li>geomA, rotRadians, x0, y0</li>
+<li>geomA, rotRadians, pointOrigin</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_RotateX.html">ST_RotateX</a></span>
+			 <sup>3d</sup>
+			(geomA, rotRadians)
+		
+
+		  
+		Rotates a geometry about the X axis.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_RotateY.html">ST_RotateY</a></span>
+			 <sup>3d</sup>
+			(geomA, rotRadians)
+		
+
+		  
+		Rotates a geometry about the Y axis.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_RotateZ.html">ST_RotateZ</a></span>
+			 <sup>3d</sup>
+			(geomA, rotRadians)
+		
+
+		  
+		Rotates a geometry about the Z axis.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Scale.html">ST_Scale</a></span>
+			 <sup>3d</sup>
+
+		  
+		Scales a geometry by given factors.<span class="func_args"><ol>
+<li>geomA, XFactor, YFactor, ZFactor</li>
+<li>geomA, XFactor, YFactor</li>
+<li>geom, factor</li>
+<li>geom, factor, origin</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Translate.html">ST_Translate</a></span>
+			 <sup>3d</sup>
+
+		  
+		Translates a geometry by given offsets.<span class="func_args"><ol>
+<li>g1, deltax, deltay</li>
+<li>g1, deltax, deltay, deltaz</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_TransScale.html">ST_TransScale</a></span>
+			 <sup>3d</sup>
+			(geomA, deltaX, deltaY, XFactor, YFactor)
+		
+
+		  
+		Translates and scales a geometry by given offsets and factors.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Clustering Functions</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ClusterDBSCAN.html">ST_ClusterDBSCAN</a></span>
+			(geom, eps, minpoints)
+		
+
+		  
+		Window function that returns a cluster id for each input geometry using the DBSCAN algorithm.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ClusterIntersecting.html">ST_ClusterIntersecting</a></span>
+			(g)
+		
+
+		  
+		Aggregate function that clusters input geometries into connected sets.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ClusterIntersectingWin.html">ST_ClusterIntersectingWin</a></span>
+			(geom)
+		
+
+		  
+		Window function that returns a cluster id for each input geometry, clustering input geometries into connected sets.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ClusterKMeans.html">ST_ClusterKMeans</a></span>
+			(geom, number_of_clusters, max_radius)
+		
+
+		  
+		Window function that returns a cluster id for each input geometry using the K-means algorithm.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ClusterWithin.html">ST_ClusterWithin</a></span>
+			(g, distance)
+		
+
+		  
+		Aggregate function that clusters geometries by separation distance.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ClusterWithinWin.html">ST_ClusterWithinWin</a></span>
+			(geom, distance)
+		
+
+		  
+		Window function that returns a cluster id for each input geometry, clustering using separation distance.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Bounding Box Functions</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/Box2D.html">Box2D</a></span>
+			(geom)
+		
+
+		  
+		Returns a BOX2D representing the 2D extent of a geometry.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/Box3D.html">Box3D</a></span>
+			 <sup>3d</sup>
+			(geom)
+		
+
+		  
+		Returns a BOX3D representing the 3D extent of a geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_EstimatedExtent.html">ST_EstimatedExtent</a></span>
+
+		  
+		Returns the estimated extent of a spatial table.<span class="func_args"><ol>
+<li>schema_name, table_name, geocolumn_name, parent_only</li>
+<li>schema_name, table_name, geocolumn_name</li>
+<li>table_name, geocolumn_name</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Expand.html">ST_Expand</a></span>
+
+		  
+		Returns a bounding box expanded from another bounding box or a geometry.<span class="func_args"><ol>
+<li>geom, units_to_expand</li>
+<li>geom, dx, dy, dz=0, dm=0</li>
+<li>box, units_to_expand</li>
+<li>box, dx, dy</li>
+<li>box, units_to_expand</li>
+<li>box, dx, dy, dz=0</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_Extent.html">ST_Extent</a></span>
+			(geomfield)
+		
+
+		  
+		Aggregate function that returns the bounding box of geometries.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_3DExtent.html">ST_3DExtent</a></span>
+			 <sup>3d</sup>
+			(geomfield)
+		
+
+		  
+		Aggregate function that returns the 3D bounding box of geometries.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MakeBox2D.html">ST_MakeBox2D</a></span>
+			(pointLowLeft, pointUpRight)
+		
+
+		  
+		Creates a BOX2D defined by two 2D point geometries.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_3DMakeBox.html">ST_3DMakeBox</a></span>
+			(point3DLowLeftBottom, point3DUpRightTop)
+		
+
+		  
+		Creates a BOX3D defined by two 3D point	geometries.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_XMax.html">ST_XMax</a></span>
+			 <sup>3d</sup>
+			(aGeomorBox2DorBox3D)
+		
+
+		  
+		Returns the X maxima of a 2D or 3D bounding box or a geometry.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_XMin.html">ST_XMin</a></span>
+			 <sup>3d</sup>
+			(aGeomorBox2DorBox3D)
+		
+
+		  
+		Returns the X minima of a 2D or 3D bounding box or a geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_YMax.html">ST_YMax</a></span>
+			 <sup>3d</sup>
+			(aGeomorBox2DorBox3D)
+		
+
+		  
+		Returns the Y maxima of a 2D or 3D bounding box or a geometry.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_YMin.html">ST_YMin</a></span>
+			 <sup>3d</sup>
+			(aGeomorBox2DorBox3D)
+		
+
+		  
+		Returns the Y minima of a 2D or 3D bounding box or a geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ZMax.html">ST_ZMax</a></span>
+			 <sup>3d</sup>
+			(aGeomorBox2DorBox3D)
+		
+
+		  
+		Returns the Z maxima of a 2D or 3D bounding box or a geometry.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ZMin.html">ST_ZMin</a></span>
+			 <sup>3d</sup>
+			(aGeomorBox2DorBox3D)
+		
+
+		  
+		Returns the Z minima of a 2D or 3D bounding box or a geometry.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Linear Referencing</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_LineInterpolatePoint.html">ST_LineInterpolatePoint</a></span>
+			 <sup>G</sup>
+			 <sup>3d</sup>
+
+		  
+		Returns a point interpolated along a line at a fractional location.<span class="func_args"><ol>
+<li>a_linestring, a_fraction</li>
+<li>a_linestring, a_fraction, use_spheroid = true</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_3DLineInterpolatePoint.html">ST_3DLineInterpolatePoint</a></span>
+			 <sup>3d</sup>
+			(a_linestring, a_fraction)
+		
+
+		  
+		Returns a point interpolated along a 3D line at a fractional location.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_LineInterpolatePoints.html">ST_LineInterpolatePoints</a></span>
+			 <sup>G</sup>
+			 <sup>3d</sup>
+
+		  
+		
+				Returns points interpolated along a line at a fractional interval.
+			<span class="func_args"><ol>
+<li>a_linestring, a_fraction, repeat</li>
+<li>a_linestring, a_fraction, use_spheroid = true, repeat = true</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_LineLocatePoint.html">ST_LineLocatePoint</a></span>
+			 <sup>G</sup>
+
+		  
+		Returns the fractional location of
+			the closest point on a line to a point.<span class="func_args"><ol>
+<li>a_linestring, a_point</li>
+<li>a_linestring, a_point, use_spheroid = true</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_LineSubstring.html">ST_LineSubstring</a></span>
+			 <sup>G</sup>
+			 <sup>3d</sup>
+
+		  
+		Returns the part of a line between two fractional locations.<span class="func_args"><ol>
+<li>a_linestring, startfraction, endfraction</li>
+<li>a_linestring, startfraction, endfraction</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_LocateAlong.html">ST_LocateAlong</a></span>
+			 <sup>mm</sup>
+			(geom_with_measure, measure, offset = 0)
+		
+
+		  
+		Returns the point(s) on a geometry that match a measure value.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_LocateBetween.html">ST_LocateBetween</a></span>
+			 <sup>mm</sup>
+			(geom, measure_start, measure_end, offset = 0)
+		
+
+		  
+		Returns the portions of a geometry that match a measure range.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_LocateBetweenElevations.html">ST_LocateBetweenElevations</a></span>
+			 <sup>3d</sup>
+			(geom, elevation_start, elevation_end)
+		
+
+		  
+		Returns the portions of a geometry
+			that lie in an elevation (Z) range.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_InterpolatePoint.html">ST_InterpolatePoint</a></span>
+			 <sup>3d</sup>
+			(linear_geom_with_measure, point)
+		
+
+		  
+		Returns the interpolated measure of a geometry closest to a point.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AddMeasure.html">ST_AddMeasure</a></span>
+			 <sup>3d</sup>
+			(geom_mline, measure_start, measure_end)
+		
+
+		  
+		Interpolates measures along a linear geometry.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Trajectory Functions</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_IsValidTrajectory.html">ST_IsValidTrajectory</a></span>
+			 <sup>3d</sup>
+			(line)
+		
+
+		  
+		Tests if the geometry is a valid trajectory.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ClosestPointOfApproach.html">ST_ClosestPointOfApproach</a></span>
+			 <sup>3d</sup>
+			(track1, track2)
+		
+
+		  
+		
+Returns a measure at the closest point of approach of two trajectories.
+      </td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_DistanceCPA.html">ST_DistanceCPA</a></span>
+			 <sup>3d</sup>
+			(track1, track2)
+		
+
+		  
+		
+Returns the distance between the closest point of approach of two trajectories.
+      </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_CPAWithin.html">ST_CPAWithin</a></span>
+			 <sup>3d</sup>
+			(track1, track2, dist)
+		
+
+		  
+		
+Tests if the closest point of approach of two trajectories
+is within the specified distance.
+      </td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Version Functions</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/PostGIS_Extensions_Upgrade.html">PostGIS_Extensions_Upgrade</a></span>
+			(target_version=null)
+		
+
+		  
+		
+Packages and upgrades PostGIS extensions (e.g. postgis_raster,
+postgis_topology, postgis_sfcgal) to given or latest version.
+    </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/PostGIS_Full_Version.html">PostGIS_Full_Version</a></span>
+			()
+		
+
+		  
+		Reports full PostGIS version and build configuration
+		infos.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/PostGIS_GEOS_Version.html">PostGIS_GEOS_Version</a></span>
+			()
+		
+
+		  
+		Returns the version number of the GEOS
+		library.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/PostGIS_GEOS_Compiled_Version.html">PostGIS_GEOS_Compiled_Version</a></span>
+			()
+		
+
+		  
+		Returns the version number of the GEOS
+		library against which PostGIS was built.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/PostGIS_Liblwgeom_Version.html">PostGIS_Liblwgeom_Version</a></span>
+			()
+		
+
+		  
+		Returns the version number of the liblwgeom
+		library.  This should match the version of PostGIS.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/PostGIS_LibXML_Version.html">PostGIS_LibXML_Version</a></span>
+			()
+		
+
+		  
+		Returns the version number of the libxml2
+		library.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/PostGIS_LibJSON_Version.html">PostGIS_LibJSON_Version</a></span>
+			()
+		
+
+		  
+		Returns the version number of the libjson-c library.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/PostGIS_Lib_Build_Date.html">PostGIS_Lib_Build_Date</a></span>
+			()
+		
+
+		  
+		Returns build date of the PostGIS library.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/PostGIS_Lib_Version.html">PostGIS_Lib_Version</a></span>
+			()
+		
+
+		  
+		Returns the version number of the PostGIS
+		library.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/PostGIS_PROJ_Version.html">PostGIS_PROJ_Version</a></span>
+			()
+		
+
+		  
+		Returns the version number of the PROJ4
+		library.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/PostGIS_PROJ_Compiled_Version.html">PostGIS_PROJ_Compiled_Version</a></span>
+			()
+		
+
+		  
+		Returns the version number of the PROJ
+		library against which PostGIS was built.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/PostGIS_Wagyu_Version.html">PostGIS_Wagyu_Version</a></span>
+			()
+		
+
+		  
+		Returns the version number of the internal Wagyu library.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/PostGIS_Scripts_Build_Date.html">PostGIS_Scripts_Build_Date</a></span>
+			()
+		
+
+		  
+		Returns build date of the PostGIS scripts.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/PostGIS_Scripts_Installed.html">PostGIS_Scripts_Installed</a></span>
+			()
+		
+
+		  
+		Returns version of the PostGIS scripts installed in this
+			database.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/PostGIS_Scripts_Released.html">PostGIS_Scripts_Released</a></span>
+			()
+		
+
+		  
+		Returns the version number of the postgis.sql script
+		released with the installed PostGIS lib.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/PostGIS_Version.html">PostGIS_Version</a></span>
+			()
+		
+
+		  
+		Returns PostGIS version number and compile-time
+		options.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Grand Unified Custom Variables (GUCs)</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/postgis_backend.html">postgis.backend</a></span>
+
+		  
+		The backend to service a function where GEOS and SFCGAL overlap. Options: geos or sfcgal. Defaults to geos.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/postgis_gdal_datapath.html">postgis.gdal_datapath</a></span>
+
+		  
+		
+                    A configuration option to assign the value of GDAL's GDAL_DATA option. If not set, the environmentally set GDAL_DATA variable is used.
+                </td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/postgis_gdal_enabled_drivers.html">postgis.gdal_enabled_drivers</a></span>
+
+		  
+		
+                    A configuration option to set the enabled GDAL drivers in the PostGIS environment. Affects the GDAL configuration variable GDAL_SKIP.
+                </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/postgis_enable_outdb_rasters.html">postgis.enable_outdb_rasters</a></span>
+
+		  
+		
+                    A boolean configuration option to enable access to out-db raster bands.
+                </td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/postgis_gdal_vsi_options.html">postgis.gdal_vsi_options</a></span>
+
+		  
+		
+                    A string configuration to set options used when working with an out-db raster.
+                </td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Troubleshooting Functions</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/PostGIS_AddBBox.html">PostGIS_AddBBox</a></span>
+			(geomA)
+		
+
+		  
+		Add bounding box to the geometry.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/PostGIS_DropBBox.html">PostGIS_DropBBox</a></span>
+			(geomA)
+		
+
+		  
+		Drop the bounding box cache from the geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/PostGIS_HasBBox.html">PostGIS_HasBBox</a></span>
+			(geomA)
+		
+
+		  
+		Returns TRUE if the bbox of this geometry is cached, FALSE otherwise.</td></tr>
+</table>
+<br>
+</div></div>
+</body>
+</html>

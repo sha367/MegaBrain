@@ -1,0 +1,2952 @@
+'\" t
+.\"     Title: pgbench
+.\"    Author: The PostgreSQL Global Development Group
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 17.1 Documentation
+.\"    Source: PostgreSQL 17.1
+.\"  Language: English
+.\"
+.TH "PGBENCH" "1" "2024" "PostgreSQL 17.1" "PostgreSQL 17.1 Documentation"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+pgbench \- run a benchmark test on PostgreSQL
+.SH "SYNOPSIS"
+.HP \w'\fBpgbench\fR\ 'u
+\fBpgbench\fR \fB\-i\fR [\fIoption\fR...] [\fIdbname\fR]
+.HP \w'\fBpgbench\fR\ 'u
+\fBpgbench\fR [\fIoption\fR...] [\fIdbname\fR]
+.SH "DESCRIPTION"
+.PP
+pgbench
+is a simple program for running benchmark tests on
+PostgreSQL\&. It runs the same sequence of SQL commands over and over, possibly in multiple concurrent database sessions, and then calculates the average transaction rate (transactions per second)\&. By default,
+pgbench
+tests a scenario that is loosely based on TPC\-B, involving five
+\fBSELECT\fR,
+\fBUPDATE\fR, and
+\fBINSERT\fR
+commands per transaction\&. However, it is easy to test other cases by writing your own transaction script files\&.
+.PP
+Typical output from
+pgbench
+looks like:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+transaction type: <builtin: TPC\-B (sort of)>
+scaling factor: 10
+query mode: simple
+number of clients: 10
+number of threads: 1
+maximum number of tries: 1
+number of transactions per client: 1000
+number of transactions actually processed: 10000/10000
+number of failed transactions: 0 (0\&.000%)
+latency average = 11\&.013 ms
+latency stddev = 7\&.351 ms
+initial connection time = 45\&.758 ms
+tps = 896\&.967014 (without initial connection time)
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+The first seven lines report some of the most important parameter settings\&. The sixth line reports the maximum number of tries for transactions with serialization or deadlock errors (see
+Failures and Serialization/Deadlock Retries
+for more information)\&. The eighth line reports the number of transactions completed and intended (the latter being just the product of number of clients and number of transactions per client); these will be equal unless the run failed before completion or some SQL command(s) failed\&. (In
+\fB\-T\fR
+mode, only the actual number of transactions is printed\&.) The next line reports the number of failed transactions due to serialization or deadlock errors (see
+Failures and Serialization/Deadlock Retries
+for more information)\&. The last line reports the number of transactions per second\&.
+.PP
+The default TPC\-B\-like transaction test requires specific tables to be set up beforehand\&.
+pgbench
+should be invoked with the
+\fB\-i\fR
+(initialize) option to create and populate these tables\&. (When you are testing a custom script, you don\*(Aqt need this step, but will instead need to do whatever setup your test needs\&.) Initialization looks like:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+pgbench \-i [ \fIother\-options\fR ] \fIdbname\fR
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+where
+\fIdbname\fR
+is the name of the already\-created database to test in\&. (You may also need
+\fB\-h\fR,
+\fB\-p\fR, and/or
+\fB\-U\fR
+options to specify how to connect to the database server\&.)
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBCaution\fR
+.ps -1
+.br
+.PP
+pgbench \-i
+creates four tables
+pgbench_accounts,
+pgbench_branches,
+pgbench_history, and
+pgbench_tellers, destroying any existing tables of these names\&. Be very careful to use another database if you have tables having these names!
+.sp .5v
+.RE
+.PP
+At the default
+\(lqscale factor\(rq
+of 1, the tables initially contain this many rows:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+table                   # of rows
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+pgbench_branches        1
+pgbench_tellers         10
+pgbench_accounts        100000
+pgbench_history         0
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+You can (and, for most purposes, probably should) increase the number of rows by using the
+\fB\-s\fR
+(scale factor) option\&. The
+\fB\-F\fR
+(fillfactor) option might also be used at this point\&.
+.PP
+Once you have done the necessary setup, you can run your benchmark with a command that doesn\*(Aqt include
+\fB\-i\fR, that is
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+pgbench [ \fIoptions\fR ] \fIdbname\fR
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+In nearly all cases, you\*(Aqll need some options to make a useful test\&. The most important options are
+\fB\-c\fR
+(number of clients),
+\fB\-t\fR
+(number of transactions),
+\fB\-T\fR
+(time limit), and
+\fB\-f\fR
+(specify a custom script file)\&. See below for a full list\&.
+.SH "OPTIONS"
+.PP
+The following is divided into three subsections\&. Different options are used during database initialization and while running benchmarks, but some options are useful in both cases\&.
+.SS "Initialization Options"
+.PP
+pgbench
+accepts the following command\-line initialization arguments:
+.PP
+\fB[\-d]\fR\fB \fR\fB\fIdbname\fR\fR
+.br
+\fB[\-\-dbname=]\fR\fB\fIdbname\fR\fR
+.RS 4
+Specifies the name of the database to test in\&. If this is not specified, the environment variable
+\fBPGDATABASE\fR
+is used\&. If that is not set, the user name specified for the connection is used\&.
+.RE
+.PP
+\fB\-i\fR
+.br
+\fB\-\-initialize\fR
+.RS 4
+Required to invoke initialization mode\&.
+.RE
+.PP
+\fB\-I \fR\fB\fIinit_steps\fR\fR
+.br
+\fB\-\-init\-steps=\fR\fB\fIinit_steps\fR\fR
+.RS 4
+Perform just a selected set of the normal initialization steps\&.
+\fIinit_steps\fR
+specifies the initialization steps to be performed, using one character per step\&. Each step is invoked in the specified order\&. The default is
+dtgvp\&. The available steps are:
+.PP
+d (Drop)
+.RS 4
+Drop any existing
+pgbench
+tables\&.
+.RE
+.PP
+t (create Tables)
+.RS 4
+Create the tables used by the standard
+pgbench
+scenario, namely
+pgbench_accounts,
+pgbench_branches,
+pgbench_history, and
+pgbench_tellers\&.
+.RE
+.PP
+g or G (Generate data, client\-side or server\-side)
+.RS 4
+Generate data and load it into the standard tables, replacing any data already present\&.
+.sp
+With
+g
+(client\-side data generation), data is generated in
+\fBpgbench\fR
+client and then sent to the server\&. This uses the client/server bandwidth extensively through a
+\fBCOPY\fR\&.
+\fBpgbench\fR
+uses the
+\fBFREEZE\fR
+option with version 14 or later of
+PostgreSQL
+to speed up subsequent
+\fBVACUUM\fR, except on the
+pgbench_accounts
+table if partitions are enabled\&. Using
+g
+causes logging to print one message every 100,000 rows while generating data for all tables\&.
+.sp
+With
+G
+(server\-side data generation), only small queries are sent from the
+\fBpgbench\fR
+client and then data is actually generated in the server\&. No significant bandwidth is required for this variant, but the server will do more work\&. Using
+G
+causes logging not to print any progress message while generating data\&.
+.sp
+The default initialization behavior uses client\-side data generation (equivalent to
+g)\&.
+.RE
+.PP
+v (Vacuum)
+.RS 4
+Invoke
+\fBVACUUM\fR
+on the standard tables\&.
+.RE
+.PP
+p (create Primary keys)
+.RS 4
+Create primary key indexes on the standard tables\&.
+.RE
+.PP
+f (create Foreign keys)
+.RS 4
+Create foreign key constraints between the standard tables\&. (Note that this step is not performed by default\&.)
+.RE
+.RE
+.PP
+\fB\-F\fR \fIfillfactor\fR
+.br
+\fB\-\-fillfactor=\fR\fIfillfactor\fR
+.RS 4
+Create the
+pgbench_accounts,
+pgbench_tellers
+and
+pgbench_branches
+tables with the given fillfactor\&. Default is 100\&.
+.RE
+.PP
+\fB\-n\fR
+.br
+\fB\-\-no\-vacuum\fR
+.RS 4
+Perform no vacuuming during initialization\&. (This option suppresses the
+v
+initialization step, even if it was specified in
+\fB\-I\fR\&.)
+.RE
+.PP
+\fB\-q\fR
+.br
+\fB\-\-quiet\fR
+.RS 4
+Switch logging to quiet mode, producing only one progress message per 5 seconds\&. The default logging prints one message each 100,000 rows, which often outputs many lines per second (especially on good hardware)\&.
+.sp
+This setting has no effect if
+G
+is specified in
+\fB\-I\fR\&.
+.RE
+.PP
+\fB\-s\fR \fIscale_factor\fR
+.br
+\fB\-\-scale=\fR\fIscale_factor\fR
+.RS 4
+Multiply the number of rows generated by the scale factor\&. For example,
+\-s 100
+will create 10,000,000 rows in the
+pgbench_accounts
+table\&. Default is 1\&. When the scale is 20,000 or larger, the columns used to hold account identifiers (aid
+columns) will switch to using larger integers (bigint), in order to be big enough to hold the range of account identifiers\&.
+.RE
+.PP
+\fB\-\-foreign\-keys\fR
+.RS 4
+Create foreign key constraints between the standard tables\&. (This option adds the
+f
+step to the initialization step sequence, if it is not already present\&.)
+.RE
+.PP
+\fB\-\-index\-tablespace=\fR\fB\fIindex_tablespace\fR\fR
+.RS 4
+Create indexes in the specified tablespace, rather than the default tablespace\&.
+.RE
+.PP
+\fB\-\-partition\-method=\fR\fB\fINAME\fR\fR
+.RS 4
+Create a partitioned
+pgbench_accounts
+table with
+\fINAME\fR
+method\&. Expected values are
+range
+or
+hash\&. This option requires that
+\fB\-\-partitions\fR
+is set to non\-zero\&. If unspecified, default is
+range\&.
+.RE
+.PP
+\fB\-\-partitions=\fR\fB\fINUM\fR\fR
+.RS 4
+Create a partitioned
+pgbench_accounts
+table with
+\fINUM\fR
+partitions of nearly equal size for the scaled number of accounts\&. Default is
+0, meaning no partitioning\&.
+.RE
+.PP
+\fB\-\-tablespace=\fR\fB\fItablespace\fR\fR
+.RS 4
+Create tables in the specified tablespace, rather than the default tablespace\&.
+.RE
+.PP
+\fB\-\-unlogged\-tables\fR
+.RS 4
+Create all tables as unlogged tables, rather than permanent tables\&.
+.RE
+.SS "Benchmarking Options"
+.PP
+pgbench
+accepts the following command\-line benchmarking arguments:
+.PP
+\fB\-b\fR \fIscriptname[@weight]\fR
+.br
+\fB\-\-builtin\fR=\fIscriptname[@weight]\fR
+.RS 4
+Add the specified built\-in script to the list of scripts to be executed\&. Available built\-in scripts are:
+tpcb\-like,
+simple\-update
+and
+select\-only\&. Unambiguous prefixes of built\-in names are accepted\&. With the special name
+list, show the list of built\-in scripts and exit immediately\&.
+.sp
+Optionally, write an integer weight after
+@
+to adjust the probability of selecting this script versus other ones\&. The default weight is 1\&. See below for details\&.
+.RE
+.PP
+\fB\-c\fR \fIclients\fR
+.br
+\fB\-\-client=\fR\fIclients\fR
+.RS 4
+Number of clients simulated, that is, number of concurrent database sessions\&. Default is 1\&.
+.RE
+.PP
+\fB\-C\fR
+.br
+\fB\-\-connect\fR
+.RS 4
+Establish a new connection for each transaction, rather than doing it just once per client session\&. This is useful to measure the connection overhead\&.
+.RE
+.PP
+\fB\-D\fR \fIvarname\fR=\fIvalue\fR
+.br
+\fB\-\-define=\fR\fIvarname\fR=\fIvalue\fR
+.RS 4
+Define a variable for use by a custom script (see below)\&. Multiple
+\fB\-D\fR
+options are allowed\&.
+.RE
+.PP
+\fB\-f\fR \fIfilename[@weight]\fR
+.br
+\fB\-\-file=\fR\fIfilename[@weight]\fR
+.RS 4
+Add a transaction script read from
+\fIfilename\fR
+to the list of scripts to be executed\&.
+.sp
+Optionally, write an integer weight after
+@
+to adjust the probability of selecting this script versus other ones\&. The default weight is 1\&. (To use a script file name that includes an
+@
+character, append a weight so that there is no ambiguity, for example
+filen@me@1\&.) See below for details\&.
+.RE
+.PP
+\fB\-j\fR \fIthreads\fR
+.br
+\fB\-\-jobs=\fR\fIthreads\fR
+.RS 4
+Number of worker threads within
+pgbench\&. Using more than one thread can be helpful on multi\-CPU machines\&. Clients are distributed as evenly as possible among available threads\&. Default is 1\&.
+.RE
+.PP
+\fB\-l\fR
+.br
+\fB\-\-log\fR
+.RS 4
+Write information about each transaction to a log file\&. See below for details\&.
+.RE
+.PP
+\fB\-L\fR \fIlimit\fR
+.br
+\fB\-\-latency\-limit=\fR\fIlimit\fR
+.RS 4
+Transactions that last more than
+\fIlimit\fR
+milliseconds are counted and reported separately, as
+late\&.
+.sp
+When throttling is used (\fB\-\-rate=\&.\&.\&.\fR), transactions that lag behind schedule by more than
+\fIlimit\fR
+ms, and thus have no hope of meeting the latency limit, are not sent to the server at all\&. They are counted and reported separately as
+skipped\&.
+.sp
+When the
+\fB\-\-max\-tries\fR
+option is used, a transaction which fails due to a serialization anomaly or from a deadlock will not be retried if the total time of all its tries is greater than
+\fIlimit\fR
+ms\&. To limit only the time of tries and not their number, use
+\-\-max\-tries=0\&. By default, the option
+\fB\-\-max\-tries\fR
+is set to 1 and transactions with serialization/deadlock errors are not retried\&. See
+Failures and Serialization/Deadlock Retries
+for more information about retrying such transactions\&.
+.RE
+.PP
+\fB\-M\fR \fIquerymode\fR
+.br
+\fB\-\-protocol=\fR\fIquerymode\fR
+.RS 4
+Protocol to use for submitting queries to the server:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+simple: use simple query protocol\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+extended: use extended query protocol\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+prepared: use extended query protocol with prepared statements\&.
+.RE
+.sp
+In the
+prepared
+mode,
+pgbench
+reuses the parse analysis result starting from the second query iteration, so
+pgbench
+runs faster than in other modes\&.
+.sp
+The default is simple query protocol\&. (See
+Chapter\ \&53
+for more information\&.)
+.RE
+.PP
+\fB\-n\fR
+.br
+\fB\-\-no\-vacuum\fR
+.RS 4
+Perform no vacuuming before running the test\&. This option is
+\fInecessary\fR
+if you are running a custom test scenario that does not include the standard tables
+pgbench_accounts,
+pgbench_branches,
+pgbench_history, and
+pgbench_tellers\&.
+.RE
+.PP
+\fB\-N\fR
+.br
+\fB\-\-skip\-some\-updates\fR
+.RS 4
+Run built\-in simple\-update script\&. Shorthand for
+\fB\-b simple\-update\fR\&.
+.RE
+.PP
+\fB\-P\fR \fIsec\fR
+.br
+\fB\-\-progress=\fR\fIsec\fR
+.RS 4
+Show progress report every
+\fIsec\fR
+seconds\&. The report includes the time since the beginning of the run, the TPS since the last report, and the transaction latency average, standard deviation, and the number of failed transactions since the last report\&. Under throttling (\fB\-R\fR), the latency is computed with respect to the transaction scheduled start time, not the actual transaction beginning time, thus it also includes the average schedule lag time\&. When
+\fB\-\-max\-tries\fR
+is used to enable transaction retries after serialization/deadlock errors, the report includes the number of retried transactions and the sum of all retries\&.
+.RE
+.PP
+\fB\-r\fR
+.br
+\fB\-\-report\-per\-command\fR
+.RS 4
+Report the following statistics for each command after the benchmark finishes: the average per\-statement latency (execution time from the perspective of the client), the number of failures, and the number of retries after serialization or deadlock errors in this command\&. The report displays retry statistics only if the
+\fB\-\-max\-tries\fR
+option is not equal to 1\&.
+.RE
+.PP
+\fB\-R\fR \fIrate\fR
+.br
+\fB\-\-rate=\fR\fIrate\fR
+.RS 4
+Execute transactions targeting the specified rate instead of running as fast as possible (the default)\&. The rate is given in transactions per second\&. If the targeted rate is above the maximum possible rate, the rate limit won\*(Aqt impact the results\&.
+.sp
+The rate is targeted by starting transactions along a Poisson\-distributed schedule time line\&. The expected start time schedule moves forward based on when the client first started, not when the previous transaction ended\&. That approach means that when transactions go past their original scheduled end time, it is possible for later ones to catch up again\&.
+.sp
+When throttling is active, the transaction latency reported at the end of the run is calculated from the scheduled start times, so it includes the time each transaction had to wait for the previous transaction to finish\&. The wait time is called the schedule lag time, and its average and maximum are also reported separately\&. The transaction latency with respect to the actual transaction start time, i\&.e\&., the time spent executing the transaction in the database, can be computed by subtracting the schedule lag time from the reported latency\&.
+.sp
+If
+\fB\-\-latency\-limit\fR
+is used together with
+\fB\-\-rate\fR, a transaction can lag behind so much that it is already over the latency limit when the previous transaction ends, because the latency is calculated from the scheduled start time\&. Such transactions are not sent to the server, but are skipped altogether and counted separately\&.
+.sp
+A high schedule lag time is an indication that the system cannot process transactions at the specified rate, with the chosen number of clients and threads\&. When the average transaction execution time is longer than the scheduled interval between each transaction, each successive transaction will fall further behind, and the schedule lag time will keep increasing the longer the test run is\&. When that happens, you will have to reduce the specified transaction rate\&.
+.RE
+.PP
+\fB\-s\fR \fIscale_factor\fR
+.br
+\fB\-\-scale=\fR\fIscale_factor\fR
+.RS 4
+Report the specified scale factor in
+pgbench\*(Aqs output\&. With the built\-in tests, this is not necessary; the correct scale factor will be detected by counting the number of rows in the
+pgbench_branches
+table\&. However, when testing only custom benchmarks (\fB\-f\fR
+option), the scale factor will be reported as 1 unless this option is used\&.
+.RE
+.PP
+\fB\-S\fR
+.br
+\fB\-\-select\-only\fR
+.RS 4
+Run built\-in select\-only script\&. Shorthand for
+\fB\-b select\-only\fR\&.
+.RE
+.PP
+\fB\-t\fR \fItransactions\fR
+.br
+\fB\-\-transactions=\fR\fItransactions\fR
+.RS 4
+Number of transactions each client runs\&. Default is 10\&.
+.RE
+.PP
+\fB\-T\fR \fIseconds\fR
+.br
+\fB\-\-time=\fR\fIseconds\fR
+.RS 4
+Run the test for this many seconds, rather than a fixed number of transactions per client\&.
+\fB\-t\fR
+and
+\fB\-T\fR
+are mutually exclusive\&.
+.RE
+.PP
+\fB\-v\fR
+.br
+\fB\-\-vacuum\-all\fR
+.RS 4
+Vacuum all four standard tables before running the test\&. With neither
+\fB\-n\fR
+nor
+\fB\-v\fR,
+pgbench
+will vacuum the
+pgbench_tellers
+and
+pgbench_branches
+tables, and will truncate
+pgbench_history\&.
+.RE
+.PP
+\fB\-\-aggregate\-interval=\fR\fB\fIseconds\fR\fR
+.RS 4
+Length of aggregation interval (in seconds)\&. May be used only with
+\fB\-l\fR
+option\&. With this option, the log contains per\-interval summary data, as described below\&.
+.RE
+.PP
+\fB\-\-exit\-on\-abort\fR
+.RS 4
+Exit immediately when any client is aborted due to some error\&. Without this option, even when a client is aborted, other clients could continue their run as specified by
+\fB\-t\fR
+or
+\fB\-T\fR
+option, and
+pgbench
+will print an incomplete results in this case\&.
+.sp
+Note that serialization failures or deadlock failures do not abort the client, so they are not affected by this option\&. See
+Failures and Serialization/Deadlock Retries
+for more information\&.
+.RE
+.PP
+\fB\-\-failures\-detailed\fR
+.RS 4
+Report failures in per\-transaction and aggregation logs, as well as in the main and per\-script reports, grouped by the following types:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+serialization failures;
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+deadlock failures;
+.RE
+.sp
+See
+Failures and Serialization/Deadlock Retries
+for more information\&.
+.RE
+.PP
+\fB\-\-log\-prefix=\fR\fB\fIprefix\fR\fR
+.RS 4
+Set the filename prefix for the log files created by
+\fB\-\-log\fR\&. The default is
+pgbench_log\&.
+.RE
+.PP
+\fB\-\-max\-tries=\fR\fB\fInumber_of_tries\fR\fR
+.RS 4
+Enable retries for transactions with serialization/deadlock errors and set the maximum number of these tries\&. This option can be combined with the
+\fB\-\-latency\-limit\fR
+option which limits the total time of all transaction tries; moreover, you cannot use an unlimited number of tries (\-\-max\-tries=0) without
+\fB\-\-latency\-limit\fR
+or
+\fB\-\-time\fR\&. The default value is 1 and transactions with serialization/deadlock errors are not retried\&. See
+Failures and Serialization/Deadlock Retries
+for more information about retrying such transactions\&.
+.RE
+.PP
+\fB\-\-progress\-timestamp\fR
+.RS 4
+When showing progress (option
+\fB\-P\fR), use a timestamp (Unix epoch) instead of the number of seconds since the beginning of the run\&. The unit is in seconds, with millisecond precision after the dot\&. This helps compare logs generated by various tools\&.
+.RE
+.PP
+\fB\-\-random\-seed=\fR\fIseed\fR
+.RS 4
+Set random generator seed\&. Seeds the system random number generator, which then produces a sequence of initial generator states, one for each thread\&. Values for
+\fIseed\fR
+may be:
+time
+(the default, the seed is based on the current time),
+rand
+(use a strong random source, failing if none is available), or an unsigned decimal integer value\&. The random generator is invoked explicitly from a pgbench script (random\&.\&.\&.
+functions) or implicitly (for instance option
+\fB\-\-rate\fR
+uses it to schedule transactions)\&. When explicitly set, the value used for seeding is shown on the terminal\&. Any value allowed for
+\fIseed\fR
+may also be provided through the environment variable
+PGBENCH_RANDOM_SEED\&. To ensure that the provided seed impacts all possible uses, put this option first or use the environment variable\&.
+.sp
+Setting the seed explicitly allows to reproduce a
+\fBpgbench\fR
+run exactly, as far as random numbers are concerned\&. As the random state is managed per thread, this means the exact same
+\fBpgbench\fR
+run for an identical invocation if there is one client per thread and there are no external or data dependencies\&. From a statistical viewpoint reproducing runs exactly is a bad idea because it can hide the performance variability or improve performance unduly, e\&.g\&., by hitting the same pages as a previous run\&. However, it may also be of great help for debugging, for instance re\-running a tricky case which leads to an error\&. Use wisely\&.
+.RE
+.PP
+\fB\-\-sampling\-rate=\fR\fB\fIrate\fR\fR
+.RS 4
+Sampling rate, used when writing data into the log, to reduce the amount of log generated\&. If this option is given, only the specified fraction of transactions are logged\&. 1\&.0 means all transactions will be logged, 0\&.05 means only 5% of the transactions will be logged\&.
+.sp
+Remember to take the sampling rate into account when processing the log file\&. For example, when computing TPS values, you need to multiply the numbers accordingly (e\&.g\&., with 0\&.01 sample rate, you\*(Aqll only get 1/100 of the actual TPS)\&.
+.RE
+.PP
+\fB\-\-show\-script=\fR\fIscriptname\fR
+.RS 4
+Show the actual code of builtin script
+\fIscriptname\fR
+on stderr, and exit immediately\&.
+.RE
+.PP
+\fB\-\-verbose\-errors\fR
+.RS 4
+Print messages about all errors and failures (errors without retrying) including which limit for retries was exceeded and how far it was exceeded for the serialization/deadlock failures\&. (Note that in this case the output can be significantly increased\&.)\&. See
+Failures and Serialization/Deadlock Retries
+for more information\&.
+.RE
+.SS "Common Options"
+.PP
+pgbench
+also accepts the following common command\-line arguments for connection parameters and other common settings:
+.PP
+\fB\-\-debug\fR
+.RS 4
+Print debugging output\&.
+.RE
+.PP
+\fB\-h\fR \fIhostname\fR
+.br
+\fB\-\-host=\fR\fIhostname\fR
+.RS 4
+The database server\*(Aqs host name
+.RE
+.PP
+\fB\-p\fR \fIport\fR
+.br
+\fB\-\-port=\fR\fIport\fR
+.RS 4
+The database server\*(Aqs port number
+.RE
+.PP
+\fB\-U\fR \fIlogin\fR
+.br
+\fB\-\-username=\fR\fIlogin\fR
+.RS 4
+The user name to connect as
+.RE
+.PP
+\fB\-V\fR
+.br
+\fB\-\-version\fR
+.RS 4
+Print the
+pgbench
+version and exit\&.
+.RE
+.PP
+\fB\-?\fR
+.br
+\fB\-\-help\fR
+.RS 4
+Show help about
+pgbench
+command line arguments, and exit\&.
+.RE
+.SH "EXIT STATUS"
+.PP
+A successful run will exit with status 0\&. Exit status 1 indicates static problems such as invalid command\-line options or internal errors which are supposed to never occur\&. Early errors that occur when starting benchmark such as initial connection failures also exit with status 1\&. Errors during the run such as database errors or problems in the script will result in exit status 2\&. In the latter case,
+pgbench
+will print partial results if
+\fB\-\-exit\-on\-abort\fR
+option is not specified\&.
+.SH "ENVIRONMENT"
+.PP
+\fBPGDATABASE\fR
+.br
+\fBPGHOST\fR
+.br
+\fBPGPORT\fR
+.br
+\fBPGUSER\fR
+.RS 4
+Default connection parameters\&.
+.RE
+.PP
+This utility, like most other
+PostgreSQL
+utilities, uses the environment variables supported by
+libpq
+(see
+Section\ \&32.15)\&.
+.PP
+The environment variable
+\fBPG_COLOR\fR
+specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
+.SH "NOTES"
+.SS "What Is the \(lqTransaction\(rq Actually Performed in pgbench?"
+.PP
+pgbench
+executes test scripts chosen randomly from a specified list\&. The scripts may include built\-in scripts specified with
+\fB\-b\fR
+and user\-provided scripts specified with
+\fB\-f\fR\&. Each script may be given a relative weight specified after an
+@
+so as to change its selection probability\&. The default weight is
+1\&. Scripts with a weight of
+0
+are ignored\&.
+.PP
+The default built\-in transaction script (also invoked with
+\fB\-b tpcb\-like\fR) issues seven commands per transaction over randomly chosen
+aid,
+tid,
+bid
+and
+delta\&. The scenario is inspired by the TPC\-B benchmark, but is not actually TPC\-B, hence the name\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 1.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  1." 4.2
+.\}
+BEGIN;
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 2.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  2." 4.2
+.\}
+UPDATE pgbench_accounts SET abalance = abalance + :delta WHERE aid = :aid;
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 3.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  3." 4.2
+.\}
+SELECT abalance FROM pgbench_accounts WHERE aid = :aid;
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 4.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  4." 4.2
+.\}
+UPDATE pgbench_tellers SET tbalance = tbalance + :delta WHERE tid = :tid;
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 5.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  5." 4.2
+.\}
+UPDATE pgbench_branches SET bbalance = bbalance + :delta WHERE bid = :bid;
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 6.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  6." 4.2
+.\}
+INSERT INTO pgbench_history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP);
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 7.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  7." 4.2
+.\}
+END;
+.RE
+.PP
+If you select the
+simple\-update
+built\-in (also
+\fB\-N\fR), steps 4 and 5 aren\*(Aqt included in the transaction\&. This will avoid update contention on these tables, but it makes the test case even less like TPC\-B\&.
+.PP
+If you select the
+select\-only
+built\-in (also
+\fB\-S\fR), only the
+\fBSELECT\fR
+is issued\&.
+.SS "Custom Scripts"
+.PP
+pgbench
+has support for running custom benchmark scenarios by replacing the default transaction script (described above) with a transaction script read from a file (\fB\-f\fR
+option)\&. In this case a
+\(lqtransaction\(rq
+counts as one execution of a script file\&.
+.PP
+A script file contains one or more SQL commands terminated by semicolons\&. Empty lines and lines beginning with
+\-\-
+are ignored\&. Script files can also contain
+\(lqmeta commands\(rq, which are interpreted by
+pgbench
+itself, as described below\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+Before
+PostgreSQL
+9\&.6, SQL commands in script files were terminated by newlines, and so they could not be continued across lines\&. Now a semicolon is
+\fIrequired\fR
+to separate consecutive SQL commands (though an SQL command does not need one if it is followed by a meta command)\&. If you need to create a script file that works with both old and new versions of
+pgbench, be sure to write each SQL command on a single line ending with a semicolon\&.
+.PP
+It is assumed that
+pgbench
+scripts do not contain incomplete blocks of SQL transactions\&. If at runtime the client reaches the end of the script without completing the last transaction block, it will be aborted\&.
+.sp .5v
+.RE
+.PP
+There is a simple variable\-substitution facility for script files\&. Variable names must consist of letters (including non\-Latin letters), digits, and underscores, with the first character not being a digit\&. Variables can be set by the command\-line
+\fB\-D\fR
+option, explained above, or by the meta commands explained below\&. In addition to any variables preset by
+\fB\-D\fR
+command\-line options, there are a few variables that are preset automatically, listed in
+Table\ \&298\&. A value specified for these variables using
+\fB\-D\fR
+takes precedence over the automatic presets\&. Once set, a variable\*(Aqs value can be inserted into an SQL command by writing
+:\fIvariablename\fR\&. When running more than one client session, each session has its own set of variables\&.
+pgbench
+supports up to 255 variable uses in one statement\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&298.\ \&pgbench Automatic Variables
+.TS
+allbox tab(:);
+lB lB.
+T{
+Variable
+T}:T{
+Description
+T}
+.T&
+l l
+l l
+l l
+l l.
+T{
+client_id
+T}:T{
+unique number identifying the client session (starts from zero)
+T}
+T{
+default_seed
+T}:T{
+seed used in hash and pseudorandom permutation functions by default
+T}
+T{
+random_seed
+T}:T{
+random generator seed (unless overwritten with \fB\-D\fR)
+T}
+T{
+scale
+T}:T{
+current scale factor
+T}
+.TE
+.sp 1
+.PP
+Script file meta commands begin with a backslash (\e) and normally extend to the end of the line, although they can be continued to additional lines by writing backslash\-return\&. Arguments to a meta command are separated by white space\&. These meta commands are supported:
+.PP
+\egset [\fIprefix\fR] \easet [\fIprefix\fR]
+.RS 4
+These commands may be used to end SQL queries, taking the place of the terminating semicolon (;)\&.
+.sp
+When the
+\egset
+command is used, the preceding SQL query is expected to return one row, the columns of which are stored into variables named after column names, and prefixed with
+\fIprefix\fR
+if provided\&.
+.sp
+When the
+\easet
+command is used, all combined SQL queries (separated by
+\e;) have their columns stored into variables named after column names, and prefixed with
+\fIprefix\fR
+if provided\&. If a query returns no row, no assignment is made and the variable can be tested for existence to detect this\&. If a query returns more than one row, the last value is kept\&.
+.sp
+\egset
+and
+\easet
+cannot be used in pipeline mode, since the query results are not yet available by the time the commands would need them\&.
+.sp
+The following example puts the final account balance from the first query into variable
+\fIabalance\fR, and fills variables
+\fIp_two\fR
+and
+\fIp_three\fR
+with integers from the third query\&. The result of the second query is discarded\&. The result of the two last combined queries are stored in variables
+\fIfour\fR
+and
+\fIfive\fR\&.
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+UPDATE pgbench_accounts
+  SET abalance = abalance + :delta
+  WHERE aid = :aid
+  RETURNING abalance \egset
+\-\- compound of two queries
+SELECT 1 \e;
+SELECT 2 AS two, 3 AS three \egset p_
+SELECT 4 AS four \e; SELECT 5 AS five \easet
+.fi
+.if n \{\
+.RE
+.\}
+.RE
+.PP
+\eif \fIexpression\fR
+.br
+\eelif \fIexpression\fR
+.br
+\eelse
+.br
+\eendif
+.RS 4
+This group of commands implements nestable conditional blocks, similarly to
+psql\*(Aqs
+\eif \fIexpression\fR\&. Conditional expressions are identical to those with
+\eset, with non\-zero values interpreted as true\&.
+.RE
+.PP
+\eset \fIvarname\fR \fIexpression\fR
+.RS 4
+Sets variable
+\fIvarname\fR
+to a value calculated from
+\fIexpression\fR\&. The expression may contain the
+NULL
+constant, Boolean constants
+TRUE
+and
+FALSE, integer constants such as
+5432, double constants such as
+3\&.14159, references to variables
+:\fIvariablename\fR,
+operators
+with their usual SQL precedence and associativity,
+function calls, SQL
+CASE generic conditional expressions
+and parentheses\&.
+.sp
+Functions and most operators return
+NULL
+on
+NULL
+input\&.
+.sp
+For conditional purposes, non zero numerical values are
+TRUE, zero numerical values and
+NULL
+are
+FALSE\&.
+.sp
+Too large or small integer and double constants, as well as integer arithmetic operators (+,
+\-,
+*
+and
+/) raise errors on overflows\&.
+.sp
+When no final
+ELSE
+clause is provided to a
+CASE, the default value is
+NULL\&.
+.sp
+Examples:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\eset ntellers 10 * :scale
+\eset aid (1021 * random(1, 100000 * :scale)) % \e
+           (100000 * :scale) + 1
+\eset divx CASE WHEN :x <> 0 THEN :y/:x ELSE NULL END
+.fi
+.if n \{\
+.RE
+.\}
+.RE
+.PP
+\esleep \fInumber\fR [ us | ms | s ]
+.RS 4
+Causes script execution to sleep for the specified duration in microseconds (us), milliseconds (ms) or seconds (s)\&. If the unit is omitted then seconds are the default\&.
+\fInumber\fR
+can be either an integer constant or a
+:\fIvariablename\fR
+reference to a variable having an integer value\&.
+.sp
+Example:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\esleep 10 ms
+.fi
+.if n \{\
+.RE
+.\}
+.RE
+.PP
+\esetshell \fIvarname\fR \fIcommand\fR [ \fIargument\fR \&.\&.\&. ]
+.RS 4
+Sets variable
+\fIvarname\fR
+to the result of the shell command
+\fIcommand\fR
+with the given
+\fIargument\fR(s)\&. The command must return an integer value through its standard output\&.
+.sp
+\fIcommand\fR
+and each
+\fIargument\fR
+can be either a text constant or a
+:\fIvariablename\fR
+reference to a variable\&. If you want to use an
+\fIargument\fR
+starting with a colon, write an additional colon at the beginning of
+\fIargument\fR\&.
+.sp
+Example:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\esetshell variable_to_be_assigned command literal_argument :variable ::literal_starting_with_colon
+.fi
+.if n \{\
+.RE
+.\}
+.RE
+.PP
+\eshell \fIcommand\fR [ \fIargument\fR \&.\&.\&. ]
+.RS 4
+Same as
+\esetshell, but the result of the command is discarded\&.
+.sp
+Example:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\eshell command literal_argument :variable ::literal_starting_with_colon
+.fi
+.if n \{\
+.RE
+.\}
+.RE
+.PP
+\estartpipeline
+.br
+\esyncpipeline
+.br
+\eendpipeline
+.RS 4
+This group of commands implements pipelining of SQL statements\&. A pipeline must begin with a
+\fB\estartpipeline\fR
+and end with an
+\fB\eendpipeline\fR\&. In between there may be any number of
+\fB\esyncpipeline\fR
+commands, which sends a
+sync message
+without ending the ongoing pipeline and flushing the send buffer\&. In pipeline mode, statements are sent to the server without waiting for the results of previous statements\&. See
+Section\ \&32.5
+for more details\&. Pipeline mode requires the use of extended query protocol\&.
+.RE
+.SS "Built\-in Operators"
+.PP
+The arithmetic, bitwise, comparison and logical operators listed in
+Table\ \&299
+are built into
+pgbench
+and may be used in expressions appearing in
+\eset\&. The operators are listed in increasing precedence order\&. Except as noted, operators taking two numeric inputs will produce a double value if either input is double, otherwise they produce an integer result\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&299.\ \&pgbench Operators
+.TS
+allbox tab(:);
+lB.
+T{
+.PP
+Operator
+
+       .PP
+Description
+
+       .PP
+Example(s)
+T}
+.T&
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l.
+T{
+.PP
+\fIboolean\fR
+OR
+\fIboolean\fR
+→ \fIboolean\fR
+
+       .PP
+Logical OR
+
+       .PP
+5 or 0
+→ TRUE
+T}
+T{
+.PP
+\fIboolean\fR
+AND
+\fIboolean\fR
+→ \fIboolean\fR
+
+       .PP
+Logical AND
+
+       .PP
+3 and 0
+→ FALSE
+T}
+T{
+.PP
+NOT
+\fIboolean\fR
+→ \fIboolean\fR
+
+       .PP
+Logical NOT
+
+       .PP
+not false
+→ TRUE
+T}
+T{
+.PP
+\fIboolean\fR
+IS [NOT] (NULL|TRUE|FALSE)
+→ \fIboolean\fR
+
+       .PP
+Boolean value tests
+
+       .PP
+1 is null
+→ FALSE
+T}
+T{
+.PP
+\fIvalue\fR
+ISNULL|NOTNULL
+→ \fIboolean\fR
+
+       .PP
+Nullness tests
+
+       .PP
+1 notnull
+→ TRUE
+T}
+T{
+.PP
+\fInumber\fR
+=
+\fInumber\fR
+→ \fIboolean\fR
+
+       .PP
+Equal
+
+       .PP
+5 = 4
+→ FALSE
+T}
+T{
+.PP
+\fInumber\fR
+<>
+\fInumber\fR
+→ \fIboolean\fR
+
+       .PP
+Not equal
+
+       .PP
+5 <> 4
+→ TRUE
+T}
+T{
+.PP
+\fInumber\fR
+!=
+\fInumber\fR
+→ \fIboolean\fR
+
+       .PP
+Not equal
+
+       .PP
+5 != 5
+→ FALSE
+T}
+T{
+.PP
+\fInumber\fR
+<
+\fInumber\fR
+→ \fIboolean\fR
+
+       .PP
+Less than
+
+       .PP
+5 < 4
+→ FALSE
+T}
+T{
+.PP
+\fInumber\fR
+<=
+\fInumber\fR
+→ \fIboolean\fR
+
+       .PP
+Less than or equal to
+
+       .PP
+5 <= 4
+→ FALSE
+T}
+T{
+.PP
+\fInumber\fR
+>
+\fInumber\fR
+→ \fIboolean\fR
+
+       .PP
+Greater than
+
+       .PP
+5 > 4
+→ TRUE
+T}
+T{
+.PP
+\fInumber\fR
+>=
+\fInumber\fR
+→ \fIboolean\fR
+
+       .PP
+Greater than or equal to
+
+       .PP
+5 >= 4
+→ TRUE
+T}
+T{
+.PP
+\fIinteger\fR
+|
+\fIinteger\fR
+→ \fIinteger\fR
+
+       .PP
+Bitwise OR
+
+       .PP
+1 | 2
+→ 3
+T}
+T{
+.PP
+\fIinteger\fR
+#
+\fIinteger\fR
+→ \fIinteger\fR
+
+       .PP
+Bitwise XOR
+
+       .PP
+1 # 3
+→ 2
+T}
+T{
+.PP
+\fIinteger\fR
+&
+\fIinteger\fR
+→ \fIinteger\fR
+
+       .PP
+Bitwise AND
+
+       .PP
+1 & 3
+→ 1
+T}
+T{
+.PP
+~
+\fIinteger\fR
+→ \fIinteger\fR
+
+       .PP
+Bitwise NOT
+
+       .PP
+~ 1
+→ \-2
+T}
+T{
+.PP
+\fIinteger\fR
+<<
+\fIinteger\fR
+→ \fIinteger\fR
+
+       .PP
+Bitwise shift left
+
+       .PP
+1 << 2
+→ 4
+T}
+T{
+.PP
+\fIinteger\fR
+>>
+\fIinteger\fR
+→ \fIinteger\fR
+
+       .PP
+Bitwise shift right
+
+       .PP
+8 >> 2
+→ 2
+T}
+T{
+.PP
+\fInumber\fR
++
+\fInumber\fR
+→ \fInumber\fR
+
+       .PP
+Addition
+
+       .PP
+5 + 4
+→ 9
+T}
+T{
+.PP
+\fInumber\fR
+\-
+\fInumber\fR
+→ \fInumber\fR
+
+       .PP
+Subtraction
+
+       .PP
+3 \- 2\&.0
+→ 1\&.0
+T}
+T{
+.PP
+\fInumber\fR
+*
+\fInumber\fR
+→ \fInumber\fR
+
+       .PP
+Multiplication
+
+       .PP
+5 * 4
+→ 20
+T}
+T{
+.PP
+\fInumber\fR
+/
+\fInumber\fR
+→ \fInumber\fR
+
+       .PP
+Division (truncates the result towards zero if both inputs are integers)
+
+       .PP
+5 / 3
+→ 1
+T}
+T{
+.PP
+\fIinteger\fR
+%
+\fIinteger\fR
+→ \fIinteger\fR
+
+       .PP
+Modulo (remainder)
+
+       .PP
+3 % 2
+→ 1
+T}
+T{
+.PP
+\-
+\fInumber\fR
+→ \fInumber\fR
+
+       .PP
+Negation
+
+       .PP
+\- 2\&.0
+→ \-2\&.0
+T}
+.TE
+.sp 1
+.SS "Built\-In Functions"
+.PP
+The functions listed in
+Table\ \&300
+are built into
+pgbench
+and may be used in expressions appearing in
+\eset\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&300.\ \&pgbench Functions
+.TS
+allbox tab(:);
+lB.
+T{
+.PP
+Function
+
+       .PP
+Description
+
+       .PP
+Example(s)
+T}
+.T&
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l
+l.
+T{
+.PP
+\fBabs\fR
+(
+\fInumber\fR
+)
+→
+same type as input
+
+       .PP
+Absolute value
+
+       .PP
+abs(\-17)
+→ 17
+T}
+T{
+.PP
+\fBdebug\fR
+(
+\fInumber\fR
+)
+→
+same type as input
+
+       .PP
+Prints the argument to
+stderr, and returns the argument\&.
+
+       .PP
+debug(5432\&.1)
+→ 5432\&.1
+T}
+T{
+.PP
+\fBdouble\fR
+(
+\fInumber\fR
+)
+→ double
+
+       .PP
+Casts to double\&.
+
+       .PP
+double(5432)
+→ 5432\&.0
+T}
+T{
+.PP
+\fBexp\fR
+(
+\fInumber\fR
+)
+→ double
+
+       .PP
+Exponential (e
+raised to the given power)
+
+       .PP
+exp(1\&.0)
+→ 2\&.718281828459045
+T}
+T{
+.PP
+\fBgreatest\fR
+(
+\fInumber\fR
+[, \&.\&.\&. ]
+)
+→
+double
+if any argument is double, else
+integer
+
+       .PP
+Selects the largest value among the arguments\&.
+
+       .PP
+greatest(5, 4, 3, 2)
+→ 5
+T}
+T{
+.PP
+\fBhash\fR
+(
+\fIvalue\fR
+[, \fIseed\fR ]
+)
+→ integer
+
+       .PP
+This is an alias for
+\fBhash_murmur2\fR\&.
+
+       .PP
+hash(10, 5432)
+→ \-5817877081768721676
+T}
+T{
+.PP
+\fBhash_fnv1a\fR
+(
+\fIvalue\fR
+[, \fIseed\fR ]
+)
+→ integer
+
+       .PP
+Computes
+\m[blue]\fBFNV\-1a hash\fR\m[]\&.
+
+       .PP
+hash_fnv1a(10, 5432)
+→ \-7793829335365542153
+T}
+T{
+.PP
+\fBhash_murmur2\fR
+(
+\fIvalue\fR
+[, \fIseed\fR ]
+)
+→ integer
+
+       .PP
+Computes
+\m[blue]\fBMurmurHash2 hash\fR\m[]\&.
+
+       .PP
+hash_murmur2(10, 5432)
+→ \-5817877081768721676
+T}
+T{
+.PP
+\fBint\fR
+(
+\fInumber\fR
+)
+→ integer
+
+       .PP
+Casts to integer\&.
+
+       .PP
+int(5\&.4 + 3\&.8)
+→ 9
+T}
+T{
+.PP
+\fBleast\fR
+(
+\fInumber\fR
+[, \&.\&.\&. ]
+)
+→
+double
+if any argument is double, else
+integer
+
+       .PP
+Selects the smallest value among the arguments\&.
+
+       .PP
+least(5, 4, 3, 2\&.1)
+→ 2\&.1
+T}
+T{
+.PP
+\fBln\fR
+(
+\fInumber\fR
+)
+→ double
+
+       .PP
+Natural logarithm
+
+       .PP
+ln(2\&.718281828459045)
+→ 1\&.0
+T}
+T{
+.PP
+\fBmod\fR
+(
+\fIinteger\fR,
+\fIinteger\fR
+)
+→ integer
+
+       .PP
+Modulo (remainder)
+
+       .PP
+mod(54, 32)
+→ 22
+T}
+T{
+.PP
+\fBpermute\fR
+(
+\fIi\fR,
+\fIsize\fR
+[,
+\fIseed\fR
+] )
+→ integer
+
+       .PP
+Permuted value of
+\fIi\fR, in the range
+[0, size)\&. This is the new position of
+\fIi\fR
+(modulo
+\fIsize\fR) in a pseudorandom permutation of the integers
+0\&.\&.\&.size\-1, parameterized by
+\fIseed\fR, see below\&.
+
+       .PP
+permute(0, 4)
+→ an integer between 0 and 3
+T}
+T{
+.PP
+\fBpi\fR
+()
+→ double
+
+       .PP
+Approximate value of
+π
+
+       .PP
+pi()
+→ 3\&.14159265358979323846
+T}
+T{
+.PP
+\fBpow\fR
+(
+\fIx\fR,
+\fIy\fR
+)
+→ double
+
+       .PP
+\fBpower\fR
+(
+\fIx\fR,
+\fIy\fR
+)
+→ double
+
+       .PP
+\fIx\fR
+raised to the power of
+\fIy\fR
+
+       .PP
+pow(2\&.0, 10)
+→ 1024\&.0
+T}
+T{
+.PP
+\fBrandom\fR
+(
+\fIlb\fR,
+\fIub\fR
+)
+→ integer
+
+       .PP
+Computes a uniformly\-distributed random integer in
+[lb, ub]\&.
+
+       .PP
+random(1, 10)
+→ an integer between 1 and 10
+T}
+T{
+.PP
+\fBrandom_exponential\fR
+(
+\fIlb\fR,
+\fIub\fR,
+\fIparameter\fR
+)
+→ integer
+
+       .PP
+Computes an exponentially\-distributed random integer in
+[lb, ub], see below\&.
+
+       .PP
+random_exponential(1, 10, 3\&.0)
+→ an integer between 1 and 10
+T}
+T{
+.PP
+\fBrandom_gaussian\fR
+(
+\fIlb\fR,
+\fIub\fR,
+\fIparameter\fR
+)
+→ integer
+
+       .PP
+Computes a Gaussian\-distributed random integer in
+[lb, ub], see below\&.
+
+       .PP
+random_gaussian(1, 10, 2\&.5)
+→ an integer between 1 and 10
+T}
+T{
+.PP
+\fBrandom_zipfian\fR
+(
+\fIlb\fR,
+\fIub\fR,
+\fIparameter\fR
+)
+→ integer
+
+       .PP
+Computes a Zipfian\-distributed random integer in
+[lb, ub], see below\&.
+
+       .PP
+random_zipfian(1, 10, 1\&.5)
+→ an integer between 1 and 10
+T}
+T{
+.PP
+\fBsqrt\fR
+(
+\fInumber\fR
+)
+→ double
+
+       .PP
+Square root
+
+       .PP
+sqrt(2\&.0)
+→ 1\&.414213562
+T}
+.TE
+.sp 1
+.PP
+The
+random
+function generates values using a uniform distribution, that is all the values are drawn within the specified range with equal probability\&. The
+random_exponential,
+random_gaussian
+and
+random_zipfian
+functions require an additional double parameter which determines the precise shape of the distribution\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+For an exponential distribution,
+\fIparameter\fR
+controls the distribution by truncating a quickly\-decreasing exponential distribution at
+\fIparameter\fR, and then projecting onto integers between the bounds\&. To be precise, with
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+f(x) = exp(\-parameter * (x \- min) / (max \- min + 1)) / (1 \- exp(\-parameter))
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Then value
+\fIi\fR
+between
+\fImin\fR
+and
+\fImax\fR
+inclusive is drawn with probability:
+f(i) \- f(i + 1)\&.
+.sp
+Intuitively, the larger the
+\fIparameter\fR, the more frequently values close to
+\fImin\fR
+are accessed, and the less frequently values close to
+\fImax\fR
+are accessed\&. The closer to 0
+\fIparameter\fR
+is, the flatter (more uniform) the access distribution\&. A crude approximation of the distribution is that the most frequent 1% values in the range, close to
+\fImin\fR, are drawn
+\fIparameter\fR% of the time\&. The
+\fIparameter\fR
+value must be strictly positive\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+For a Gaussian distribution, the interval is mapped onto a standard normal distribution (the classical bell\-shaped Gaussian curve) truncated at
+\-parameter
+on the left and
++parameter
+on the right\&. Values in the middle of the interval are more likely to be drawn\&. To be precise, if
+PHI(x)
+is the cumulative distribution function of the standard normal distribution, with mean
+mu
+defined as
+(max + min) / 2\&.0, with
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+f(x) = PHI(2\&.0 * parameter * (x \- mu) / (max \- min + 1)) /
+       (2\&.0 * PHI(parameter) \- 1)
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+then value
+\fIi\fR
+between
+\fImin\fR
+and
+\fImax\fR
+inclusive is drawn with probability:
+f(i + 0\&.5) \- f(i \- 0\&.5)\&. Intuitively, the larger the
+\fIparameter\fR, the more frequently values close to the middle of the interval are drawn, and the less frequently values close to the
+\fImin\fR
+and
+\fImax\fR
+bounds\&. About 67% of values are drawn from the middle
+1\&.0 / parameter, that is a relative
+0\&.5 / parameter
+around the mean, and 95% in the middle
+2\&.0 / parameter, that is a relative
+1\&.0 / parameter
+around the mean; for instance, if
+\fIparameter\fR
+is 4\&.0, 67% of values are drawn from the middle quarter (1\&.0 / 4\&.0) of the interval (i\&.e\&., from
+3\&.0 / 8\&.0
+to
+5\&.0 / 8\&.0) and 95% from the middle half (2\&.0 / 4\&.0) of the interval (second and third quartiles)\&. The minimum allowed
+\fIparameter\fR
+value is 2\&.0\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+random_zipfian
+generates a bounded Zipfian distribution\&.
+\fIparameter\fR
+defines how skewed the distribution is\&. The larger the
+\fIparameter\fR, the more frequently values closer to the beginning of the interval are drawn\&. The distribution is such that, assuming the range starts from 1, the ratio of the probability of drawing
+\fIk\fR
+versus drawing
+\fIk+1\fR
+is
+((\fIk\fR+1)/\fIk\fR)**\fIparameter\fR\&. For example,
+random_zipfian(1, \&.\&.\&., 2\&.5)
+produces the value
+1
+about
+(2/1)**2\&.5 = 5\&.66
+times more frequently than
+2, which itself is produced
+(3/2)**2\&.5 = 2\&.76
+times more frequently than
+3, and so on\&.
+.sp
+pgbench\*(Aqs implementation is based on "Non\-Uniform Random Variate Generation", Luc Devroye, p\&. 550\-551, Springer 1986\&. Due to limitations of that algorithm, the
+\fIparameter\fR
+value is restricted to the range [1\&.001, 1000]\&.
+.RE
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+When designing a benchmark which selects rows non\-uniformly, be aware that the rows chosen may be correlated with other data such as IDs from a sequence or the physical row ordering, which may skew performance measurements\&.
+.PP
+To avoid this, you may wish to use the
+\fBpermute\fR
+function, or some other additional step with similar effect, to shuffle the selected rows and remove such correlations\&.
+.sp .5v
+.RE
+.PP
+Hash functions
+hash,
+hash_murmur2
+and
+hash_fnv1a
+accept an input value and an optional seed parameter\&. In case the seed isn\*(Aqt provided the value of
+:default_seed
+is used, which is initialized randomly unless set by the command\-line
+\-D
+option\&.
+.PP
+permute
+accepts an input value, a size, and an optional seed parameter\&. It generates a pseudorandom permutation of integers in the range
+[0, size), and returns the index of the input value in the permuted values\&. The permutation chosen is parameterized by the seed, which defaults to
+:default_seed, if not specified\&. Unlike the hash functions,
+permute
+ensures that there are no collisions or holes in the output values\&. Input values outside the interval are interpreted modulo the size\&. The function raises an error if the size is not positive\&.
+\fBpermute\fR
+can be used to scatter the distribution of non\-uniform random functions such as
+random_zipfian
+or
+random_exponential
+so that values drawn more often are not trivially correlated\&. For instance, the following
+pgbench
+script simulates a possible real world workload typical for social media and blogging platforms where a few accounts generate excessive load:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\eset size 1000000
+\eset r random_zipfian(1, :size, 1\&.07)
+\eset k 1 + permute(:r, :size)
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+In some cases several distinct distributions are needed which don\*(Aqt correlate with each other and this is when the optional seed parameter comes in handy:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\eset k1 1 + permute(:r, :size, :default_seed + 123)
+\eset k2 1 + permute(:r, :size, :default_seed + 321)
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+A similar behavior can also be approximated with
+\fBhash\fR:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\eset size 1000000
+\eset r random_zipfian(1, 100 * :size, 1\&.07)
+\eset k 1 + abs(hash(:r)) % :size
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+However, since
+\fBhash\fR
+generates collisions, some values will not be reachable and others will be more frequent than expected from the original distribution\&.
+.PP
+As an example, the full definition of the built\-in TPC\-B\-like transaction is:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\eset aid random(1, 100000 * :scale)
+\eset bid random(1, 1 * :scale)
+\eset tid random(1, 10 * :scale)
+\eset delta random(\-5000, 5000)
+BEGIN;
+UPDATE pgbench_accounts SET abalance = abalance + :delta WHERE aid = :aid;
+SELECT abalance FROM pgbench_accounts WHERE aid = :aid;
+UPDATE pgbench_tellers SET tbalance = tbalance + :delta WHERE tid = :tid;
+UPDATE pgbench_branches SET bbalance = bbalance + :delta WHERE bid = :bid;
+INSERT INTO pgbench_history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP);
+END;
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+This script allows each iteration of the transaction to reference different, randomly\-chosen rows\&. (This example also shows why it\*(Aqs important for each client session to have its own variables \(em otherwise they\*(Aqd not be independently touching different rows\&.)
+.SS "Per\-Transaction Logging"
+.PP
+With the
+\fB\-l\fR
+option (but without the
+\fB\-\-aggregate\-interval\fR
+option),
+pgbench
+writes information about each transaction to a log file\&. The log file will be named
+\fIprefix\fR\&.\fInnn\fR, where
+\fIprefix\fR
+defaults to
+pgbench_log, and
+\fInnn\fR
+is the PID of the
+pgbench
+process\&. The prefix can be changed by using the
+\fB\-\-log\-prefix\fR
+option\&. If the
+\fB\-j\fR
+option is 2 or higher, so that there are multiple worker threads, each will have its own log file\&. The first worker will use the same name for its log file as in the standard single worker case\&. The additional log files for the other workers will be named
+\fIprefix\fR\&.\fInnn\fR\&.\fImmm\fR, where
+\fImmm\fR
+is a sequential number for each worker starting with 1\&.
+.PP
+Each line in a log file describes one transaction\&. It contains the following space\-separated fields:
+.PP
+\fIclient_id\fR
+.RS 4
+identifies the client session that ran the transaction
+.RE
+.PP
+\fItransaction_no\fR
+.RS 4
+counts how many transactions have been run by that session
+.RE
+.PP
+\fItime\fR
+.RS 4
+transaction\*(Aqs elapsed time, in microseconds
+.RE
+.PP
+\fIscript_no\fR
+.RS 4
+identifies the script file that was used for the transaction (useful when multiple scripts are specified with
+\fB\-f\fR
+or
+\fB\-b\fR)
+.RE
+.PP
+\fItime_epoch\fR
+.RS 4
+transaction\*(Aqs completion time, as a Unix\-epoch time stamp
+.RE
+.PP
+\fItime_us\fR
+.RS 4
+fractional\-second part of transaction\*(Aqs completion time, in microseconds
+.RE
+.PP
+\fIschedule_lag\fR
+.RS 4
+transaction start delay, that is the difference between the transaction\*(Aqs scheduled start time and the time it actually started, in microseconds (present only if
+\fB\-\-rate\fR
+is specified)
+.RE
+.PP
+\fIretries\fR
+.RS 4
+count of retries after serialization or deadlock errors during the transaction (present only if
+\fB\-\-max\-tries\fR
+is not equal to one)
+.RE
+.PP
+When both
+\fB\-\-rate\fR
+and
+\fB\-\-latency\-limit\fR
+are used, the
+\fItime\fR
+for a skipped transaction will be reported as
+skipped\&. If the transaction ends with a failure, its
+\fItime\fR
+will be reported as
+failed\&. If you use the
+\fB\-\-failures\-detailed\fR
+option, the
+\fItime\fR
+of the failed transaction will be reported as
+serialization
+or
+deadlock
+depending on the type of failure (see
+Failures and Serialization/Deadlock Retries
+for more information)\&.
+.PP
+Here is a snippet of a log file generated in a single\-client run:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+0 199 2241 0 1175850568 995598
+0 200 2465 0 1175850568 998079
+0 201 2513 0 1175850569 608
+0 202 2038 0 1175850569 2663
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Another example with
+\-\-rate=100
+and
+\-\-latency\-limit=5
+(note the additional
+\fIschedule_lag\fR
+column):
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+0 81 4621 0 1412881037 912698 3005
+0 82 6173 0 1412881037 914578 4304
+0 83 skipped 0 1412881037 914578 5217
+0 83 skipped 0 1412881037 914578 5099
+0 83 4722 0 1412881037 916203 3108
+0 84 4142 0 1412881037 918023 2333
+0 85 2465 0 1412881037 919759 740
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+In this example, transaction 82 was late, because its latency (6\&.173 ms) was over the 5 ms limit\&. The next two transactions were skipped, because they were already late before they were even started\&.
+.PP
+The following example shows a snippet of a log file with failures and retries, with the maximum number of tries set to 10 (note the additional
+\fIretries\fR
+column):
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+3 0 47423 0 1499414498 34501 3
+3 1 8333 0 1499414498 42848 0
+3 2 8358 0 1499414498 51219 0
+4 0 72345 0 1499414498 59433 6
+1 3 41718 0 1499414498 67879 4
+1 4 8416 0 1499414498 76311 0
+3 3 33235 0 1499414498 84469 3
+0 0 failed 0 1499414498 84905 9
+2 0 failed 0 1499414498 86248 9
+3 4 8307 0 1499414498 92788 0
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+If the
+\fB\-\-failures\-detailed\fR
+option is used, the type of failure is reported in the
+\fItime\fR
+like this:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+3 0 47423 0 1499414498 34501 3
+3 1 8333 0 1499414498 42848 0
+3 2 8358 0 1499414498 51219 0
+4 0 72345 0 1499414498 59433 6
+1 3 41718 0 1499414498 67879 4
+1 4 8416 0 1499414498 76311 0
+3 3 33235 0 1499414498 84469 3
+0 0 serialization 0 1499414498 84905 9
+2 0 serialization 0 1499414498 86248 9
+3 4 8307 0 1499414498 92788 0
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+When running a long test on hardware that can handle a lot of transactions, the log files can become very large\&. The
+\fB\-\-sampling\-rate\fR
+option can be used to log only a random sample of transactions\&.
+.SS "Aggregated Logging"
+.PP
+With the
+\fB\-\-aggregate\-interval\fR
+option, a different format is used for the log files\&. Each log line describes one aggregation interval\&. It contains the following space\-separated fields:
+.PP
+\fIinterval_start\fR
+.RS 4
+start time of the interval, as a Unix\-epoch time stamp
+.RE
+.PP
+\fInum_transactions\fR
+.RS 4
+number of transactions within the interval
+.RE
+.PP
+\fIsum_latency\fR
+.RS 4
+sum of transaction latencies
+.RE
+.PP
+\fIsum_latency_2\fR
+.RS 4
+sum of squares of transaction latencies
+.RE
+.PP
+\fImin_latency\fR
+.RS 4
+minimum transaction latency
+.RE
+.PP
+\fImax_latency\fR
+.RS 4
+maximum transaction latency
+.RE
+.PP
+\fIsum_lag\fR
+.RS 4
+sum of transaction start delays (zero unless
+\fB\-\-rate\fR
+is specified)
+.RE
+.PP
+\fIsum_lag_2\fR
+.RS 4
+sum of squares of transaction start delays (zero unless
+\fB\-\-rate\fR
+is specified)
+.RE
+.PP
+\fImin_lag\fR
+.RS 4
+minimum transaction start delay (zero unless
+\fB\-\-rate\fR
+is specified)
+.RE
+.PP
+\fImax_lag\fR
+.RS 4
+maximum transaction start delay (zero unless
+\fB\-\-rate\fR
+is specified)
+.RE
+.PP
+\fIskipped\fR
+.RS 4
+number of transactions skipped because they would have started too late (zero unless
+\fB\-\-rate\fR
+and
+\fB\-\-latency\-limit\fR
+are specified)
+.RE
+.PP
+\fIretried\fR
+.RS 4
+number of retried transactions (zero unless
+\fB\-\-max\-tries\fR
+is not equal to one)
+.RE
+.PP
+\fIretries\fR
+.RS 4
+number of retries after serialization or deadlock errors (zero unless
+\fB\-\-max\-tries\fR
+is not equal to one)
+.RE
+.PP
+\fIserialization_failures\fR
+.RS 4
+number of transactions that got a serialization error and were not retried afterwards (zero unless
+\fB\-\-failures\-detailed\fR
+is specified)
+.RE
+.PP
+\fIdeadlock_failures\fR
+.RS 4
+number of transactions that got a deadlock error and were not retried afterwards (zero unless
+\fB\-\-failures\-detailed\fR
+is specified)
+.RE
+.PP
+Here is some example output generated with this option:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\fBpgbench \-\-aggregate\-interval=10 \-\-time=20 \-\-client=10 \-\-log \-\-rate=1000 \-\-latency\-limit=10 \-\-failures\-detailed \-\-max\-tries=10 test\fR
+
+1650260552 5178 26171317 177284491527 1136 44462 2647617 7321113867 0 9866 64 7564 28340 4148 0
+1650260562 4808 25573984 220121792172 1171 62083 3037380 9666800914 0 9998 598 7392 26621 4527 0
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Notice that while the plain (unaggregated) log format shows which script was used for each transaction, the aggregated format does not\&. Therefore if you need per\-script data, you need to aggregate the data on your own\&.
+.SS "Per\-Statement Report"
+.PP
+With the
+\fB\-r\fR
+option,
+pgbench
+collects the following statistics for each statement:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+latency
+\(em elapsed transaction time for each statement\&.
+pgbench
+reports an average value of all successful runs of the statement\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The number of failures in this statement\&. See
+Failures and Serialization/Deadlock Retries
+for more information\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The number of retries after a serialization or a deadlock error in this statement\&. See
+Failures and Serialization/Deadlock Retries
+for more information\&.
+.RE
+.PP
+The report displays retry statistics only if the
+\fB\-\-max\-tries\fR
+option is not equal to 1\&.
+.PP
+All values are computed for each statement executed by every client and are reported after the benchmark has finished\&.
+.PP
+For the default script, the output will look similar to this:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+starting vacuum\&.\&.\&.end\&.
+transaction type: <builtin: TPC\-B (sort of)>
+scaling factor: 1
+query mode: simple
+number of clients: 10
+number of threads: 1
+maximum number of tries: 1
+number of transactions per client: 1000
+number of transactions actually processed: 10000/10000
+number of failed transactions: 0 (0\&.000%)
+number of transactions above the 50\&.0 ms latency limit: 1311/10000 (13\&.110 %)
+latency average = 28\&.488 ms
+latency stddev = 21\&.009 ms
+initial connection time = 69\&.068 ms
+tps = 346\&.224794 (without initial connection time)
+statement latencies in milliseconds and failures:
+   0\&.012  0  \eset aid random(1, 100000 * :scale)
+   0\&.002  0  \eset bid random(1, 1 * :scale)
+   0\&.002  0  \eset tid random(1, 10 * :scale)
+   0\&.002  0  \eset delta random(\-5000, 5000)
+   0\&.319  0  BEGIN;
+   0\&.834  0  UPDATE pgbench_accounts SET abalance = abalance + :delta WHERE aid = :aid;
+   0\&.641  0  SELECT abalance FROM pgbench_accounts WHERE aid = :aid;
+  11\&.126  0  UPDATE pgbench_tellers SET tbalance = tbalance + :delta WHERE tid = :tid;
+  12\&.961  0  UPDATE pgbench_branches SET bbalance = bbalance + :delta WHERE bid = :bid;
+   0\&.634  0  INSERT INTO pgbench_history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP);
+   1\&.957  0  END;
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Another example of output for the default script using serializable default transaction isolation level (\fBPGOPTIONS=\*(Aq\-c default_transaction_isolation=serializable\*(Aq pgbench \&.\&.\&.\fR):
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+starting vacuum\&.\&.\&.end\&.
+transaction type: <builtin: TPC\-B (sort of)>
+scaling factor: 1
+query mode: simple
+number of clients: 10
+number of threads: 1
+maximum number of tries: 10
+number of transactions per client: 1000
+number of transactions actually processed: 6317/10000
+number of failed transactions: 3683 (36\&.830%)
+number of transactions retried: 7667 (76\&.670%)
+total number of retries: 45339
+number of transactions above the 50\&.0 ms latency limit: 106/6317 (1\&.678 %)
+latency average = 17\&.016 ms
+latency stddev = 13\&.283 ms
+initial connection time = 45\&.017 ms
+tps = 186\&.792667 (without initial connection time)
+statement latencies in milliseconds, failures and retries:
+  0\&.006     0      0  \eset aid random(1, 100000 * :scale)
+  0\&.001     0      0  \eset bid random(1, 1 * :scale)
+  0\&.001     0      0  \eset tid random(1, 10 * :scale)
+  0\&.001     0      0  \eset delta random(\-5000, 5000)
+  0\&.385     0      0  BEGIN;
+  0\&.773     0      1  UPDATE pgbench_accounts SET abalance = abalance + :delta WHERE aid = :aid;
+  0\&.624     0      0  SELECT abalance FROM pgbench_accounts WHERE aid = :aid;
+  1\&.098   320   3762  UPDATE pgbench_tellers SET tbalance = tbalance + :delta WHERE tid = :tid;
+  0\&.582  3363  41576  UPDATE pgbench_branches SET bbalance = bbalance + :delta WHERE bid = :bid;
+  0\&.465     0      0  INSERT INTO pgbench_history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP);
+  1\&.933     0      0  END;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+If multiple script files are specified, all statistics are reported separately for each script file\&.
+.PP
+Note that collecting the additional timing information needed for per\-statement latency computation adds some overhead\&. This will slow average execution speed and lower the computed TPS\&. The amount of slowdown varies significantly depending on platform and hardware\&. Comparing average TPS values with and without latency reporting enabled is a good way to measure if the timing overhead is significant\&.
+.SS "Failures and Serialization/Deadlock Retries"
+.PP
+When executing
+pgbench, there are three main types of errors:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Errors of the main program\&. They are the most serious and always result in an immediate exit from
+pgbench
+with the corresponding error message\&. They include:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+errors at the beginning of
+pgbench
+(e\&.g\&. an invalid option value);
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+errors in the initialization mode (e\&.g\&. the query to create tables for built\-in scripts fails);
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+errors before starting threads (e\&.g\&. could not connect to the database server, syntax error in the meta command, thread creation failure);
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+internal
+pgbench
+errors (which are supposed to never occur\&.\&.\&.)\&.
+.RE
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Errors when the thread manages its clients (e\&.g\&. the client could not start a connection to the database server / the socket for connecting the client to the database server has become invalid)\&. In such cases all clients of this thread stop while other threads continue to work\&. However,
+\fB\-\-exit\-on\-abort\fR
+is specified, all of the threads stop immediately in this case\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Direct client errors\&. They lead to immediate exit from
+pgbench
+with the corresponding error message in the case of an internal
+pgbench
+error (which are supposed to never occur\&.\&.\&.) or when
+\fB\-\-exit\-on\-abort\fR
+is specified\&. Otherwise in the worst case they only lead to the abortion of the failed client while other clients continue their run (but some client errors are handled without an abortion of the client and reported separately, see below)\&. Later in this section it is assumed that the discussed errors are only the direct client errors and they are not internal
+pgbench
+errors\&.
+.RE
+.PP
+A client\*(Aqs run is aborted in case of a serious error; for example, the connection with the database server was lost or the end of script was reached without completing the last transaction\&. In addition, if execution of an SQL or meta command fails for reasons other than serialization or deadlock errors, the client is aborted\&. Otherwise, if an SQL command fails with serialization or deadlock errors, the client is not aborted\&. In such cases, the current transaction is rolled back, which also includes setting the client variables as they were before the run of this transaction (it is assumed that one transaction script contains only one transaction; see
+What Is the "Transaction" Actually Performed in pgbench?
+for more information)\&. Transactions with serialization or deadlock errors are repeated after rollbacks until they complete successfully or reach the maximum number of tries (specified by the
+\fB\-\-max\-tries\fR
+option) / the maximum time of retries (specified by the
+\fB\-\-latency\-limit\fR
+option) / the end of benchmark (specified by the
+\fB\-\-time\fR
+option)\&. If the last trial run fails, this transaction will be reported as failed but the client is not aborted and continues to work\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+Without specifying the
+\fB\-\-max\-tries\fR
+option, a transaction will never be retried after a serialization or deadlock error because its default value is 1\&. Use an unlimited number of tries (\-\-max\-tries=0) and the
+\fB\-\-latency\-limit\fR
+option to limit only the maximum time of tries\&. You can also use the
+\fB\-\-time\fR
+option to limit the benchmark duration under an unlimited number of tries\&.
+.PP
+Be careful when repeating scripts that contain multiple transactions: the script is always retried completely, so successful transactions can be performed several times\&.
+.PP
+Be careful when repeating transactions with shell commands\&. Unlike the results of SQL commands, the results of shell commands are not rolled back, except for the variable value of the
+\fB\esetshell\fR
+command\&.
+.sp .5v
+.RE
+.PP
+The latency of a successful transaction includes the entire time of transaction execution with rollbacks and retries\&. The latency is measured only for successful transactions and commands but not for failed transactions or commands\&.
+.PP
+The main report contains the number of failed transactions\&. If the
+\fB\-\-max\-tries\fR
+option is not equal to 1, the main report also contains statistics related to retries: the total number of retried transactions and total number of retries\&. The per\-script report inherits all these fields from the main report\&. The per\-statement report displays retry statistics only if the
+\fB\-\-max\-tries\fR
+option is not equal to 1\&.
+.PP
+If you want to group failures by basic types in per\-transaction and aggregation logs, as well as in the main and per\-script reports, use the
+\fB\-\-failures\-detailed\fR
+option\&. If you also want to distinguish all errors and failures (errors without retrying) by type including which limit for retries was exceeded and how much it was exceeded by for the serialization/deadlock failures, use the
+\fB\-\-verbose\-errors\fR
+option\&.
+.SS "Table Access Methods"
+.PP
+You may specify the
+Table Access Method
+for the pgbench tables\&. The environment variable
+\fBPGOPTIONS\fR
+specifies database configuration options that are passed to PostgreSQL via the command line (See
+Section\ \&19.1.4)\&. For example, a hypothetical default Table Access Method for the tables that pgbench creates called
+wuzza
+can be specified with:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+PGOPTIONS=\*(Aq\-c default_table_access_method=wuzza\*(Aq
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.SS "Good Practices"
+.PP
+It is very easy to use
+pgbench
+to produce completely meaningless numbers\&. Here are some guidelines to help you get useful results\&.
+.PP
+In the first place,
+\fInever\fR
+believe any test that runs for only a few seconds\&. Use the
+\fB\-t\fR
+or
+\fB\-T\fR
+option to make the run last at least a few minutes, so as to average out noise\&. In some cases you could need hours to get numbers that are reproducible\&. It\*(Aqs a good idea to try the test run a few times, to find out if your numbers are reproducible or not\&.
+.PP
+For the default TPC\-B\-like test scenario, the initialization scale factor (\fB\-s\fR) should be at least as large as the largest number of clients you intend to test (\fB\-c\fR); else you\*(Aqll mostly be measuring update contention\&. There are only
+\fB\-s\fR
+rows in the
+pgbench_branches
+table, and every transaction wants to update one of them, so
+\fB\-c\fR
+values in excess of
+\fB\-s\fR
+will undoubtedly result in lots of transactions blocked waiting for other transactions\&.
+.PP
+The default test scenario is also quite sensitive to how long it\*(Aqs been since the tables were initialized: accumulation of dead rows and dead space in the tables changes the results\&. To understand the results you must keep track of the total number of updates and when vacuuming happens\&. If autovacuum is enabled it can result in unpredictable changes in measured performance\&.
+.PP
+A limitation of
+pgbench
+is that it can itself become the bottleneck when trying to test a large number of client sessions\&. This can be alleviated by running
+pgbench
+on a different machine from the database server, although low network latency will be essential\&. It might even be useful to run several
+pgbench
+instances concurrently, on several client machines, against the same database server\&.
+.SS "Security"
+.PP
+If untrusted users have access to a database that has not adopted a
+secure schema usage pattern, do not run
+pgbench
+in that database\&.
+pgbench
+uses unqualified names and does not manipulate the search path\&.

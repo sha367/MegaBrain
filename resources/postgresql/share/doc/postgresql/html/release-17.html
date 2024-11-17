@@ -1,0 +1,1235 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>E.2. Release 17</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="release-17-1.html" title="E.1. Release 17.1" /><link rel="next" href="release-prior.html" title="E.3. Prior Releases" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">E.2. Release 17</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="release-17-1.html" title="E.1. Release 17.1">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="release.html" title="Appendix E. Release Notes">Up</a></td><th width="60%" align="center">Appendix E. Release Notes</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="release-prior.html" title="E.3. Prior Releases">Next</a></td></tr></table><hr /></div><div class="sect1" id="RELEASE-17"><div class="titlepage"><div><div><h2 class="title" style="clear: both">E.2. Release 17 <a href="#RELEASE-17" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="release-17.html#RELEASE-17-HIGHLIGHTS">E.2.1. Overview</a></span></dt><dt><span class="sect2"><a href="release-17.html#RELEASE-17-MIGRATION">E.2.2. Migration to Version 17</a></span></dt><dt><span class="sect2"><a href="release-17.html#RELEASE-17-CHANGES">E.2.3. Changes</a></span></dt><dt><span class="sect2"><a href="release-17.html#RELEASE-17-ACKNOWLEDGEMENTS">E.2.4. Acknowledgments</a></span></dt></dl></div><p><strong>Release date: </strong>2024-09-26</p><div class="sect2" id="RELEASE-17-HIGHLIGHTS"><div class="titlepage"><div><div><h3 class="title">E.2.1. Overview <a href="#RELEASE-17-HIGHLIGHTS" class="id_link">#</a></h3></div></div></div><p>
+    <span class="productname">PostgreSQL</span> 17 contains many new features
+    and enhancements, including:
+   </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+      New memory management system for <code class="command">VACUUM</code>, which reduces
+      memory consumption and can improve overall vacuuming performance.
+     </p></li><li class="listitem"><p>
+      New <acronym class="acronym">SQL/JSON</acronym> capabilities, including constructors,
+      identity functions, and the <a class="link" href="functions-json.html#FUNCTIONS-SQLJSON-TABLE" title="9.16.4. JSON_TABLE"><code class="function">JSON_TABLE()</code></a>
+      function, which converts JSON data into a table representation.
+     </p></li><li class="listitem"><p>
+      Various query performance improvements, including for sequential reads
+      using streaming I/O, write throughput under high concurrency, and
+      searches over multiple values in a <a class="link" href="btree.html" title="64.1. B-Tree Indexes">btree</a>
+      index.
+     </p></li><li class="listitem"><p>
+      Logical replication enhancements, including:
+      </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>
+         Failover control
+        </p></li><li class="listitem"><p>
+         <a class="link" href="app-pgcreatesubscriber.html" title="pg_createsubscriber"><span class="application">pg_createsubscriber</span></a>,
+          a utility that creates logical replicas from physical standbys
+        </p></li><li class="listitem"><p>
+         <a class="link" href="pgupgrade.html" title="pg_upgrade"><span class="application">pg_upgrade</span></a> now
+          preserves logical replication slots on publishers and full
+          subscription state on subscribers.  This will allow upgrades
+          to future major versions to continue logical replication without
+          requiring copy to resynchronize.
+        </p></li></ul></div><p>
+     </p></li><li class="listitem"><p>
+      New client-side connection option, <a class="link" href="libpq-connect.html#LIBPQ-CONNECT-SSLNEGOTIATION"><code class="literal">sslnegotiation=direct</code></a>,
+      that performs a direct TLS handshake to avoid a round-trip negotiation.
+     </p></li><li class="listitem"><p>
+      <a class="link" href="app-pgbasebackup.html" title="pg_basebackup"><span class="application">pg_basebackup</span></a>
+      now supports incremental backup.
+     </p></li><li class="listitem"><p>
+      <a class="link" href="sql-copy.html" title="COPY"><code class="command">COPY</code></a> adds a new option,
+      <code class="literal">ON_ERROR ignore</code>, that allows a copy operation to
+      continue in the event of an error.
+     </p></li></ul></div><p>
+    The above items and other new features of
+    <span class="productname">PostgreSQL</span> 17 are explained in more detail
+    in the sections below.
+   </p></div><div class="sect2" id="RELEASE-17-MIGRATION"><div class="titlepage"><div><div><h3 class="title">E.2.2. Migration to Version 17 <a href="#RELEASE-17-MIGRATION" class="id_link">#</a></h3></div></div></div><p>
+    A dump/restore using <a class="xref" href="app-pg-dumpall.html" title="pg_dumpall"><span class="refentrytitle"><span class="application">pg_dumpall</span></span></a> or use of
+    <a class="xref" href="pgupgrade.html" title="pg_upgrade"><span class="refentrytitle"><span class="application">pg_upgrade</span></span></a> or logical replication is required for
+    those wishing to migrate data from any previous release.  See <a class="xref" href="upgrading.html" title="18.6. Upgrading a PostgreSQL Cluster">Section 18.6</a> for general information on migrating to new
+    major releases.
+   </p><p>
+    Version 17 contains a number of changes that may affect compatibility
+    with previous releases.  Observe the following incompatibilities:
+   </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+     Change functions to use a safe <a class="xref" href="runtime-config-client.html#GUC-SEARCH-PATH">search_path</a>
+     during maintenance operations (Jeff Davis)
+     <a class="ulink" href="https://postgr.es/c/2af07e2f7" target="_top">§</a>
+     <a class="ulink" href="https://postgr.es/c/b4da732fd64" target="_top">§</a>
+     </p><p>
+     This prevents maintenance operations (<code class="command">ANALYZE</code>,
+     <code class="command">CLUSTER</code>, <code class="command">CREATE
+     INDEX</code>, <code class="command">CREATE
+     MATERIALIZED VIEW</code>, <code class="command">REFRESH
+     MATERIALIZED VIEW</code>, <code class="command">REINDEX</code>,
+     or <code class="command">VACUUM</code>) from performing unsafe access.
+     Functions used by expression indexes and materialized views that
+     need to reference non-default schemas must specify a search path
+     during function creation.
+     </p></li><li class="listitem"><p>
+     Restrict <code class="literal">ago</code> to only appear at the end in
+     <code class="type">interval</code> values (Joseph Koshakow)
+     <a class="ulink" href="https://postgr.es/c/165d581f1" target="_top">§</a>
+     <a class="ulink" href="https://postgr.es/c/617f9b7d4" target="_top">§</a>
+     </p><p>
+     Also, prevent empty interval units from appearing multiple times.
+     </p></li><li class="listitem"><p>
+     Remove server variable old_snapshot_threshold (Thomas Munro)
+     <a class="ulink" href="https://postgr.es/c/f691f5b80" target="_top">§</a>
+     </p><p>
+     This variable allowed vacuum to remove rows that potentially could
+     be still visible to running transactions, causing "snapshot too
+     old" errors later if accessed.  This feature might be re-added
+     to <span class="application">PostgreSQL</span> later if an improved
+     implementation is found.
+     </p></li><li class="listitem"><p>
+     Change <a class="link" href="sql-set-session-authorization.html" title="SET SESSION AUTHORIZATION"><code class="command">SET
+     SESSION AUTHORIZATION</code></a> handling of the initial
+     session user's superuser status (Joseph Koshakow)
+     <a class="ulink" href="https://postgr.es/c/a0363ab7a" target="_top">§</a>
+     </p><p>
+     The new behavior is based on the session user's superuser status at
+     the time the <code class="command">SET SESSION AUTHORIZATION</code> command
+     is issued, rather than their superuser status at connection time.
+     </p></li><li class="listitem"><p>
+     Remove feature which simulated per-database users (Nathan Bossart)
+     <a class="ulink" href="https://postgr.es/c/884eee5bf" target="_top">§</a>
+     </p><p>
+     The feature, <code class="literal">db_user_namespace</code>, was rarely used.
+     </p></li><li class="listitem"><p>
+      Remove <span class="application">adminpack</span> contrib extension
+      (Daniel Gustafsson)
+      <a class="ulink" href="https://postgr.es/c/cc09e6549" target="_top">§</a>
+      </p><p>
+      This was used by now end-of-life <span class="productname">pgAdmin
+      III</span>.
+      </p></li><li class="listitem"><p>
+     Remove <a class="xref" href="runtime-config-wal.html#GUC-WAL-SYNC-METHOD">wal_sync_method</a> value
+     <code class="literal">fsync_writethrough</code> on <span class="systemitem">Windows</span> (Thomas Munro)
+     <a class="ulink" href="https://postgr.es/c/d0c28601e" target="_top">§</a>
+     </p><p>
+     This value was the same as <code class="literal">fsync</code> on <span class="systemitem">Windows</span>.
+     </p></li><li class="listitem"><p>
+     Change file boundary handling of two <acronym class="acronym">WAL</acronym> file
+     name functions (Kyotaro Horiguchi, Andres Freund, Bruce Momjian)
+     <a class="ulink" href="https://postgr.es/c/344afc776" target="_top">§</a>
+     </p><p>
+     The functions <a class="link" href="functions-admin.html#FUNCTIONS-ADMIN-BACKUP-TABLE" title="Table 9.95. Backup Control Functions"><code class="function">pg_walfile_name()</code></a>
+     and <code class="function">pg_walfile_name_offset()</code> used to report
+     the previous <acronym class="acronym">LSN</acronym> segment number when the
+     <acronym class="acronym">LSN</acronym> was on a file segment boundary;  it now
+     returns the current <acronym class="acronym">LSN</acronym> segment.
+     </p></li><li class="listitem"><p>
+     Remove server variable <code class="literal">trace_recovery_messages</code>
+     since it is no longer needed (Bharath Rupireddy)
+     <a class="ulink" href="https://postgr.es/c/c7a3e6b46" target="_top">§</a>
+     </p></li><li class="listitem"><p>
+     Remove <a class="link" href="information-schema.html" title="Chapter 35. The Information Schema">information schema</a> column
+     <code class="structname">element_types</code>.<code class="structfield">domain_default</code>
+     (Peter Eisentraut)
+     <a class="ulink" href="https://postgr.es/c/78806a950" target="_top">§</a>
+     </p></li><li class="listitem"><p>
+     Change <span class="application"><a class="xref" href="pgrowlocks.html" title="F.29. pgrowlocks — show a table's row locking information">pgrowlocks</a></span>
+     lock mode output labels (Bruce Momjian)
+     <a class="ulink" href="https://postgr.es/c/15d5d7405" target="_top">§</a>
+     </p></li><li class="listitem"><p>
+     Remove <code class="structfield">buffers_backend</code> and
+     <code class="structfield">buffers_backend_fsync</code> from <a class="link" href="monitoring-stats.html#MONITORING-PG-STAT-BGWRITER-VIEW" title="27.2.14. pg_stat_bgwriter"><code class="structname">pg_stat_bgwriter</code></a>
+     (Bharath Rupireddy)
+     <a class="ulink" href="https://postgr.es/c/74604a37f" target="_top">§</a>
+     </p><p>
+     These fields are considered redundant to similar columns in <a class="link" href="monitoring-stats.html#MONITORING-PG-STAT-IO-VIEW" title="27.2.13. pg_stat_io"><code class="structname">pg_stat_io</code></a>.
+     </p></li><li class="listitem"><p>
+     Rename I/O block read/write timing statistics columns of
+     <span class="application"><a class="xref" href="pgstatstatements.html" title="F.30. pg_stat_statements — track statistics of SQL planning and execution">pg_stat_statements</a></span>
+     (Nazir Bilal Yavuz)
+     <a class="ulink" href="https://postgr.es/c/13d00729d" target="_top">§</a>
+     </p><p>
+     This renames <code class="structfield">blk_read_time</code>
+     to <code class="structfield">shared_blk_read_time</code>,
+     and <code class="structfield">blk_write_time</code> to
+     <code class="structfield">shared_blk_write_time</code>.
+     </p></li><li class="listitem"><p>
+     Change <a class="link" href="catalog-pg-attribute.html" title="51.7. pg_attribute"><code class="structname">pg_attribute</code>.<code class="structfield">attstattarget</code></a>
+     and
+     <code class="structname">pg_statistic_ext</code>.<code class="structfield">stxstattarget</code>
+     to represent the default statistics target as <code class="literal">NULL</code>
+     (Peter Eisentraut)
+     <a class="ulink" href="https://postgr.es/c/4f622503d" target="_top">§</a>
+     <a class="ulink" href="https://postgr.es/c/012460ee9" target="_top">§</a>
+     </p></li><li class="listitem"><p>
+     Rename <a class="link" href="catalog-pg-collation.html" title="51.12. pg_collation"><code class="structname">pg_collation</code>.<code class="structfield">colliculocale</code></a>
+     to <code class="structfield">colllocale</code> and
+     <a class="link" href="catalog-pg-database.html" title="51.15. pg_database"><code class="structname">pg_database</code>.<code class="structfield">daticulocale</code></a>
+     to <code class="structfield">datlocale</code> (Jeff Davis)
+     <a class="ulink" href="https://postgr.es/c/f696c0cd5" target="_top">§</a>
+     </p></li><li class="listitem"><p>
+     Rename <a class="link" href="progress-reporting.html#VACUUM-PROGRESS-REPORTING" title="27.4.5. VACUUM Progress Reporting"><code class="structname">pg_stat_progress_vacuum</code></a>
+     column <code class="structfield">max_dead_tuples</code>
+     to <code class="structfield">max_dead_tuple_bytes</code>,
+     rename <code class="structfield">num_dead_tuples</code> to
+     <code class="structfield">num_dead_item_ids</code>, and add
+     <code class="structfield">dead_tuple_bytes</code> (Masahiko Sawada)
+     <a class="ulink" href="https://postgr.es/c/667e65aac" target="_top">§</a>
+     <a class="ulink" href="https://postgr.es/c/f1affb670" target="_top">§</a>
+     </p></li><li class="listitem"><p>
+     Rename <acronym class="acronym">SLRU</acronym> columns in system view <a class="link" href="monitoring-stats.html#MONITORING-PG-STAT-SLRU-VIEW" title="27.2.25. pg_stat_slru"><code class="structname">pg_stat_slru</code></a>
+     (Alvaro Herrera)
+     <a class="ulink" href="https://postgr.es/c/bcdfa5f2e" target="_top">§</a>
+     </p><p>
+     The column names accepted by <a class="link" href="monitoring-stats.html#MONITORING-STATS-FUNCS-TABLE" title="Table 27.36. Additional Statistics Functions"><code class="function">pg_stat_reset_slru()</code></a>
+     are also changed.
+     </p></li></ul></div></div><div class="sect2" id="RELEASE-17-CHANGES"><div class="titlepage"><div><div><h3 class="title">E.2.3. Changes <a href="#RELEASE-17-CHANGES" class="id_link">#</a></h3></div></div></div><p>
+     Below you will find a detailed account of the changes between
+    <span class="productname">PostgreSQL</span> 17 and the previous major
+    release.
+    </p><div class="sect3" id="RELEASE-17-SERVER"><div class="titlepage"><div><div><h4 class="title">E.2.3.1. Server <a href="#RELEASE-17-SERVER" class="id_link">#</a></h4></div></div></div><div class="sect4" id="RELEASE-17-OPTIMIZER"><div class="titlepage"><div><div><h5 class="title">E.2.3.1.1. Optimizer <a href="#RELEASE-17-OPTIMIZER" class="id_link">#</a></h5></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+       Allow the optimizer to improve <acronym class="acronym">CTE</acronym> plans by
+       considering the statistics and sort order of columns referenced in earlier row
+       output clauses (Jian Guo, Richard Guo, Tom Lane)
+       <a class="ulink" href="https://postgr.es/c/f7816aec2" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/a65724dfa" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Improve optimization of <code class="literal">IS NOT NULL</code> and
+       <code class="literal">IS NULL</code> query restrictions (David Rowley,
+       Richard Guo, Andy Fan)
+       <a class="ulink" href="https://postgr.es/c/b262ad440" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/3af704098" target="_top">§</a>
+       </p><p>
+       Remove <code class="literal">IS NOT NULL</code> restrictions from queries on
+       <code class="literal">NOT NULL</code> columns and eliminate scans on
+       <code class="literal">NOT NULL</code> columns if <code class="literal">IS NULL</code>
+       is specified.
+       </p></li><li class="listitem"><p>
+       Allow partition pruning on boolean columns on <code class="literal">IS [NOT]
+       UNKNOWN</code> conditionals (David Rowley)
+       <a class="ulink" href="https://postgr.es/c/07c36c133" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Improve optimization of range values when using containment
+       operators &lt;@ and @&gt; (Kim Johan Andersson, Jian He)
+       <a class="ulink" href="https://postgr.es/c/075df6b20" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Allow correlated <code class="literal">IN</code> subqueries to be transformed
+       into joins (Andy Fan, Tom Lane)
+       <a class="ulink" href="https://postgr.es/c/9f1337639" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Improve optimization of the <code class="literal">LIMIT</code> clause
+       on partitioned tables, inheritance parents, and <code class="literal">UNION
+       ALL</code> queries (Andy Fan, David Rowley)
+       <a class="ulink" href="https://postgr.es/c/a8a968a82" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Allow query nodes to be run in parallel in more cases (Tom Lane)
+       <a class="ulink" href="https://postgr.es/c/e08d74ca1" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Allow <code class="literal">GROUP BY</code> columns to be internally
+       ordered to match <code class="literal">ORDER BY</code> (Andrei Lepikhov,
+       Teodor Sigaev)
+       <a class="ulink" href="https://postgr.es/c/0452b461b" target="_top">§</a>
+       </p><p>
+       This can be disabled using server variable
+       <a class="xref" href="runtime-config-query.html#GUC-ENABLE-GROUPBY-REORDERING">enable_group_by_reordering</a>.
+       </p></li><li class="listitem"><p>
+       Allow <code class="literal">UNION</code> (without <code class="literal">ALL</code>)
+       to use MergeAppend (David Rowley)
+       <a class="ulink" href="https://postgr.es/c/66c0185a3" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Fix MergeAppend plans to more accurately compute the number of
+       rows that need to be sorted (Alexander Kuzmenkov)
+       <a class="ulink" href="https://postgr.es/c/9d1a5354f" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Allow  <a class="link" href="gist.html" title="64.2. GiST Indexes">GiST</a> and <a class="link" href="spgist.html" title="64.3. SP-GiST Indexes">SP-GiST</a> indexes to be part of incremental
+       sorts (Miroslav Bendik)
+       <a class="ulink" href="https://postgr.es/c/625d5b3ca" target="_top">§</a>
+       </p><p>
+       This is particularly useful for <code class="literal">ORDER BY</code>
+       clauses where the first column has a GiST and SP-GiST index,
+       and other columns do not.
+       </p></li><li class="listitem"><p>
+       Add columns to <a class="link" href="view-pg-stats.html" title="52.27. pg_stats"><code class="structname">pg_stats</code></a>
+       to report range-type histogram information (Egor Rogov, Soumyadeep
+       Chakraborty)
+       <a class="ulink" href="https://postgr.es/c/bc3c8db8a" target="_top">§</a>
+       </p></li></ul></div></div><div class="sect4" id="RELEASE-17-INDEXES"><div class="titlepage"><div><div><h5 class="title">E.2.3.1.2. Indexes <a href="#RELEASE-17-INDEXES" class="id_link">#</a></h5></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+       Allow <a class="link" href="btree.html" title="64.1. B-Tree Indexes">btree</a> indexes to more
+       efficiently find a set of values, such as those supplied by
+       <code class="literal">IN</code> clauses using constants (Peter Geoghegan,
+       Matthias van de Meent)
+       <a class="ulink" href="https://postgr.es/c/5bf748b86" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Allow <a class="link" href="brin.html" title="64.5. BRIN Indexes"><acronym class="acronym">BRIN</acronym></a> indexes
+       to be created using parallel workers (Tomas Vondra, Matthias van
+       de Meent)
+       <a class="ulink" href="https://postgr.es/c/b43757171" target="_top">§</a>
+       </p></li></ul></div></div><div class="sect4" id="RELEASE-17-PERFORMANCE"><div class="titlepage"><div><div><h5 class="title">E.2.3.1.3. General Performance <a href="#RELEASE-17-PERFORMANCE" class="id_link">#</a></h5></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+       Allow vacuum to more efficiently remove and freeze tuples (Melanie
+       Plageman, Heikki Linnakangas)
+       <a class="ulink" href="https://postgr.es/c/6dbb49026" target="_top">§</a>
+       </p><p>
+       <acronym class="acronym">WAL</acronym> traffic caused by vacuum is also more
+       compact.
+       </p></li><li class="listitem"><p>
+       Allow vacuum to more efficiently store tuple references (Masahiko
+       Sawada, John Naylor)
+       <a class="ulink" href="https://postgr.es/c/ee1b30f12" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/30e144287" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/667e65aac" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/6dbb49026" target="_top">§</a>
+       </p><p>
+       Additionally, vacuum is no longer silently limited to one gigabyte
+       of memory when <a class="xref" href="runtime-config-resource.html#GUC-MAINTENANCE-WORK-MEM">maintenance_work_mem</a> or <a class="xref" href="runtime-config-resource.html#GUC-AUTOVACUUM-WORK-MEM">autovacuum_work_mem</a> are higher.
+       </p></li><li class="listitem"><p>
+       Optimize vacuuming of relations with no indexes (Melanie Plageman)
+       <a class="ulink" href="https://postgr.es/c/c120550ed" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Increase default <a class="xref" href="runtime-config-resource.html#GUC-VACUUM-BUFFER-USAGE-LIMIT">vacuum_buffer_usage_limit</a>
+       to 2MB (Thomas Munro)
+       <a class="ulink" href="https://postgr.es/c/98f320eb2" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Improve performance when checking roles with many memberships
+       (Nathan Bossart)
+       <a class="ulink" href="https://postgr.es/c/d365ae705" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Improve performance of heavily-contended <acronym class="acronym">WAL</acronym>
+       writes (Bharath Rupireddy)
+       <a class="ulink" href="https://postgr.es/c/71e4cc6b8" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Improve performance when transferring large blocks of data to a
+       client (Melih Mutlu)
+       <a class="ulink" href="https://postgr.es/c/c4ab7da60" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Allow the grouping of file system reads with the new system variable
+       <a class="xref" href="runtime-config-resource.html#GUC-IO-COMBINE-LIMIT">io_combine_limit</a> (Thomas Munro, Andres Freund,
+       Melanie Plageman, Nazir Bilal Yavuz)
+       <a class="ulink" href="https://postgr.es/c/210622c60" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/b7b0f3f27" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/041b96802" target="_top">§</a>
+       </p></li></ul></div></div><div class="sect4" id="RELEASE-17-MONITORING"><div class="titlepage"><div><div><h5 class="title">E.2.3.1.4. Monitoring <a href="#RELEASE-17-MONITORING" class="id_link">#</a></h5></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+       Create system view <a class="link" href="monitoring-stats.html#MONITORING-PG-STAT-CHECKPOINTER-VIEW" title="27.2.15. pg_stat_checkpointer"><code class="structname">pg_stat_checkpointer</code></a>
+       (Bharath Rupireddy, Anton A. Melnikov, Alexander Korotkov)
+       <a class="ulink" href="https://postgr.es/c/96f052613" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/12915a58e" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/e820db5b5" target="_top">§</a>
+       </p><p>
+       Relevant columns have been removed from <a class="link" href="monitoring-stats.html#PG-STAT-BGWRITER-VIEW" title="Table 27.24. pg_stat_bgwriter View"><code class="structname">pg_stat_bgwriter</code></a>
+       and added to this new system view.
+       </p></li><li class="listitem"><p>
+       Improve control over resetting statistics (Atsushi Torikoshi,
+       Bharath Rupireddy)
+       <a class="ulink" href="https://postgr.es/c/23c8c0c8f" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/2e8a0edc2" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/e5cca6288" target="_top">§</a>
+       </p><p>
+       Allow <a class="link" href="monitoring-stats.html#MONITORING-STATS-FUNCS-TABLE" title="Table 27.36. Additional Statistics Functions"><code class="function">pg_stat_reset_shared()</code></a>
+       (with no arguments) and
+       pg_stat_reset_shared(<code class="literal">NULL</code>) to reset all
+       shared statistics.  Allow pg_stat_reset_shared('slru') and <a class="link" href="monitoring-stats.html#MONITORING-STATS-FUNCS-TABLE" title="Table 27.36. Additional Statistics Functions"><code class="function">pg_stat_reset_slru()</code></a>
+       (with no arguments) to reset <acronym class="acronym">SLRU</acronym> statistics,
+       which was already possible with pg_stat_reset_slru(NULL).
+       </p></li><li class="listitem"><p>
+       Add log messages related to <acronym class="acronym">WAL</acronym> recovery from
+       backups (Andres Freund)
+       <a class="ulink" href="https://postgr.es/c/1d35f705e" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Add <a class="xref" href="runtime-config-logging.html#GUC-LOG-CONNECTIONS">log_connections</a> log line for
+       <code class="literal">trust</code> connections (Jacob Champion)
+       <a class="ulink" href="https://postgr.es/c/e48b19c5d" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Add log message to report walsender acquisition and release of
+       replication slots (Bharath Rupireddy)
+       <a class="ulink" href="https://postgr.es/c/7c3fb505b" target="_top">§</a>
+       </p><p>
+       This is enabled by the server variable <a class="xref" href="runtime-config-logging.html#GUC-LOG-REPLICATION-COMMANDS">log_replication_commands</a>.
+       </p></li><li class="listitem"><p>
+       Add system view <a class="link" href="view-pg-wait-events.html" title="52.36. pg_wait_events"><code class="structname">pg_wait_events</code></a>
+       that reports wait event types (Bertrand Drouvot)
+       <a class="ulink" href="https://postgr.es/c/1e68e43d3" target="_top">§</a>
+       </p><p>
+       This is useful for adding descriptions
+       to wait events reported in <a class="link" href="monitoring-stats.html#MONITORING-PG-STAT-ACTIVITY-VIEW" title="27.2.3. pg_stat_activity"><code class="structname">pg_stat_activity</code></a>.
+       </p></li><li class="listitem"><p>
+       Add <a class="link" href="view-pg-wait-events.html" title="52.36. pg_wait_events">wait events</a> for
+       checkpoint delays (Thomas Munro)
+       <a class="ulink" href="https://postgr.es/c/0013ba290" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Allow vacuum to report the progress of index processing (Sami
+       Imseih)
+       <a class="ulink" href="https://postgr.es/c/46ebdfe16" target="_top">§</a>
+       </p><p>
+       This appears in system view <a class="link" href="progress-reporting.html#PG-STAT-PROGRESS-VACUUM-VIEW" title="Table 27.45. pg_stat_progress_vacuum View"><code class="structname">pg_stat_progress_vacuum</code></a>
+       columns <code class="structfield">indexes_total</code> and
+       <code class="structfield">indexes_processed</code>.
+       </p></li></ul></div></div><div class="sect4" id="RELEASE-17-PRIVILEGES"><div class="titlepage"><div><div><h5 class="title">E.2.3.1.5. Privileges <a href="#RELEASE-17-PRIVILEGES" class="id_link">#</a></h5></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+       Allow granting the right to perform maintenance operations
+       (Nathan Bossart)
+       <a class="ulink" href="https://postgr.es/c/ecb0fd337" target="_top">§</a>
+       </p><p>
+       The permission can be granted on a per-table basis using the <a class="link" href="ddl-priv.html#DDL-PRIV-MAINTAIN"><code class="literal">MAINTAIN</code></a>
+       privilege and on a per-role basis via the <a class="link" href="predefined-roles.html" title="21.5. Predefined Roles"><code class="literal">pg_maintain</code></a>
+       predefined role.  Permitted operations are
+       <code class="command">VACUUM</code>, <code class="command">ANALYZE</code>,
+       <code class="command">REINDEX</code>, <code class="command">REFRESH MATERIALIZED
+       VIEW</code>, <code class="command">CLUSTER</code>, and <code class="command">LOCK
+       TABLE</code>.
+       </p></li><li class="listitem"><p>
+       Allow roles with <a class="link" href="predefined-roles.html" title="21.5. Predefined Roles"><code class="literal">pg_monitor</code></a>
+       membership to execute <a class="link" href="functions-info.html#FUNCTIONS-INFO-SESSION-TABLE" title="Table 9.69. Session Information Functions"><code class="function">pg_current_logfile()</code></a>
+       (Pavlo Golub, Nathan Bossart)
+       <a class="ulink" href="https://postgr.es/c/8d8afd48d" target="_top">§</a>
+       </p></li></ul></div></div><div class="sect4" id="RELEASE-17-SERVER-CONFIG"><div class="titlepage"><div><div><h5 class="title">E.2.3.1.6. Server Configuration <a href="#RELEASE-17-SERVER-CONFIG" class="id_link">#</a></h5></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+       Add system variable <a class="xref" href="runtime-config-compatible.html#GUC-ALLOW-ALTER-SYSTEM">allow_alter_system</a>
+       to disallow <a class="link" href="sql-altersystem.html" title="ALTER SYSTEM"><code class="command">ALTER
+       SYSTEM</code></a> (Jelte Fennema-Nio, Gabriele Bartolini)
+       <a class="ulink" href="https://postgr.es/c/d3ae2a24f" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Allow <a class="link" href="sql-altersystem.html" title="ALTER SYSTEM"><code class="command">ALTER
+       SYSTEM</code></a> to set unrecognized custom server variables
+       (Tom Lane)
+       <a class="ulink" href="https://postgr.es/c/2d870b4ae" target="_top">§</a>
+       </p><p>
+       This is also possible with <a class="link" href="sql-grant.html" title="GRANT"><code class="literal">GRANT
+       ON PARAMETER</code></a>.
+       </p></li><li class="listitem"><p>
+       Add server variable <a class="xref" href="runtime-config-client.html#GUC-TRANSACTION-TIMEOUT">transaction_timeout</a> to
+       restrict the duration of transactions (Andrey Borodin, Japin Li,
+       Junwang Zhao, Alexander Korotkov)
+       <a class="ulink" href="https://postgr.es/c/51efe38cb" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/bf82f4379" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/28e858c0f" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Add a builtin platform-independent collation provider (Jeff Davis)
+       <a class="ulink" href="https://postgr.es/c/2d819a08a" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/846311051" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/f69319f2f" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/9acae56ce" target="_top">§</a>
+       </p><p>
+       This supports <code class="literal">C</code> and <code class="literal">C.UTF-8</code>
+       collations.
+       </p></li><li class="listitem"><p>
+       Add server variable <a class="xref" href="runtime-config-preset.html#GUC-HUGE-PAGES-STATUS">huge_pages_status</a> to
+       report the use of huge pages by Postgres (Justin Pryzby)
+       <a class="ulink" href="https://postgr.es/c/a14354cac" target="_top">§</a>
+       </p><p>
+       This is useful when <a class="xref" href="runtime-config-resource.html#GUC-HUGE-PAGES">huge_pages</a> is set to
+       <code class="literal">try</code>.
+       </p></li><li class="listitem"><p>
+       Add server variable to disable event triggers (Daniel Gustafsson)
+       <a class="ulink" href="https://postgr.es/c/7750fefdb" target="_top">§</a>
+       </p><p>
+       The setting, <a class="xref" href="runtime-config-client.html#GUC-EVENT-TRIGGERS">event_triggers</a>, allows for the
+       temporary disabling of event triggers for debugging.
+       </p></li><li class="listitem"><p>
+       Allow the <a class="link" href="monitoring-stats.html#MONITORING-PG-STAT-SLRU-VIEW" title="27.2.25. pg_stat_slru"><acronym class="acronym">SLRU</acronym></a>
+       cache sizes to be configured (Andrey Borodin, Dilip Kumar,
+       Alvaro Herrera)
+       <a class="ulink" href="https://postgr.es/c/53c2a97a9" target="_top">§</a>
+       </p><p>
+       The new server variables are <a class="xref" href="runtime-config-resource.html#GUC-COMMIT-TIMESTAMP-BUFFERS">commit_timestamp_buffers</a>,
+       <a class="xref" href="runtime-config-resource.html#GUC-MULTIXACT-MEMBER-BUFFERS">multixact_member_buffers</a>,
+       <a class="xref" href="runtime-config-resource.html#GUC-MULTIXACT-OFFSET-BUFFERS">multixact_offset_buffers</a>,
+       <a class="xref" href="runtime-config-resource.html#GUC-NOTIFY-BUFFERS">notify_buffers</a>, <a class="xref" href="runtime-config-resource.html#GUC-SERIALIZABLE-BUFFERS">serializable_buffers</a>, <a class="xref" href="runtime-config-resource.html#GUC-SUBTRANSACTION-BUFFERS">subtransaction_buffers</a>, and
+       <a class="xref" href="runtime-config-resource.html#GUC-TRANSACTION-BUFFERS">transaction_buffers</a>. <a class="xref" href="runtime-config-resource.html#GUC-COMMIT-TIMESTAMP-BUFFERS">commit_timestamp_buffers</a>, <a class="xref" href="runtime-config-resource.html#GUC-TRANSACTION-BUFFERS">transaction_buffers</a>, and <a class="xref" href="runtime-config-resource.html#GUC-SUBTRANSACTION-BUFFERS">subtransaction_buffers</a> scale up automatically with
+       <a class="xref" href="runtime-config-resource.html#GUC-SHARED-BUFFERS">shared_buffers</a>.
+       </p></li></ul></div></div><div class="sect4" id="RELEASE-17-REPLICATION"><div class="titlepage"><div><div><h5 class="title">E.2.3.1.7. Streaming Replication and Recovery <a href="#RELEASE-17-REPLICATION" class="id_link">#</a></h5></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+       Add support for incremental file system backup (Robert Haas,
+       Jakub Wartak, Tomas Vondra)
+       <a class="ulink" href="https://postgr.es/c/dc2123400" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/f8ce4ed78" target="_top">§</a>
+       </p><p>
+       Incremental backups can be created using <a class="link" href="app-pgbasebackup.html" title="pg_basebackup"><span class="application">pg_basebackup</span></a>'s
+       new <code class="option">--incremental</code>
+       option.  The new application <a class="link" href="app-pgcombinebackup.html" title="pg_combinebackup"><span class="application">pg_combinebackup</span></a>
+       allows manipulation of base and incremental file system backups.
+       </p></li><li class="listitem"><p>
+       Allow the creation of <acronym class="acronym">WAL</acronym> summarization files
+       (Robert Haas, Nathan Bossart, Hubert Depesz Lubaczewski)
+       <a class="ulink" href="https://postgr.es/c/174c48050" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/d97ef756a" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/f896057e4" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/d9ef650fc" target="_top">§</a>
+       </p><p>
+       These files record the block numbers that have changed within an
+       <a class="link" href="datatype-pg-lsn.html" title="8.20. pg_lsn Type"><acronym class="acronym">LSN</acronym></a>
+       range and are useful for incremental file
+       system backups.  This is controlled by the server
+       variables <a class="xref" href="runtime-config-wal.html#GUC-SUMMARIZE-WAL">summarize_wal</a> and <a class="xref" href="runtime-config-wal.html#GUC-WAL-SUMMARY-KEEP-TIME">wal_summary_keep_time</a>, and introspected with <a class="link" href="functions-info.html#FUNCTIONS-WAL-SUMMARY" title="Table 9.92. WAL Summarization Information Functions"><code class="function">pg_available_wal_summaries()</code></a>,
+       <code class="function">pg_wal_summary_contents()</code>, and
+       <code class="function">pg_get_wal_summarizer_state()</code>.
+       </p></li><li class="listitem"><p>
+       Add the system identifier to file system <a class="link" href="backup-manifest-format.html" title="Chapter 69. Backup Manifest Format">backup manifest</a> files
+       (Amul Sul)
+       <a class="ulink" href="https://postgr.es/c/2041bc427" target="_top">§</a>
+       </p><p>
+       This helps detect invalid <acronym class="acronym">WAL</acronym> usage.
+       </p></li><li class="listitem"><p>
+       Allow connection string value
+       <code class="literal">dbname</code> to be written when <a class="link" href="app-pgbasebackup.html" title="pg_basebackup"><span class="application">pg_basebackup</span></a>
+       writes connection information to
+       <code class="filename">postgresql.auto.conf</code> (Vignesh C, Hayato Kuroda)
+       <a class="ulink" href="https://postgr.es/c/a145f424d" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Add column <a class="link" href="view-pg-replication-slots.html" title="52.19. pg_replication_slots"><code class="structname">pg_replication_slots</code>.<code class="structfield">invalidation_reason</code></a>
+       to report the reason for invalid slots (Shveta Malik, Bharath
+       Rupireddy)
+       <a class="ulink" href="https://postgr.es/c/007693f2a" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/6ae701b43" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Add column <a class="link" href="view-pg-replication-slots.html" title="52.19. pg_replication_slots"><code class="structname">pg_replication_slots</code>.<code class="structfield">inactive_since</code></a>
+       to report slot inactivity duration (Bharath Rupireddy)
+       <a class="ulink" href="https://postgr.es/c/a11f330b5" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/6d49c8d4b" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/6f132ed69" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Add function <a class="link" href="functions-admin.html#FUNCTIONS-REPLICATION-TABLE" title="Table 9.99. Replication Management Functions"><code class="function">pg_sync_replication_slots()</code></a>
+       to synchronize logical replication slots (Hou Zhijie, Shveta Malik,
+       Ajin Cherian, Peter Eisentraut)
+       <a class="ulink" href="https://postgr.es/c/ddd5f4f54" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/7a424ece4" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Add the <code class="literal">failover</code> property to the <a class="link" href="protocol-replication.html" title="53.4. Streaming Replication Protocol">replication protocol</a> (Hou
+       Zhijie, Shveta Malik)
+       <a class="ulink" href="https://postgr.es/c/732924043" target="_top">§</a>
+       </p></li></ul></div></div><div class="sect4" id="RELEASE-17-LOGICAL"><div class="titlepage"><div><div><h5 class="title">E.2.3.1.8. <a class="link" href="logical-replication.html" title="Chapter 29. Logical Replication">Logical Replication</a> <a href="#RELEASE-17-LOGICAL" class="id_link">#</a></h5></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+       Add application <a class="link" href="app-pgcreatesubscriber.html" title="pg_createsubscriber"><span class="application">pg_createsubscriber</span></a>
+       to create a logical replica from a physical standby server
+       (Euler Taveira)
+       <a class="ulink" href="https://postgr.es/c/d44032d01" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Have <a class="link" href="pgupgrade.html" title="pg_upgrade"><span class="application">pg_upgrade</span></a>
+       migrate valid logical slots and subscriptions (Hayato Kuroda,
+       Hou Zhijie, Vignesh C, Julien Rouhaud, Shlok Kyal)
+       <a class="ulink" href="https://postgr.es/c/29d0a77fa" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/9a17be1e2" target="_top">§</a>
+       </p><p>
+       This allows logical replication to continue
+       quickly after the upgrade.  This only works for old
+       <span class="productname">PostgreSQL</span> clusters that are version
+       17 or later.
+       </p></li><li class="listitem"><p>
+       Enable the failover of <a class="link" href="logical-replication-subscription.html#LOGICAL-REPLICATION-SUBSCRIPTION-SLOT" title="29.2.1. Replication Slot Management">logical slots</a>
+       (Hou Zhijie, Shveta Malik, Ajin Cherian)
+       <a class="ulink" href="https://postgr.es/c/c393308b6" target="_top">§</a>
+       </p><p>
+       This is controlled by an optional fifth argument to <a class="link" href="functions-admin.html#FUNCTIONS-REPLICATION-TABLE" title="Table 9.99. Replication Management Functions"><code class="function">pg_create_logical_replication_slot()</code></a>.
+       </p></li><li class="listitem"><p>
+       Add server variable <a class="xref" href="runtime-config-replication.html#GUC-SYNC-REPLICATION-SLOTS">sync_replication_slots</a>
+       to enable failover logical slot synchronization (Shveta Malik,
+       Hou Zhijie, Peter Smith)
+       <a class="ulink" href="https://postgr.es/c/93db6cbda" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/60c07820d" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Add logical replication failover control to <a class="link" href="sql-createsubscription.html" title="CREATE SUBSCRIPTION"><code class="literal">CREATE/ALTER
+       SUBSCRIPTION</code></a> (Shveta Malik, Hou Zhijie, Ajin
+       Cherian)
+       <a class="ulink" href="https://postgr.es/c/776621a5e" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/22f7e61a6" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Allow the application of logical replication changes to use
+       <a class="link" href="hash-index.html" title="64.6. Hash Indexes">hash</a> indexes on the subscriber
+       (Hayato Kuroda)
+       <a class="ulink" href="https://postgr.es/c/edca34243" target="_top">§</a>
+       </p><p>
+       Previously only <a class="link" href="btree.html" title="64.1. B-Tree Indexes">btree</a> indexes could
+       be used for this purpose.
+       </p></li><li class="listitem"><p>
+       Improve <a class="link" href="logicaldecoding.html" title="Chapter 47. Logical Decoding">logical decoding</a>
+       performance in cases where there are many subtransactions
+       (Masahiko Sawada)
+       <a class="ulink" href="https://postgr.es/c/5bec1d6bc" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Restart apply workers if subscription owner's superuser privileges
+       are revoked (Vignesh C)
+       <a class="ulink" href="https://postgr.es/c/79243de13" target="_top">§</a>
+       </p><p>
+       This forces reauthentication.
+       </p></li><li class="listitem"><p>
+       Add <code class="literal">flush</code> option to <a class="link" href="functions-admin.html#FUNCTIONS-REPLICATION-TABLE" title="Table 9.99. Replication Management Functions"><code class="function">pg_logical_emit_message()</code></a>
+       (Michael Paquier)
+       <a class="ulink" href="https://postgr.es/c/173b56f1e" target="_top">§</a>
+       </p><p>
+       This makes the message durable.
+       </p></li><li class="listitem"><p>
+       Allow specification of physical standbys that must be synchronized
+       before they are visible to subscribers (Hou Zhijie, Shveta Malik)
+       <a class="ulink" href="https://postgr.es/c/bf279ddd1" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/0f934b073" target="_top">§</a>
+       </p><p>
+       The new server variable is <a class="xref" href="runtime-config-replication.html#GUC-SYNCHRONIZED-STANDBY-SLOTS">synchronized_standby_slots</a>.
+       </p></li><li class="listitem"><p>
+       Add worker type column to <a class="link" href="monitoring-stats.html#MONITORING-PG-STAT-SUBSCRIPTION" title="27.2.8. pg_stat_subscription"><code class="structname">pg_stat_subscription</code></a>
+       (Peter Smith)
+       <a class="ulink" href="https://postgr.es/c/13aeaf079" target="_top">§</a>
+       </p></li></ul></div></div></div><div class="sect3" id="RELEASE-17-UTILITY"><div class="titlepage"><div><div><h4 class="title">E.2.3.2. Utility Commands <a href="#RELEASE-17-UTILITY" class="id_link">#</a></h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+      Add new <a class="link" href="sql-copy.html" title="COPY"><code class="command">COPY</code></a>
+      option <code class="literal">ON_ERROR ignore</code> to discard error rows
+      (Damir Belyalov, Atsushi Torikoshi, Alex Shulgin, Jian He, Yugo
+      Nagata)
+      <a class="ulink" href="https://postgr.es/c/9e2d87011" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/b725b7eec" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/40bbc8cf0" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/a6d0fa5ef" target="_top">§</a>
+      </p><p>
+      The default behavior is <code class="literal">ON_ERROR stop</code>.
+      </p></li><li class="listitem"><p>
+      Add new <code class="command">COPY</code> option
+      <code class="literal">LOG_VERBOSITY</code> which reports <code class="literal">COPY
+      FROM</code> ignored error rows (Bharath Rupireddy)
+      <a class="ulink" href="https://postgr.es/c/f5a227895" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Allow <code class="literal">COPY FROM</code> to report the number of skipped
+      rows during processing (Atsushi Torikoshi)
+      <a class="ulink" href="https://postgr.es/c/729439607" target="_top">§</a>
+      </p><p>
+      This appears in system view column <a class="link" href="progress-reporting.html#COPY-PROGRESS-REPORTING" title="27.4.3. COPY Progress Reporting"><code class="structname">pg_stat_progress_copy</code>.<code class="structfield">tuples_skipped</code></a>.
+      </p></li><li class="listitem"><p>
+      In <code class="literal">COPY FROM</code>, allow easy specification that all
+      columns should be forced null or not null (Zhang Mingli)
+      <a class="ulink" href="https://postgr.es/c/f6d4c9cf1" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Allow partitioned tables to have identity columns (Ashutosh Bapat)
+      <a class="ulink" href="https://postgr.es/c/699586315" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Allow <a class="link" href="ddl-constraints.html#DDL-CONSTRAINTS-EXCLUSION" title="5.5.6. Exclusion Constraints">exclusion
+      constraints</a> on partitioned tables (Paul A. Jungwirth)
+      <a class="ulink" href="https://postgr.es/c/8c852ba9a" target="_top">§</a>
+      </p><p>
+      As long as exclusion constraints compare partition key columns
+      for equality, other columns can use exclusion constraint-specific
+      comparisons.
+      </p></li><li class="listitem"><p>
+      Add clearer <a class="link" href="sql-altertable.html" title="ALTER TABLE"><code class="command">ALTER
+      TABLE</code></a> method to set a column to the default
+      statistics target (Peter Eisentraut)
+      <a class="ulink" href="https://postgr.es/c/4f622503d" target="_top">§</a>
+      </p><p>
+      The new syntax is <code class="literal">ALTER TABLE ... SET STATISTICS
+      DEFAULT</code>; using <code class="literal">SET STATISTICS -1</code>
+      is still supported.
+      </p></li><li class="listitem"><p>
+      Allow <code class="literal">ALTER TABLE</code> to change a column's generation
+      expression (Amul Sul)
+      <a class="ulink" href="https://postgr.es/c/5d06e99a3" target="_top">§</a>
+      </p><p>
+      The syntax is <code class="literal">ALTER TABLE ... ALTER COLUMN ... SET
+      EXPRESSION</code>.
+      </p></li><li class="listitem"><p>
+      Allow specification of <a class="link" href="tableam.html" title="Chapter 61. Table Access Method Interface Definition">table access
+      methods</a> on partitioned tables (Justin Pryzby, Soumyadeep
+      Chakraborty, Michael Paquier)
+      <a class="ulink" href="https://postgr.es/c/374c7a229" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/e2395cdbe" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Add <code class="literal">DEFAULT</code> setting for <code class="literal">ALTER TABLE
+      .. SET ACCESS METHOD</code> (Michael Paquier)
+      <a class="ulink" href="https://postgr.es/c/d61a6cad6" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Add support for <a class="link" href="sql-createeventtrigger.html" title="CREATE EVENT TRIGGER">event
+      triggers</a> that fire at connection time (Konstantin Knizhnik,
+      Mikhail Gribkov)
+      <a class="ulink" href="https://postgr.es/c/e83d1b0c4" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Add event trigger support for <a class="link" href="sql-reindex.html" title="REINDEX"><code class="command">REINDEX</code></a> (Garrett
+      Thornburg, Jian He)
+      <a class="ulink" href="https://postgr.es/c/f21848de2" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Allow parenthesized syntax for <a class="link" href="sql-cluster.html" title="CLUSTER"><code class="command">CLUSTER</code></a> options if
+      a table name is not specified (Nathan Bossart)
+      <a class="ulink" href="https://postgr.es/c/cdaedfc96" target="_top">§</a>
+      </p></li></ul></div><div class="sect4" id="RELEASE-17-EXPLAIN"><div class="titlepage"><div><div><h5 class="title">E.2.3.2.1. <a class="link" href="sql-explain.html" title="EXPLAIN"><code class="command">EXPLAIN</code></a> <a href="#RELEASE-17-EXPLAIN" class="id_link">#</a></h5></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+       Allow <code class="command">EXPLAIN</code> to report
+       optimizer memory usage (Ashutosh Bapat)
+       <a class="ulink" href="https://postgr.es/c/5de890e36" target="_top">§</a>
+       </p><p>
+       The option is called <code class="literal">MEMORY</code>.
+       </p></li><li class="listitem"><p>
+       Add <code class="command">EXPLAIN</code> option <code class="literal">SERIALIZE</code>
+       to report the cost of converting data for network transmission
+       (Stepan Rutz, Matthias van de Meent)
+       <a class="ulink" href="https://postgr.es/c/06286709e" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Add local I/O block read/write timing statistics to
+       <code class="command">EXPLAIN</code>'s <code class="literal">BUFFERS</code> output
+       (Nazir Bilal Yavuz)
+       <a class="ulink" href="https://postgr.es/c/295c36c0c" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Improve <code class="command">EXPLAIN</code>'s display of SubPlan nodes and
+       output parameters (Tom Lane, Dean Rasheed)
+       <a class="ulink" href="https://postgr.es/c/fd0398fcb" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Add <acronym class="acronym">JIT</acronym> <code class="literal">deform_counter</code>
+       details to <code class="command">EXPLAIN</code> (Dmitry Dolgov)
+       <a class="ulink" href="https://postgr.es/c/5a3423ad8" target="_top">§</a>
+       </p></li></ul></div></div></div><div class="sect3" id="RELEASE-17-DATATYPES"><div class="titlepage"><div><div><h4 class="title">E.2.3.3. Data Types <a href="#RELEASE-17-DATATYPES" class="id_link">#</a></h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+      Allow the <code class="type">interval</code> data type to support
+      <code class="literal">+/-infinity</code> values (Joseph Koshakow, Jian He,
+      Ashutosh Bapat)
+      <a class="ulink" href="https://postgr.es/c/519fc1bd9" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Allow the use of an <a class="link" href="datatype-enum.html" title="8.7. Enumerated Types"><code class="type">ENUM</code></a> added via <a class="link" href="sql-altertype.html" title="ALTER TYPE"><code class="command">ALTER TYPE</code></a> if
+      the type was created in the same transaction (Tom Lane)
+      <a class="ulink" href="https://postgr.es/c/af1d39584" target="_top">§</a>
+      </p><p>
+      This was previously disallowed.
+      </p></li></ul></div></div><div class="sect3" id="RELEASE-17-MERGE"><div class="titlepage"><div><div><h4 class="title">E.2.3.4. <a class="link" href="sql-merge.html" title="MERGE">MERGE</a> <a href="#RELEASE-17-MERGE" class="id_link">#</a></h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+      Allow <code class="command">MERGE</code> to modify updatable views (Dean
+      Rasheed)
+      <a class="ulink" href="https://postgr.es/c/5f2e179bd" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Add <code class="literal">WHEN NOT MATCHED BY SOURCE</code> to
+      <code class="command">MERGE</code> (Dean Rasheed)
+      <a class="ulink" href="https://postgr.es/c/0294df2f1" target="_top">§</a>
+      </p><p>
+      <code class="literal">WHEN NOT MATCHED</code> on target rows was already
+      supported.
+      </p></li><li class="listitem"><p>
+      Allow <code class="command">MERGE</code> to use the
+      <code class="literal">RETURNING</code> clause (Dean Rasheed)
+      <a class="ulink" href="https://postgr.es/c/c649fa24a" target="_top">§</a>
+      </p><p>
+      The new <code class="literal">RETURNING</code> function
+      <code class="function">merge_action()</code> reports on the
+      <acronym class="acronym">DML</acronym> that generated the row.
+      </p></li></ul></div></div><div class="sect3" id="RELEASE-17-FUNCTIONS"><div class="titlepage"><div><div><h4 class="title">E.2.3.5. Functions <a href="#RELEASE-17-FUNCTIONS" class="id_link">#</a></h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+      Add function <a class="link" href="functions-json.html#FUNCTIONS-SQLJSON-TABLE" title="9.16.4. JSON_TABLE"><code class="function">JSON_TABLE()</code></a>
+      to convert <code class="type">JSON</code> data to a table representation (Nikita
+      Glukhov, Teodor Sigaev, Oleg Bartunov, Alexander Korotkov, Andrew
+      Dunstan, Amit Langote, Jian He)
+      <a class="ulink" href="https://postgr.es/c/de3600452" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/bb766cde6" target="_top">§</a>
+      </p><p>
+      This function can be used in the <code class="literal">FROM</code> clause of
+      <code class="command">SELECT</code> queries as a tuple source.
+      </p></li><li class="listitem"><p>
+      Add <acronym class="acronym">SQL/JSON</acronym> constructor functions <a class="link" href="functions-json.html#FUNCTIONS-JSON-CREATION-TABLE" title="Table 9.47. JSON Creation Functions"><code class="function">JSON()</code></a>,
+      <code class="function">JSON_SCALAR()</code>, and
+      <code class="function">JSON_SERIALIZE()</code> (Nikita Glukhov, Teodor Sigaev,
+      Oleg Bartunov, Alexander Korotkov, Andrew Dunstan, Amit Langote)
+      <a class="ulink" href="https://postgr.es/c/03734a7fe" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Add <acronym class="acronym">SQL/JSON</acronym> query functions <a class="link" href="functions-json.html#FUNCTIONS-SQLJSON-QUERYING" title="Table 9.52. SQL/JSON Query Functions"><code class="function">JSON_EXISTS()</code></a>,
+      <code class="function">JSON_QUERY()</code>, and
+      <code class="function">JSON_VALUE()</code> (Nikita Glukhov, Teodor Sigaev,
+      Oleg Bartunov, Alexander Korotkov, Andrew Dunstan, Amit Langote,
+      Peter Eisentraut, Jian He)
+      <a class="ulink" href="https://postgr.es/c/aaaf9449e" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/1edb3b491" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/6185c9737" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/c0fc07518" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/ef744ebb7" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Add <a class="link" href="functions-json.html#FUNCTIONS-SQLJSON-PATH-OPERATORS" title="9.16.2.3. SQL/JSON Path Operators and Methods">jsonpath</a>
+      methods to convert <code class="type">JSON</code> values to other
+      <code class="type">JSON</code> data types (Jeevan Chalke)
+      <a class="ulink" href="https://postgr.es/c/66ea94e8e" target="_top">§</a>
+      </p><p>
+      The jsonpath methods are <code class="function">.bigint()</code>,
+      <code class="function">.boolean()</code>, <code class="function">.date()</code>,
+      <code class="function">.decimal([precision [, scale]])</code>,
+      <code class="function">.integer()</code>, <code class="function">.number()</code>,
+      <code class="function">.string()</code>, <code class="function">.time()</code>,
+      <code class="function">.time_tz()</code>, <code class="function">.timestamp()</code>,
+      and <code class="function">.timestamp_tz()</code>.
+      </p></li><li class="listitem"><p>
+      Add <a class="link" href="functions-formatting.html#FUNCTIONS-FORMATTING-TABLE" title="Table 9.26. Formatting Functions"><code class="function">to_timestamp()</code></a>
+      time zone format specifiers (Tom Lane)
+      <a class="ulink" href="https://postgr.es/c/8ba6fdf90" target="_top">§</a>
+      </p><p>
+      <code class="literal">TZ</code> accepts time zone abbreviations or numeric
+      offsets, while <code class="literal">OF</code> accepts only numeric offsets.
+      </p></li><li class="listitem"><p>
+      Allow the session <a class="link" href="runtime-config-client.html#GUC-TIMEZONE">time zone</a>
+      to be specified by <code class="literal">AT LOCAL</code> (Vik Fearing)
+      <a class="ulink" href="https://postgr.es/c/97957fdba" target="_top">§</a>
+      </p><p>
+      This is useful when converting adding and removing time zones from
+      time stamps values, rather than specifying the literal session
+      time zone.
+      </p></li><li class="listitem"><p>
+      Add functions <a class="link" href="functions-uuid.html" title="9.14. UUID Functions"><code class="function">uuid_extract_timestamp()</code></a>
+      and <code class="function">uuid_extract_version()</code> to return
+      <acronym class="acronym">UUID</acronym> information (Andrey Borodin)
+      <a class="ulink" href="https://postgr.es/c/794f10f6b" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Add functions to generate random numbers in a specified range
+      (Dean Rasheed)
+      <a class="ulink" href="https://postgr.es/c/e6341323a" target="_top">§</a>
+      </p><p>
+      The functions are <a class="link" href="functions-math.html#FUNCTIONS-MATH-RANDOM-TABLE" title="Table 9.6. Random Functions"><code class="function">random(min,
+      max)</code></a> and they take values of type
+      <code class="type">integer</code>, <code class="type">bigint</code>, and <code class="type">numeric</code>.
+      </p></li><li class="listitem"><p>
+      Add functions to convert integers to binary and octal strings
+      (Eric Radman, Nathan Bossart)
+      <a class="ulink" href="https://postgr.es/c/260a1f18d" target="_top">§</a>
+      </p><p>
+      The functions are <a class="link" href="functions-string.html#FUNCTIONS-STRING-OTHER" title="Table 9.10. Other String Functions and Operators"><code class="function">to_bin()</code></a>
+      and <code class="function">to_oct()</code>.
+      </p></li><li class="listitem"><p>
+      Add Unicode informational functions (Jeff Davis)
+      <a class="ulink" href="https://postgr.es/c/a02b37fc0" target="_top">§</a>
+      </p><p>
+      Function <a class="link" href="functions-info.html#FUNCTIONS-INFO-VERSION" title="9.27.11. Version Information Functions"><code class="function">unicode_version()</code></a>
+      returns the Unicode version,
+      <code class="function">icu_unicode_version()</code>
+      returns the <acronym class="acronym">ICU</acronym> version, and
+      <code class="function">unicode_assigned()</code> returns if the characters
+      are assigned Unicode codepoints.
+      </p></li><li class="listitem"><p>
+      Add function <a class="link" href="functions-xml.html#FUNCTIONS-PRODUCING-XML-XMLTEXT" title="9.15.1.1. xmltext"><code class="function">xmltext()</code></a>
+      to convert text to a single <code class="type">XML</code> text node (Jim Jones)
+      <a class="ulink" href="https://postgr.es/c/526fe0d79" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Add function <a class="link" href="functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE" title="Table 9.74. System Catalog Information Functions"><code class="function">to_regtypemod()</code></a>
+      to return the type modifier of a type specification (David Wheeler,
+      Erik Wienhold)
+      <a class="ulink" href="https://postgr.es/c/1218ca995" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Add <a class="link" href="functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE" title="Table 9.74. System Catalog Information Functions"><code class="function">pg_basetype()</code></a>
+      function to return a domain's base type (Steve Chavez)
+      <a class="ulink" href="https://postgr.es/c/b154d8a6d" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Add function <a class="link" href="functions-admin.html#FUNCTIONS-ADMIN-DBSIZE" title="Table 9.100. Database Object Size Functions"><code class="function">pg_column_toast_chunk_id()</code></a>
+      to return a value's <a class="link" href="storage-toast.html" title="65.2. TOAST"><acronym class="acronym">TOAST</acronym></a> identifier
+      (Yugo Nagata)
+      <a class="ulink" href="https://postgr.es/c/d1162cfda" target="_top">§</a>
+      </p><p>
+      This returns <code class="literal">NULL</code> if the value is not stored
+      in <acronym class="acronym">TOAST</acronym>.
+      </p></li></ul></div></div><div class="sect3" id="RELEASE-17-PLPGSQL"><div class="titlepage"><div><div><h4 class="title">E.2.3.6. <a class="link" href="plpgsql.html" title="Chapter 41. PL/pgSQL — SQL Procedural Language">PL/pgSQL</a> <a href="#RELEASE-17-PLPGSQL" class="id_link">#</a></h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+      Allow plpgsql <a class="link" href="plpgsql-declarations.html#PLPGSQL-DECLARATION-TYPE" title="41.3.3. Copying Types"><code class="literal">%TYPE</code></a>
+      and <code class="literal">%ROWTYPE</code> specifications to represent arrays
+      of non-array types (Quan Zongliang, Pavel Stehule)
+      <a class="ulink" href="https://postgr.es/c/5e8674dc8" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Allow plpgsql <code class="literal">%TYPE</code> specification to reference
+      composite column (Tom Lane)
+      <a class="ulink" href="https://postgr.es/c/43b46aae1" target="_top">§</a>
+      </p></li></ul></div></div><div class="sect3" id="RELEASE-17-LIBPQ"><div class="titlepage"><div><div><h4 class="title">E.2.3.7. <a class="link" href="libpq.html" title="Chapter 32. libpq — C Library">libpq</a> <a href="#RELEASE-17-LIBPQ" class="id_link">#</a></h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+      Add libpq function to change role passwords (Joe Conway)
+      <a class="ulink" href="https://postgr.es/c/a7be2a6c2" target="_top">§</a>
+      </p><p>
+      The new function, <a class="link" href="libpq-misc.html#LIBPQ-PQCHANGEPASSWORD"><code class="function">PQchangePassword()</code></a>,
+      hashes the new password before sending it to the server.
+      </p></li><li class="listitem"><p>
+      Add libpq functions to close portals and prepared statements
+      (Jelte Fennema-Nio)
+      <a class="ulink" href="https://postgr.es/c/28b572656" target="_top">§</a>
+      </p><p>
+      The functions are <a class="link" href="libpq-exec.html#LIBPQ-PQCLOSEPREPARED"><code class="function">PQclosePrepared()</code></a>,
+      <a class="link" href="libpq-exec.html#LIBPQ-PQCLOSEPORTAL"><code class="function">PQclosePortal()</code></a>,
+      <a class="link" href="libpq-async.html#LIBPQ-PQSENDCLOSEPREPARED"><code class="function">PQsendClosePrepared()</code></a>,
+      and <a class="link" href="libpq-async.html#LIBPQ-PQSENDCLOSEPORTAL"><code class="function">PQsendClosePortal()</code></a>.
+      </p></li><li class="listitem"><p>
+      Add libpq <acronym class="acronym">API</acronym> which allows for blocking and
+      non-blocking <a class="link" href="libpq-cancel.html" title="32.7. Canceling Queries in Progress">cancel requests</a>,
+      with encryption if already in use (Jelte Fennema-Nio)
+      <a class="ulink" href="https://postgr.es/c/61461a300" target="_top">§</a>
+      </p><p>
+      Previously only blocking, unencrypted cancel requests were supported.
+      </p></li><li class="listitem"><p>
+      Add libpq function <a class="link" href="libpq-connect.html#LIBPQ-PQSOCKETPOLL"><code class="function">PQsocketPoll()</code></a>
+      to allow polling of network sockets (Tristan Partin, Tom Lane)
+      <a class="ulink" href="https://postgr.es/c/f5e4dedfa" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/105024a47" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Add libpq function <a class="link" href="libpq-pipeline-mode.html#LIBPQ-PQSENDPIPELINESYNC"><code class="function">PQsendPipelineSync()</code></a>
+      to send a pipeline synchronization point (Anton Kirilov)
+      <a class="ulink" href="https://postgr.es/c/4794c2d31" target="_top">§</a>
+      </p><p>
+      This is similar to <a class="link" href="libpq-pipeline-mode.html#LIBPQ-PQPIPELINESYNC"><code class="function">PQpipelineSync()</code></a>
+      but it does not flush to the server unless the size threshold of
+      the output buffer is reached.
+      </p></li><li class="listitem"><p>
+      Add libpq function <a class="link" href="libpq-single-row-mode.html#LIBPQ-PQSETCHUNKEDROWSMODE"><code class="function">PQsetChunkedRowsMode()</code></a>
+      to allow retrieval of results in chunks (Daniel Vérité)
+      <a class="ulink" href="https://postgr.es/c/4643a2b26" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Allow <acronym class="acronym">TLS</acronym> connections without requiring a
+      network round-trip negotiation (Greg Stark, Heikki Linnakangas,
+      Peter Eisentraut, Michael Paquier, Daniel Gustafsson)
+      <a class="ulink" href="https://postgr.es/c/d39a49c1e" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/91044ae4b" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/44e27f0a6" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/d80f2ce29" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/03a0e0d4b" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/17a834a04" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/407e0b023" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/fb5718f35" target="_top">§</a>
+      </p><p>
+      This is enabled with the client-side option <a class="link" href="libpq-connect.html#LIBPQ-CONNECT-SSLNEGOTIATION"><code class="literal">sslnegotiation=direct</code></a>,
+      requires <acronym class="acronym">ALPN</acronym>, and only works on
+      <span class="productname">PostgreSQL</span> 17 and later servers.
+      </p></li></ul></div></div><div class="sect3" id="RELEASE-17-PSQL"><div class="titlepage"><div><div><h4 class="title">E.2.3.8. <a class="xref" href="app-psql.html" title="psql"><span class="refentrytitle"><span class="application">psql</span></span></a> <a href="#RELEASE-17-PSQL" class="id_link">#</a></h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+      Improve <span class="application">psql</span> display of default and
+      empty privileges (Erik Wienhold, Laurenz Albe)
+      <a class="ulink" href="https://postgr.es/c/d1379ebf4" target="_top">§</a>
+      </p><p>
+      Command <code class="literal">\dp</code> now displays <code class="literal">(none)</code>
+      for empty privileges;  default still displays as empty.
+      </p></li><li class="listitem"><p>
+      Have backslash commands honor <code class="literal">\pset null</code> (Erik
+      Wienhold, Laurenz Albe)
+      <a class="ulink" href="https://postgr.es/c/d1379ebf4" target="_top">§</a>
+      </p><p>
+      Previously <code class="literal">\pset null</code> was ignored.
+      </p></li><li class="listitem"><p>
+      Allow <span class="application">psql</span>'s <code class="literal">\watch</code>
+      to stop after a minimum number of rows returned (Greg Sabino Mullane)
+      <a class="ulink" href="https://postgr.es/c/f347ec76e" target="_top">§</a>
+      </p><p>
+      The parameter is <code class="literal">min_rows</code>.
+      </p></li><li class="listitem"><p>
+      Allow <span class="application">psql</span> connection attempts to be
+      canceled with control-C (Tristan Partin)
+      <a class="ulink" href="https://postgr.es/c/cafe10565" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Allow <span class="application">psql</span> to honor
+      <code class="literal">FETCH_COUNT</code> for non-<code class="command">SELECT</code>
+      queries (Daniel Vérité)
+      <a class="ulink" href="https://postgr.es/c/90f517821" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Improve <span class="application">psql</span> tab completion (Dagfinn
+      Ilmari Mannsåker, Gilles Darold, Christoph Heiss, Steve Chavez,
+      Vignesh C, Pavel Borisov, Jian He)
+      <a class="ulink" href="https://postgr.es/c/c951e9042" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/d16eb83ab" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/cd3424748" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/816f10564" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/927332b95" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/f1bb9284f" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/304b6b1a6" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/2800fbb2b" target="_top">§</a>
+      </p></li></ul></div></div><div class="sect3" id="RELEASE-17-SERVER-APPS"><div class="titlepage"><div><div><h4 class="title">E.2.3.9. Server Applications <a href="#RELEASE-17-SERVER-APPS" class="id_link">#</a></h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+      Add application <a class="link" href="app-pgwalsummary.html" title="pg_walsummary"><span class="application">pg_walsummary</span></a>
+      to dump <acronym class="acronym">WAL</acronym> summary files (Robert Haas)
+      <a class="ulink" href="https://postgr.es/c/ee1bfd168" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Allow <a class="link" href="app-pgdump.html" title="pg_dump"><span class="application">pg_dump</span></a>'s
+      large objects to be restorable in batches (Tom Lane)
+      <a class="ulink" href="https://postgr.es/c/a45c78e32" target="_top">§</a>
+      </p><p>
+      This allows the restoration of many large objects to avoid
+      transaction limits and to be restored in parallel.
+      </p></li><li class="listitem"><p>
+      Add <span class="application">pg_dump</span> option
+      <code class="option">--exclude-extension</code> (Ayush Vatsa)
+      <a class="ulink" href="https://postgr.es/c/522ed12f7" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Allow <a class="link" href="app-pgdump.html" title="pg_dump"><span class="application">pg_dump</span></a>, <a class="link" href="app-pg-dumpall.html" title="pg_dumpall"><span class="application">pg_dumpall</span></a>,
+      and <a class="link" href="app-pgrestore.html" title="pg_restore"><span class="application">pg_restore</span></a>
+      to specify include/exclude objects in a file (Pavel Stehule,
+      Daniel Gustafsson)
+      <a class="ulink" href="https://postgr.es/c/a5cf808be" target="_top">§</a>
+      </p><p>
+      The option is called <code class="option">--filter</code>.
+      </p></li><li class="listitem"><p>
+      Add the <code class="option">--sync-method</code> parameter to several client
+      applications (Justin Pryzby, Nathan Bossart)
+      <a class="ulink" href="https://postgr.es/c/8c16ad3b4" target="_top">§</a>
+      </p><p>
+      The applications are <a class="link" href="app-initdb.html" title="initdb"><span class="application">initdb</span></a>, <a class="link" href="app-pgbasebackup.html" title="pg_basebackup"><span class="application">pg_basebackup</span></a>,
+      <a class="link" href="app-pgchecksums.html" title="pg_checksums"><span class="application">pg_checksums</span></a>,
+      <a class="link" href="app-pgdump.html" title="pg_dump"><span class="application">pg_dump</span></a>,
+      <a class="link" href="app-pgrewind.html" title="pg_rewind"><span class="application">pg_rewind</span></a>,
+      and <a class="link" href="pgupgrade.html" title="pg_upgrade"><span class="application">pg_upgrade</span></a>.
+      </p></li><li class="listitem"><p>
+      Add <a class="link" href="app-pgrestore.html" title="pg_restore"><span class="application">pg_restore</span></a>
+      option <code class="option">--transaction-size</code> to allow object restores
+      in transaction batches (Tom Lane)
+      <a class="ulink" href="https://postgr.es/c/959b38d77" target="_top">§</a>
+      </p><p>
+      This allows the performance benefits of transaction batches without
+      the problems of excessively large transaction blocks.
+      </p></li><li class="listitem"><p>
+      Change <a class="link" href="pgbench.html" title="pgbench"><span class="application">pgbench</span></a> debug
+      mode option from <code class="option">-d</code> to <code class="option">--debug</code>
+      (Greg Sabino Mullane)
+      <a class="ulink" href="https://postgr.es/c/3ff01b2b6" target="_top">§</a>
+      </p><p>
+      Option <code class="option">-d</code> is now used for the database name,
+      and the new <code class="option">--dbname</code> option can be used as well.
+      </p></li><li class="listitem"><p>
+      Add pgbench option <code class="option">--exit-on-abort</code> to exit after
+      any client aborts (Yugo Nagata)
+      <a class="ulink" href="https://postgr.es/c/3c662643c" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Add pgbench command <code class="literal">\syncpipeline</code> to allow
+      sending of sync messages (Anthonin Bonnefoy)
+      <a class="ulink" href="https://postgr.es/c/94edfe250" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Allow <a class="link" href="pgarchivecleanup.html" title="pg_archivecleanup"><span class="application">pg_archivecleanup</span></a>
+      to remove backup history files (Atsushi Torikoshi)
+      <a class="ulink" href="https://postgr.es/c/3f8c98d0b" target="_top">§</a>
+      </p><p>
+      The option is <code class="option">--clean-backup-history</code>.
+      </p></li><li class="listitem"><p>
+      Add some long options to <span class="application">pg_archivecleanup</span>
+      (Atsushi Torikoshi)
+      <a class="ulink" href="https://postgr.es/c/dd7c60f19" target="_top">§</a>
+      </p><p>
+      The long options are <code class="option">--debug</code>,
+      <code class="option">--dry-run</code>, and <code class="option">--strip-extension</code>.
+      </p></li><li class="listitem"><p>
+      Allow <a class="link" href="app-pgbasebackup.html" title="pg_basebackup"><span class="application">pg_basebackup</span></a>
+      and <a class="link" href="app-pgreceivewal.html" title="pg_receivewal"><span class="application">pg_receivewal</span></a>
+      to use dbname in their connection specification (Jelte Fennema-Nio)
+      <a class="ulink" href="https://postgr.es/c/cca97ce6a" target="_top">§</a>
+      </p><p>
+      This is useful for connection poolers that are sensitive to the
+      database name.
+      </p></li><li class="listitem"><p>
+      Add <a class="link" href="pgupgrade.html" title="pg_upgrade"><span class="application">pg_upgrade</span></a>
+      option <code class="option">--copy-file-range</code> (Thomas Munro)
+      <a class="ulink" href="https://postgr.es/c/d93627bcb" target="_top">§</a>
+      </p><p>
+      This is supported on <span class="systemitem">Linux</span>
+      and <span class="systemitem">FreeBSD</span>.
+      </p></li><li class="listitem"><p>
+      Allow <a class="link" href="app-reindexdb.html" title="reindexdb"><span class="application">reindexdb</span></a>
+      <code class="option">--index</code> to process indexes from different tables
+      in parallel (Maxim Orlov, Svetlana Derevyanko, Alexander Korotkov)
+      <a class="ulink" href="https://postgr.es/c/47f99a407" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Allow <a class="link" href="app-reindexdb.html" title="reindexdb">reindexdb</a>,
+      <a class="link" href="app-vacuumdb.html" title="vacuumdb">vacuumdb</a>, and <a class="link" href="app-clusterdb.html" title="clusterdb">clusterdb</a> to process objects in all
+      databases matching a pattern (Nathan Bossart)
+      <a class="ulink" href="https://postgr.es/c/24c928ad9" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/648928c79" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/1b49d56d3" target="_top">§</a>
+      </p><p>
+      The new option <code class="option">--all</code> controls this behavior.
+      </p></li></ul></div></div><div class="sect3" id="RELEASE-17-SOURCE-CODE"><div class="titlepage"><div><div><h4 class="title">E.2.3.10. Source Code <a href="#RELEASE-17-SOURCE-CODE" class="id_link">#</a></h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+      Remove support for <span class="productname">OpenSSL</span> 1.0.1
+      (Michael Paquier)
+      <a class="ulink" href="https://postgr.es/c/8e278b657" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Allow tests to pass in <span class="productname">OpenSSL</span>
+      <acronym class="acronym">FIPS</acronym> mode (Peter Eisentraut)
+      <a class="ulink" href="https://postgr.es/c/284cbaea7" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/3c44e7d8d" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Use <acronym class="acronym">CPU AVX</acronym>-512 instructions for bit counting
+      (Paul Amonson, Nathan Bossart, Ants Aasma)
+      <a class="ulink" href="https://postgr.es/c/792752af4" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/41c51f0c6" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Require <span class="productname"><acronym class="acronym">LLVM</acronym></span> version
+      10 or later (Thomas Munro)
+      <a class="ulink" href="https://postgr.es/c/820b5af73" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Use native <acronym class="acronym">CRC</acronym> instructions on 64-bit
+      <span class="productname">LoongArch</span> CPUs (Xudong Yang)
+      <a class="ulink" href="https://postgr.es/c/4d14ccd6a" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Remove <span class="systemitem"><acronym class="acronym">AIX</acronym></span>
+      support (Heikki Linnakangas)
+      <a class="ulink" href="https://postgr.es/c/0b16bb877" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Remove the <span class="productname">Microsoft Visual
+      Studio</span>-specific <span class="productname">PostgreSQL</span>
+      build option (Michael Paquier)
+      <a class="ulink" href="https://postgr.es/c/1301c80b2" target="_top">§</a>
+      </p><p>
+      <span class="productname">Meson</span> is now the only available method
+      for <span class="productname">Visual Studio</span> builds.
+      </p></li><li class="listitem"><p>
+      Remove configure option <code class="option">--disable-thread-safety</code>
+      (Thomas Munro, Heikki Linnakangas)
+      <a class="ulink" href="https://postgr.es/c/68a4b58ec" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/ce0b0fa3e" target="_top">§</a>
+      </p><p>
+      We now assume all supported platforms have sufficient thread support.
+      </p></li><li class="listitem"><p>
+      Remove <span class="application">configure</span> option
+      <code class="option">--with-CC</code> (Heikki Linnakangas)
+      <a class="ulink" href="https://postgr.es/c/1c1eec0f2" target="_top">§</a>
+      </p><p>
+      Setting the <code class="envar">CC</code> environment variable is now the only
+      supported method for specifying the compiler.
+      </p></li><li class="listitem"><p>
+      User-defined data type receive functions will no longer receive
+      their data null-terminated (David Rowley)
+      <a class="ulink" href="https://postgr.es/c/f0efa5aec" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Add incremental <code class="type">JSON</code> parser for use with huge
+      <code class="type">JSON</code> documents (Andrew Dunstan)
+      <a class="ulink" href="https://postgr.es/c/3311ea86e" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Convert top-level <code class="filename">README</code> file to
+      <span class="productname">Markdown</span> (Nathan Bossart)
+      <a class="ulink" href="https://postgr.es/c/363eb0599" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Remove no longer needed top-level <code class="filename">INSTALL</code> file
+      (Tom Lane)
+      <a class="ulink" href="https://postgr.es/c/e2b73f4a4" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Remove <span class="application">make</span>'s <code class="literal">distprep</code>
+      option (Peter Eisentraut)
+      <a class="ulink" href="https://postgr.es/c/721856ff2" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Add  <span class="application">make</span> support for
+      <span class="productname">Android</span> shared libraries (Peter
+      Eisentraut)
+      <a class="ulink" href="https://postgr.es/c/79b03dbb3" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Add backend support for injection points (Michael Paquier)
+      <a class="ulink" href="https://postgr.es/c/d86d20f0b" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/37b369dc6" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/f587338de" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/bb93640a6" target="_top">§</a>
+      </p><p>
+      This is used for server debugging and they must be enabled at server
+      compile time.
+      </p></li><li class="listitem"><p>
+      Add dynamic shared memory registry (Nathan Bossart)
+      <a class="ulink" href="https://postgr.es/c/8b2bcf3f2" target="_top">§</a>
+      </p><p>
+       This allows shared libraries which are not initialized at startup
+       to coordinate dynamic shared memory access.
+      </p></li><li class="listitem"><p>
+      Fix <code class="literal">emit_log_hook</code> to use the same time value as
+      other log records for the same query (Kambam Vinay, Michael Paquier)
+      <a class="ulink" href="https://postgr.es/c/2a217c371" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Improve documentation for using <code class="literal">jsonpath</code> for
+      predicate checks (David Wheeler)
+      <a class="ulink" href="https://postgr.es/c/7014c9a4b" target="_top">§</a>
+      </p></li></ul></div></div><div class="sect3" id="RELEASE-17-MODULES"><div class="titlepage"><div><div><h4 class="title">E.2.3.11. Additional Modules <a href="#RELEASE-17-MODULES" class="id_link">#</a></h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+      Allow joins with non-join qualifications to be pushed down to
+      foreign servers and custom scans (Richard Guo, Etsuro Fujita)
+      <a class="ulink" href="https://postgr.es/c/9e9931d2b" target="_top">§</a>
+      </p><p>
+      Foreign data wrappers and custom scans will need to be modified to
+      handle these cases.
+      </p></li><li class="listitem"><p>
+      Allow pushdown of <code class="literal">EXISTS</code> and <code class="literal">IN</code>
+      subqueries to <a class="xref" href="postgres-fdw.html" title="F.36. postgres_fdw — access data stored in external PostgreSQL servers">postgres_fdw</a> foreign servers
+      (Alexander Pyhalov)
+      <a class="ulink" href="https://postgr.es/c/824dbea3e" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Increase the default foreign data wrapper tuple cost (David Rowley,
+      Umair Shahid)
+      <a class="ulink" href="https://postgr.es/c/cac169d68" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/f7f694b21" target="_top">§</a>
+      </p><p>
+      This value is used by the optimizer.
+      </p></li><li class="listitem"><p>
+      Allow <a class="link" href="dblink.html" title="F.11. dblink — connect to other PostgreSQL databases"><span class="application">dblink</span></a>
+      database operations to be interrupted (Noah Misch)
+      <a class="ulink" href="https://postgr.es/c/d3c5f37dd" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Allow the creation of hash indexes on <span class="application"><a class="xref" href="ltree.html" title="F.22. ltree — hierarchical tree-like data type">ltree</a></span> columns (Tommy Pavlicek)
+      <a class="ulink" href="https://postgr.es/c/485f0aa85" target="_top">§</a>
+      </p><p>
+      This also enables hash join and hash aggregation on
+      <span class="application">ltree</span> columns.
+      </p></li><li class="listitem"><p>
+      Allow <span class="application"><a class="xref" href="unaccent.html" title="F.46. unaccent — a text search dictionary which removes diacritics">unaccent</a></span> character
+      translation rules to contain whitespace and quotes (Michael Paquier)
+      <a class="ulink" href="https://postgr.es/c/59f47fb98" target="_top">§</a>
+      </p><p>
+      The syntax for the <code class="filename">unaccent.rules</code> file has
+      changed.
+      </p></li><li class="listitem"><p>
+      Allow <span class="application"><a class="xref" href="amcheck.html" title="F.1. amcheck — tools to verify table and index consistency">amcheck</a></span>
+      to check for unique constraint violations using new option
+      <code class="option">--checkunique</code> (Anastasia Lubennikova, Pavel Borisov,
+      Maxim Orlov)
+      <a class="ulink" href="https://postgr.es/c/5ae208720" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Allow <span class="application"><a class="xref" href="citext.html" title="F.9. citext — a case-insensitive character string type">citext</a></span> tests to
+      pass in OpenSSL <acronym class="acronym">FIPS</acronym> mode (Peter Eisentraut)
+      <a class="ulink" href="https://postgr.es/c/3c551ebed" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Allow <span class="application"><a class="xref" href="pgcrypto.html" title="F.26. pgcrypto — cryptographic functions">pgcrypto</a></span> tests
+      to pass in OpenSSL <acronym class="acronym">FIPS</acronym> mode (Peter Eisentraut)
+      <a class="ulink" href="https://postgr.es/c/795592865" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Remove some unused <a class="link" href="spi.html" title="Chapter 45. Server Programming Interface"><acronym class="acronym">SPI</acronym></a>
+      macros (Bharath Rupireddy)
+      <a class="ulink" href="https://postgr.es/c/75680c3d8" target="_top">§</a>
+      </p></li><li class="listitem"><p>
+      Allow <a class="link" href="sql-alteroperator.html" title="ALTER OPERATOR"><code class="command">ALTER
+      OPERATOR</code></a> to set more optimization attributes
+      (Tommy Pavlicek)
+      <a class="ulink" href="https://postgr.es/c/2b5154bea" target="_top">§</a>
+      </p><p>
+      This is useful for extensions.
+      </p></li><li class="listitem"><p>
+      Allow extensions to define <a class="link" href="xfunc-c.html#XFUNC-ADDIN-WAIT-EVENTS" title="36.10.12. Custom Wait Events">custom wait events</a>
+      (Masahiro Ikeda)
+      <a class="ulink" href="https://postgr.es/c/c9af05465" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/c8e318b1b" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/d61f2538a" target="_top">§</a>
+      <a class="ulink" href="https://postgr.es/c/c789f0f6c" target="_top">§</a>
+      </p><p>
+      Custom wait events have been added to <span class="application"><a class="xref" href="postgres-fdw.html" title="F.36. postgres_fdw — access data stored in external PostgreSQL servers">postgres_fdw</a></span> and <span class="application"><a class="xref" href="dblink.html" title="F.11. dblink — connect to other PostgreSQL databases">dblink</a></span>.
+      </p></li><li class="listitem"><p>
+      Add <span class="application"><a class="xref" href="pgbuffercache.html" title="F.25. pg_buffercache — inspect PostgreSQL buffer cache state">pg_buffercache</a></span>
+      function <code class="function">pg_buffercache_evict()</code> to allow shared
+      buffer eviction (Palak Chaturvedi, Thomas Munro)
+      <a class="ulink" href="https://postgr.es/c/13453eedd" target="_top">§</a>
+      </p><p>
+      This is useful for testing.
+      </p></li></ul></div><div class="sect4" id="RELEASE-17-PGSTATSTATEMENTS"><div class="titlepage"><div><div><h5 class="title">E.2.3.11.1. <a class="link" href="pgstatstatements.html" title="F.30. pg_stat_statements — track statistics of SQL planning and execution"><span class="application">pg_stat_statements</span></a> <a href="#RELEASE-17-PGSTATSTATEMENTS" class="id_link">#</a></h5></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+       Replace <a class="link" href="sql-call.html" title="CALL"><code class="command">CALL</code></a>
+       parameters in <span class="application">pg_stat_statements</span> with
+       placeholders (Sami Imseih)
+       <a class="ulink" href="https://postgr.es/c/11c34b342" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Replace savepoint names stored in
+       <code class="structname">pg_stat_statements</code> with placeholders
+       (Greg Sabino Mullane)
+       <a class="ulink" href="https://postgr.es/c/31de7e60d" target="_top">§</a>
+       </p><p>
+       This greatly reduces the number of entries needed to record <a class="link" href="sql-savepoint.html" title="SAVEPOINT"><code class="command">SAVEPOINT</code></a>,
+       <a class="link" href="sql-release-savepoint.html" title="RELEASE SAVEPOINT"><code class="command">RELEASE
+       SAVEPOINT</code></a>, and <a class="link" href="sql-rollback-to.html" title="ROLLBACK TO SAVEPOINT"><code class="command">ROLLBACK TO
+       SAVEPOINT</code></a> commands.
+       </p></li><li class="listitem"><p>
+       Replace the two-phase commit <acronym class="acronym">GID</acronym>s stored in
+       <code class="structname">pg_stat_statements</code> with placeholders
+       (Michael Paquier)
+       <a class="ulink" href="https://postgr.es/c/638d42a3c" target="_top">§</a>
+       </p><p>
+       This greatly reduces the number of entries needed to record
+       <a class="link" href="sql-prepare-transaction.html" title="PREPARE TRANSACTION"><code class="command">PREPARE
+       TRANSACTION</code></a>, <a class="link" href="sql-commit-prepared.html" title="COMMIT PREPARED"><code class="command">COMMIT
+       PREPARED</code></a>, and <a class="link" href="sql-rollback-prepared.html" title="ROLLBACK PREPARED"><code class="command">ROLLBACK
+       PREPARED</code></a>.
+       </p></li><li class="listitem"><p>
+       Track <a class="link" href="sql-deallocate.html" title="DEALLOCATE"><code class="command">DEALLOCATE</code></a>
+       in <code class="structname">pg_stat_statements</code> (Dagfinn Ilmari
+       Mannsåker, Michael Paquier)
+       <a class="ulink" href="https://postgr.es/c/bb45156f3" target="_top">§</a>
+       </p><p>
+       <code class="command">DEALLOCATE</code> names are stored in
+       <code class="structname">pg_stat_statements</code> as placeholders.
+       </p></li><li class="listitem"><p>
+       Add local I/O block read/write timing statistics columns of
+       <code class="structname">pg_stat_statements</code> (Nazir Bilal Yavuz)
+       <a class="ulink" href="https://postgr.es/c/295c36c0c" target="_top">§</a>
+       <a class="ulink" href="https://postgr.es/c/5147ab1dd" target="_top">§</a>
+       </p><p>
+       The new columns are <code class="structfield">local_blk_read_time</code>
+       and <code class="structfield">local_blk_write_time</code>.
+       </p></li><li class="listitem"><p>
+       Add <acronym class="acronym">JIT</acronym> deform_counter details to
+       <code class="structname">pg_stat_statements</code> (Dmitry Dolgov)
+       <a class="ulink" href="https://postgr.es/c/5a3423ad8" target="_top">§</a>
+       </p></li><li class="listitem"><p>
+       Add optional fourth argument (<code class="literal">minmax_only</code>)
+       to <code class="function">pg_stat_statements_reset()</code> to allow for
+       the resetting of only min/max statistics (Andrei Zubkov)
+       <a class="ulink" href="https://postgr.es/c/dc9f8a798" target="_top">§</a>
+       </p><p>
+       This argument defaults to <code class="literal">false</code>.
+       </p></li><li class="listitem"><p>
+       Add <code class="structname">pg_stat_statements</code>
+       columns <code class="structfield">stats_since</code> and
+       <code class="structfield">minmax_stats_since</code> to track entry
+       creation time and last min/max reset time (Andrei Zubkov)
+       <a class="ulink" href="https://postgr.es/c/dc9f8a798" target="_top">§</a>
+       </p></li></ul></div></div></div></div><div class="sect2" id="RELEASE-17-ACKNOWLEDGEMENTS"><div class="titlepage"><div><div><h3 class="title">E.2.4. Acknowledgments <a href="#RELEASE-17-ACKNOWLEDGEMENTS" class="id_link">#</a></h3></div></div></div><p>
+    The following individuals (in alphabetical order) have contributed
+    to this release as patch authors, committers, reviewers, testers,
+    or reporters of issues.
+   </p><table border="0" summary="Simple list" class="simplelist"><tr><td>Abhijit Menon-Sen</td></tr><tr><td>Adnan Dautovic</td></tr><tr><td>Aidar Imamov</td></tr><tr><td>Ajin Cherian</td></tr><tr><td>Akash Shankaran</td></tr><tr><td>Akshat Jaimini</td></tr><tr><td>Alaa Attya</td></tr><tr><td>Aleksander Alekseev</td></tr><tr><td>Aleksej Orlov</td></tr><tr><td>Alena Rybakina</td></tr><tr><td>Alex Hsieh</td></tr><tr><td>Alex Malek</td></tr><tr><td>Alex Shulgin</td></tr><tr><td>Alex Work</td></tr><tr><td>Alexander Korotkov</td></tr><tr><td>Alexander Kozhemyakin</td></tr><tr><td>Alexander Kuzmenkov</td></tr><tr><td>Alexander Lakhin</td></tr><tr><td>Alexander Pyhalov</td></tr><tr><td>Alexey Palazhchenko</td></tr><tr><td>Alfons Kemper</td></tr><tr><td>Álvaro Herrera</td></tr><tr><td>Amadeo Gallardo</td></tr><tr><td>Amit Kapila</td></tr><tr><td>Amit Langote</td></tr><tr><td>Amul Sul</td></tr><tr><td>Anastasia Lubennikova</td></tr><tr><td>Anatoly Zaretsky</td></tr><tr><td>Andreas Karlsson</td></tr><tr><td>Andreas Ulbrich</td></tr><tr><td>Andrei Lepikhov</td></tr><tr><td>Andrei Zubkov</td></tr><tr><td>Andres Freund</td></tr><tr><td>Andrew Alsup</td></tr><tr><td>Andrew Atkinson</td></tr><tr><td>Andrew Bille</td></tr><tr><td>Andrew Dunstan</td></tr><tr><td>Andrew Kane</td></tr><tr><td>Andrey Borodin</td></tr><tr><td>Andrey Rachitskiy</td></tr><tr><td>Andrey Sokolov</td></tr><tr><td>Andy Fan</td></tr><tr><td>Anthonin Bonnefoy</td></tr><tr><td>Anthony Hsu</td></tr><tr><td>Anton Kirilov</td></tr><tr><td>Anton Melnikov</td></tr><tr><td>Anton Voloshin</td></tr><tr><td>Antonin Houska</td></tr><tr><td>Ants Aasma</td></tr><tr><td>Antti Lampinen</td></tr><tr><td>Aramaki Zyake</td></tr><tr><td>Artem Anisimov</td></tr><tr><td>Artur Zakirov</td></tr><tr><td>Ashutosh Bapat</td></tr><tr><td>Ashutosh Sharma</td></tr><tr><td>Atsushi Torikoshi</td></tr><tr><td>Attila Gulyás</td></tr><tr><td>Ayush Tiwari</td></tr><tr><td>Ayush Vatsa</td></tr><tr><td>Bartosz Chrol</td></tr><tr><td>Benoît Ryder</td></tr><tr><td>Bernd Helmle</td></tr><tr><td>Bertrand Drouvot</td></tr><tr><td>Bharath Rupireddy</td></tr><tr><td>Bo Andreson</td></tr><tr><td>Boshomi Phenix</td></tr><tr><td>Bowen Shi</td></tr><tr><td>Boyu Yang</td></tr><tr><td>Bruce Momjian</td></tr><tr><td>Cameron Vogt</td></tr><tr><td>Cary Huang</td></tr><tr><td>Cédric Villemain</td></tr><tr><td>Changhong Fei</td></tr><tr><td>Chantal Keller</td></tr><tr><td>Chapman Flack</td></tr><tr><td>Chengxi Sun</td></tr><tr><td>Chris Travers</td></tr><tr><td>Christian Maurer</td></tr><tr><td>Christian Stork</td></tr><tr><td>Christoph Berg</td></tr><tr><td>Christoph Heiss</td></tr><tr><td>Christophe Courtois</td></tr><tr><td>Christopher Kline</td></tr><tr><td>Claudio Freire</td></tr><tr><td>Colin Caine</td></tr><tr><td>Corey Huinker</td></tr><tr><td>Curt Kolovson</td></tr><tr><td>Dag Lem</td></tr><tr><td>Dagfinn Ilmari Mannsåker</td></tr><tr><td>Damir Belyalov</td></tr><tr><td>Daniel Fredouille</td></tr><tr><td>Daniel Gustafsson</td></tr><tr><td>Daniel Shelepanov</td></tr><tr><td>Daniel Vérité</td></tr><tr><td>Daniel Westermann</td></tr><tr><td>Darren Rush</td></tr><tr><td>Dave Cramer</td></tr><tr><td>Dave Page</td></tr><tr><td>David Christensen</td></tr><tr><td>David Cook</td></tr><tr><td>David G. Johnston</td></tr><tr><td>David Geier</td></tr><tr><td>David Hillman</td></tr><tr><td>David Perez</td></tr><tr><td>David Rowley</td></tr><tr><td>David Steele</td></tr><tr><td>David Wheeler</td></tr><tr><td>David Zhang</td></tr><tr><td>Dean Rasheed</td></tr><tr><td>Denis Erokhin</td></tr><tr><td>Denis Laxalde</td></tr><tr><td>Devrim Gündüz</td></tr><tr><td>Dilip Kumar</td></tr><tr><td>Dimitrios Apostolou</td></tr><tr><td>Dmitry Dolgov</td></tr><tr><td>Dmitry Koval</td></tr><tr><td>Dmitry Vasiliev</td></tr><tr><td>Dominique Devienne</td></tr><tr><td>Dong Wook Lee</td></tr><tr><td>Donghang Lin</td></tr><tr><td>Dongming Liu</td></tr><tr><td>Drew Callahan</td></tr><tr><td>Drew Kimball</td></tr><tr><td>Dzmitry Jachnik</td></tr><tr><td>Egor Chindyaskin</td></tr><tr><td>Egor Rogov</td></tr><tr><td>Ekaterina Kiryanova</td></tr><tr><td>Elena Indrupskaya</td></tr><tr><td>Elizabeth Christensen</td></tr><tr><td>Emre Hasegeli</td></tr><tr><td>Eric Cyr</td></tr><tr><td>Eric Mutta</td></tr><tr><td>Eric Radman</td></tr><tr><td>Eric Ridge</td></tr><tr><td>Erik Rijkers</td></tr><tr><td>Erik Wienhold</td></tr><tr><td>Erki Eessaar</td></tr><tr><td>Ethan Mertz</td></tr><tr><td>Etsuro Fujita</td></tr><tr><td>Eugen Konkov</td></tr><tr><td>Euler Taveira</td></tr><tr><td>Evan Macbeth</td></tr><tr><td>Evgeny Morozov</td></tr><tr><td>Fabien Coelho</td></tr><tr><td>Fabrízio de Royes Mello</td></tr><tr><td>Farias de Oliveira</td></tr><tr><td>Feliphe Pozzer</td></tr><tr><td>Fire Emerald</td></tr><tr><td>Flavien Guedez</td></tr><tr><td>Floris Van Nee</td></tr><tr><td>Francesco Degrassi</td></tr><tr><td>Frank Streitzig</td></tr><tr><td>Gabriele Bartolini</td></tr><tr><td>Garrett Thornburg</td></tr><tr><td>Gavin Flower</td></tr><tr><td>Gavin Panella</td></tr><tr><td>Gilles Darold</td></tr><tr><td>Gilles Parc</td></tr><tr><td>Grant Gryczan</td></tr><tr><td>Greg Nancarrow</td></tr><tr><td>Greg Sabino Mullane</td></tr><tr><td>Greg Stark</td></tr><tr><td>Gurjeet Singh</td></tr><tr><td>Haiying Tang</td></tr><tr><td>Hajime Matsunaga</td></tr><tr><td>Hal Takahara</td></tr><tr><td>Hanefi Onaldi</td></tr><tr><td>Hannu Krosing</td></tr><tr><td>Hans Buschmann</td></tr><tr><td>Hao Wu</td></tr><tr><td>Hao Zhang</td></tr><tr><td>Hayato Kuroda</td></tr><tr><td>Heikki Linnakangas</td></tr><tr><td>Hemanth Sandrana</td></tr><tr><td>Himanshu Upadhyaya</td></tr><tr><td>Hironobu Suzuki</td></tr><tr><td>Holger Reise</td></tr><tr><td>Hongxu Ma</td></tr><tr><td>Hongyu Song</td></tr><tr><td>Horst Reiterer</td></tr><tr><td>Hubert Lubaczewski</td></tr><tr><td>Hywel Carver</td></tr><tr><td>Ian Barwick</td></tr><tr><td>Ian Ilyasov</td></tr><tr><td>Ilya Nenashev</td></tr><tr><td>Isaac Morland</td></tr><tr><td>Israel Barth Rubio</td></tr><tr><td>Ivan Kartyshov</td></tr><tr><td>Ivan Kolombet</td></tr><tr><td>Ivan Lazarev</td></tr><tr><td>Ivan Panchenko</td></tr><tr><td>Ivan Trofimov</td></tr><tr><td>Jacob Champion</td></tr><tr><td>Jacob Speidel</td></tr><tr><td>Jacques Combrink</td></tr><tr><td>Jaime Casanova</td></tr><tr><td>Jakub Wartak</td></tr><tr><td>James Coleman</td></tr><tr><td>James Pang</td></tr><tr><td>Jani Rahkola</td></tr><tr><td>Japin Li</td></tr><tr><td>Jeevan Chalke</td></tr><tr><td>Jeff Davis</td></tr><tr><td>Jeff Janes</td></tr><tr><td>Jelte Fennema-Nio</td></tr><tr><td>Jeremy Schneider</td></tr><tr><td>Jian Guo</td></tr><tr><td>Jian He</td></tr><tr><td>Jim Jones</td></tr><tr><td>Jim Keener</td></tr><tr><td>Jim Nasby</td></tr><tr><td>Jingtang Zhang</td></tr><tr><td>Jingxian Li</td></tr><tr><td>Jingzhou Fu</td></tr><tr><td>Joe Conway</td></tr><tr><td>Joel Jacobson</td></tr><tr><td>John Ekins</td></tr><tr><td>John Hsu</td></tr><tr><td>John Morris</td></tr><tr><td>John Naylor</td></tr><tr><td>John Russell</td></tr><tr><td>Jonathan Katz</td></tr><tr><td>Jordi Gutiérrez</td></tr><tr><td>Joseph Koshakow</td></tr><tr><td>Josh Kupershmidt</td></tr><tr><td>Joshua D. Drake</td></tr><tr><td>Joshua Uyehara</td></tr><tr><td>Jubilee Young</td></tr><tr><td>Julien Rouhaud</td></tr><tr><td>Junwang Zhao</td></tr><tr><td>Justin Pryzby</td></tr><tr><td>Kaido Vaikla</td></tr><tr><td>Kambam Vinay</td></tr><tr><td>Karen Talarico</td></tr><tr><td>Karina Litskevich</td></tr><tr><td>Karl O. Pinc</td></tr><tr><td>Kashif Zeeshan</td></tr><tr><td>Kim Johan Andersson</td></tr><tr><td>Kirill Reshke</td></tr><tr><td>Kirk Parker</td></tr><tr><td>Kirk Wolak</td></tr><tr><td>Kisoon Kwon</td></tr><tr><td>Koen De Groote</td></tr><tr><td>Kohei KaiGai</td></tr><tr><td>Kong Man</td></tr><tr><td>Konstantin Knizhnik</td></tr><tr><td>Kouhei Sutou</td></tr><tr><td>Krishnakumar R</td></tr><tr><td>Kuntal Ghosh</td></tr><tr><td>Kurt Roeckx</td></tr><tr><td>Kyotaro Horiguchi</td></tr><tr><td>Lang Liu</td></tr><tr><td>Lars Kanis</td></tr><tr><td>Laurenz Albe</td></tr><tr><td>Lauri Laanmets</td></tr><tr><td>Legs Mansion</td></tr><tr><td>Lukas Fittl</td></tr><tr><td>Magnus Hagander</td></tr><tr><td>Mahendrakar Srinivasarao</td></tr><tr><td>Maiquel Grassi</td></tr><tr><td>Manos Emmanouilidis</td></tr><tr><td>Marcel Hofstetter</td></tr><tr><td>Marcos Pegoraro</td></tr><tr><td>Marian Krucina</td></tr><tr><td>Marina Polyakova</td></tr><tr><td>Mark Dilger</td></tr><tr><td>Mark Guertin</td></tr><tr><td>Mark Sloan</td></tr><tr><td>Markus Winand</td></tr><tr><td>Marlene Reiterer</td></tr><tr><td>Martín Marqués</td></tr><tr><td>Martin Nash</td></tr><tr><td>Martin Schlossarek</td></tr><tr><td>Masahiko Sawada</td></tr><tr><td>Masahiro Ikeda</td></tr><tr><td>Masaki Kuwamura</td></tr><tr><td>Masao Fujii</td></tr><tr><td>Mason Sharp</td></tr><tr><td>Matheus Alcantara</td></tr><tr><td>Mats Kindahl</td></tr><tr><td>Matthias Kuhn</td></tr><tr><td>Matthias van de Meent</td></tr><tr><td>Maxim Boguk</td></tr><tr><td>Maxim Orlov</td></tr><tr><td>Maxim Yablokov</td></tr><tr><td>Maxime Boyer</td></tr><tr><td>Melanie Plageman</td></tr><tr><td>Melih Mutlu</td></tr><tr><td>Merlin Moncure</td></tr><tr><td>Micah Gate</td></tr><tr><td>Michael Banck</td></tr><tr><td>Michael Bondarenko</td></tr><tr><td>Michael Paquier</td></tr><tr><td>Michael Wang</td></tr><tr><td>Michael Zhilin</td></tr><tr><td>Michail Nikolaev</td></tr><tr><td>Michal Bartak</td></tr><tr><td>Michal Kleczek</td></tr><tr><td>Mikhail Gribkov</td></tr><tr><td>Mingli Zhang</td></tr><tr><td>Miroslav Bendik</td></tr><tr><td>Mitsuru Hinata</td></tr><tr><td>Moaaz Assali</td></tr><tr><td>Muralikrishna Bandaru</td></tr><tr><td>Nathan Bossart</td></tr><tr><td>Nazir Bilal Yavuz</td></tr><tr><td>Neil Tiffin</td></tr><tr><td>Ngigi Waithaka</td></tr><tr><td>Nikhil Benesch</td></tr><tr><td>Nikhil Raj</td></tr><tr><td>Nikita Glukhov</td></tr><tr><td>Nikita Kalinin</td></tr><tr><td>Nikita Malakhov</td></tr><tr><td>Nikolay Samokhvalov</td></tr><tr><td>Nikolay Shaplov</td></tr><tr><td>Nisha Moond</td></tr><tr><td>Nishant Sharma</td></tr><tr><td>Nitin Jadhav</td></tr><tr><td>Noah Misch</td></tr><tr><td>Noriyoshi Shinoda</td></tr><tr><td>Ole Peder Brandtzæg</td></tr><tr><td>Oleg Bartunov</td></tr><tr><td>Oleg Sibiryakov</td></tr><tr><td>Oleg Tselebrovskiy</td></tr><tr><td>Olleg Samoylov</td></tr><tr><td>Onder Kalaci</td></tr><tr><td>Ondrej Navratil</td></tr><tr><td>Pablo Kharo</td></tr><tr><td>Palak Chaturvedi</td></tr><tr><td>Pantelis Theodosiou</td></tr><tr><td>Paul Amonson</td></tr><tr><td>Paul Jungwirth</td></tr><tr><td>Pavel Borisov</td></tr><tr><td>Pavel Kulakov</td></tr><tr><td>Pavel Luzanov</td></tr><tr><td>Pavel Stehule</td></tr><tr><td>Pavlo Golub</td></tr><tr><td>Pedro Gallegos</td></tr><tr><td>Pete Storer</td></tr><tr><td>Peter Eisentraut</td></tr><tr><td>Peter Geoghegan</td></tr><tr><td>Peter Smith</td></tr><tr><td>Philip Warner</td></tr><tr><td>Philipp Salvisberg</td></tr><tr><td>Pierre Ducroquet</td></tr><tr><td>Pierre Fortin</td></tr><tr><td>Przemyslaw Sztoch</td></tr><tr><td>Quynh Tran</td></tr><tr><td>Raghuveer Devulapalli</td></tr><tr><td>Ranier Vilela</td></tr><tr><td>Reid Thompson</td></tr><tr><td>Rian McGuire</td></tr><tr><td>Richard Guo</td></tr><tr><td>Richard Vesely</td></tr><tr><td>Ridvan Korkmaz</td></tr><tr><td>Robert Haas</td></tr><tr><td>Robert Scott</td></tr><tr><td>Robert Treat</td></tr><tr><td>Roberto Mello</td></tr><tr><td>Robins Tharakan</td></tr><tr><td>Roman Lozko</td></tr><tr><td>Ronan Dunklau</td></tr><tr><td>Rui Zhao</td></tr><tr><td>Ryo Matsumura</td></tr><tr><td>Ryoga Yoshida</td></tr><tr><td>Sameer Kumar</td></tr><tr><td>Sami Imseih</td></tr><tr><td>Samuel Dussault</td></tr><tr><td>Sanjay Minni</td></tr><tr><td>Satoru Koizumi</td></tr><tr><td>Sebastian Skalacki</td></tr><tr><td>Sergei Glukhov</td></tr><tr><td>Sergei Kornilov</td></tr><tr><td>Sergey Prokhorenko</td></tr><tr><td>Sergey Sargsyan</td></tr><tr><td>Sergey Shinderuk</td></tr><tr><td>Shaozhong Shi</td></tr><tr><td>Shaun Thomas</td></tr><tr><td>Shay Rojansky</td></tr><tr><td>Shihao Zhong</td></tr><tr><td>Shinya Kato</td></tr><tr><td>Shlok Kyal</td></tr><tr><td>Shruthi Gowda</td></tr><tr><td>Shubham Khanna</td></tr><tr><td>Shulin Zhou</td></tr><tr><td>Shveta Malik</td></tr><tr><td>Simon Riggs</td></tr><tr><td>Soumyadeep Chakraborty</td></tr><tr><td>Sravan Velagandula</td></tr><tr><td>Stan Hu</td></tr><tr><td>Stepan Neretin</td></tr><tr><td>Stepan Rutz</td></tr><tr><td>Stéphane Schildknecht</td></tr><tr><td>Stephane Tachoires</td></tr><tr><td>Stephen Frost</td></tr><tr><td>Steve Atkins</td></tr><tr><td>Steve Chavez</td></tr><tr><td>Suraj Khamkar</td></tr><tr><td>Suraj Kharage</td></tr><tr><td>Svante Richter</td></tr><tr><td>Svetlana Derevyanko</td></tr><tr><td>Sylvain Frandaz</td></tr><tr><td>Takayuki Tsunakawa</td></tr><tr><td>Tatsuo Ishii</td></tr><tr><td>Tatsuro Yamada</td></tr><tr><td>Tender Wang</td></tr><tr><td>Teodor Sigaev</td></tr><tr><td>Thom Brown</td></tr><tr><td>Thomas Munro</td></tr><tr><td>Tim Carey-Smith</td></tr><tr><td>Tim Needham</td></tr><tr><td>Tim Palmer</td></tr><tr><td>Tobias Bussmann</td></tr><tr><td>Tom Lane</td></tr><tr><td>Tomas Vondra</td></tr><tr><td>Tommy Pavlicek</td></tr><tr><td>Tomonari Katsumata</td></tr><tr><td>Tristan Partin</td></tr><tr><td>Tristen Raab</td></tr><tr><td>Tung Nguyen</td></tr><tr><td>Umair Shahid</td></tr><tr><td>Uwe Binder</td></tr><tr><td>Valerie Woolard</td></tr><tr><td>Vallimaharajan G</td></tr><tr><td>Vasya Boytsov</td></tr><tr><td>Victor Wagner</td></tr><tr><td>Victor Yegorov</td></tr><tr><td>Victoria Shepard</td></tr><tr><td>Vidushi Gupta</td></tr><tr><td>Vignesh C</td></tr><tr><td>Vik Fearing</td></tr><tr><td>Viktor Leis</td></tr><tr><td>Vinayak Pokale</td></tr><tr><td>Vitaly Burovoy</td></tr><tr><td>Vojtech Benes</td></tr><tr><td>Wei Sun</td></tr><tr><td>Wei Wang</td></tr><tr><td>Wenjiang Zhang</td></tr><tr><td>Will Mortensen</td></tr><tr><td>Willi Mann</td></tr><tr><td>Wolfgang Walther</td></tr><tr><td>Xiang Liu</td></tr><tr><td>Xiaoran Wang</td></tr><tr><td>Xing Guo</td></tr><tr><td>Xudong Yang</td></tr><tr><td>Yahor Yuzefovich</td></tr><tr><td>Yajun Hu</td></tr><tr><td>Yaroslav Saburov</td></tr><tr><td>Yong Li</td></tr><tr><td>Yongtao Huang</td></tr><tr><td>Yugo Nagata</td></tr><tr><td>Yuhang Qiu</td></tr><tr><td>Yuki Seino</td></tr><tr><td>Yura Sokolov</td></tr><tr><td>Yurii Rashkovskii</td></tr><tr><td>Yuuki Fujii</td></tr><tr><td>Yuya Watari</td></tr><tr><td>Yves Colin</td></tr><tr><td>Zhihong Yu</td></tr><tr><td>Zhijie Hou</td></tr><tr><td>Zongliang Quan</td></tr><tr><td>Zubeyr Eryilmaz</td></tr><tr><td>Zuming Jiang</td></tr></table></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="release-17-1.html" title="E.1. Release 17.1">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="release.html" title="Appendix E. Release Notes">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="release-prior.html" title="E.3. Prior Releases">Next</a></td></tr><tr><td width="40%" align="left" valign="top">E.1. Release 17.1 </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> E.3. Prior Releases</td></tr></table></div></body></html>

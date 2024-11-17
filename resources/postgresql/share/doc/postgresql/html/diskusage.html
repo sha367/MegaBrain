@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>27.6. Monitoring Disk Usage</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="dynamic-trace.html" title="27.5. Dynamic Tracing" /><link rel="next" href="wal.html" title="Chapter 28. Reliability and the Write-Ahead Log" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">27.6. Monitoring Disk Usage</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="dynamic-trace.html" title="27.5. Dynamic Tracing">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="monitoring.html" title="Chapter 27. Monitoring Database Activity">Up</a></td><th width="60%" align="center">Chapter 27. Monitoring Database Activity</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="wal.html" title="Chapter 28. Reliability and the Write-Ahead Log">Next</a></td></tr></table><hr /></div><div class="sect1" id="DISKUSAGE"><div class="titlepage"><div><div><h2 class="title" style="clear: both">27.6. Monitoring Disk Usage <a href="#DISKUSAGE" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="diskusage.html#DISK-USAGE">27.6.1. Determining Disk Usage</a></span></dt><dt><span class="sect2"><a href="diskusage.html#DISK-FULL">27.6.2. Disk Full Failure</a></span></dt></dl></div><p>
+   This section discusses how to monitor the disk usage of a
+   <span class="productname">PostgreSQL</span> database system.
+  </p><div class="sect2" id="DISK-USAGE"><div class="titlepage"><div><div><h3 class="title">27.6.1. Determining Disk Usage <a href="#DISK-USAGE" class="id_link">#</a></h3></div></div></div><a id="id-1.6.14.11.3.2" class="indexterm"></a><p>
+    Each table has a primary heap disk file where most of the data is
+    stored. If the table has any columns with potentially-wide values,
+    there also might be a <acronym class="acronym">TOAST</acronym> file associated with the table,
+    which is used to store values too wide to fit comfortably in the main
+    table (see <a class="xref" href="storage-toast.html" title="65.2. TOAST">Section 65.2</a>).  There will be one valid index
+    on the <acronym class="acronym">TOAST</acronym> table, if present. There also might be indexes
+    associated with the base table.  Each table and index is stored in a
+    separate disk file — possibly more than one file, if the file would
+    exceed one gigabyte.  Naming conventions for these files are described
+    in <a class="xref" href="storage-file-layout.html" title="65.1. Database File Layout">Section 65.1</a>.
+   </p><p>
+    You can monitor disk space in three ways:
+    using the SQL functions listed in <a class="xref" href="functions-admin.html#FUNCTIONS-ADMIN-DBSIZE" title="Table 9.100. Database Object Size Functions">Table 9.100</a>,
+    using the <a class="xref" href="oid2name.html" title="oid2name"><span class="refentrytitle">oid2name</span></a> module, or
+    using manual inspection of the system catalogs.
+    The SQL functions are the easiest to use and are generally recommended.
+    The remainder of this section shows how to do it by inspection of the
+    system catalogs.
+   </p><p>
+    Using <span class="application">psql</span> on a recently vacuumed or analyzed
+    database, you can issue queries to see the disk usage of any table:
+</p><pre class="programlisting">
+SELECT pg_relation_filepath(oid), relpages FROM pg_class WHERE relname = 'customer';
+
+ pg_relation_filepath | relpages
+----------------------+----------
+ base/16384/16806     |       60
+(1 row)
+</pre><p>
+    Each page is typically 8 kilobytes. (Remember, <code class="structfield">relpages</code>
+    is only updated by <code class="command">VACUUM</code>, <code class="command">ANALYZE</code>, and
+    a few DDL commands such as <code class="command">CREATE INDEX</code>.)  The file path name
+    is of interest if you want to examine the table's disk file directly.
+   </p><p>
+    To show the space used by <acronym class="acronym">TOAST</acronym> tables, use a query
+    like the following:
+</p><pre class="programlisting">
+SELECT relname, relpages
+FROM pg_class,
+     (SELECT reltoastrelid
+      FROM pg_class
+      WHERE relname = 'customer') AS ss
+WHERE oid = ss.reltoastrelid OR
+      oid = (SELECT indexrelid
+             FROM pg_index
+             WHERE indrelid = ss.reltoastrelid)
+ORDER BY relname;
+
+       relname        | relpages
+----------------------+----------
+ pg_toast_16806       |        0
+ pg_toast_16806_index |        1
+</pre><p>
+   </p><p>
+    You can easily display index sizes, too:
+</p><pre class="programlisting">
+SELECT c2.relname, c2.relpages
+FROM pg_class c, pg_class c2, pg_index i
+WHERE c.relname = 'customer' AND
+      c.oid = i.indrelid AND
+      c2.oid = i.indexrelid
+ORDER BY c2.relname;
+
+      relname      | relpages
+-------------------+----------
+ customer_id_index |       26
+</pre><p>
+   </p><p>
+    It is easy to find your largest tables and indexes using this
+    information:
+</p><pre class="programlisting">
+SELECT relname, relpages
+FROM pg_class
+ORDER BY relpages DESC;
+
+       relname        | relpages
+----------------------+----------
+ bigtable             |     3290
+ customer             |     3144
+</pre><p>
+   </p></div><div class="sect2" id="DISK-FULL"><div class="titlepage"><div><div><h3 class="title">27.6.2. Disk Full Failure <a href="#DISK-FULL" class="id_link">#</a></h3></div></div></div><p>
+    The most important disk monitoring task of a database administrator
+    is to make sure the disk doesn't become full.  A filled data disk will
+    not result in data corruption, but it might prevent useful activity
+    from occurring. If the disk holding the WAL files grows full, database
+    server panic and consequent shutdown might occur.
+   </p><p>
+    If you cannot free up additional space on the disk by deleting
+    other things, you can move some of the database files to other file
+    systems by making use of tablespaces. See <a class="xref" href="manage-ag-tablespaces.html" title="22.6. Tablespaces">Section 22.6</a> for more information about that.
+   </p><div class="tip"><h3 class="title">Tip</h3><p>
+     Some file systems perform badly when they are almost full, so do
+     not wait until the disk is completely full to take action.
+    </p></div><p>
+    If your system supports per-user disk quotas, then the database
+    will naturally be subject to whatever quota is placed on the user
+    the server runs as.  Exceeding the quota will have the same bad
+    effects as running out of disk space entirely.
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="dynamic-trace.html" title="27.5. Dynamic Tracing">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="monitoring.html" title="Chapter 27. Monitoring Database Activity">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="wal.html" title="Chapter 28. Reliability and the Write-Ahead Log">Next</a></td></tr><tr><td width="40%" align="left" valign="top">27.5. Dynamic Tracing </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> Chapter 28. Reliability and the Write-Ahead Log</td></tr></table></div></body></html>

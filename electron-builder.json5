@@ -12,7 +12,9 @@
     {
       from: 'resources',
       to: '.',
-      filter: ['**/*'],
+      filter: [
+        '**/*'
+      ],
     },
   ],
   mac: {

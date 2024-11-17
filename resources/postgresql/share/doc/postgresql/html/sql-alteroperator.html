@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ALTER OPERATOR</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-altermaterializedview.html" title="ALTER MATERIALIZED VIEW" /><link rel="next" href="sql-alteropclass.html" title="ALTER OPERATOR CLASS" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">ALTER OPERATOR</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-altermaterializedview.html" title="ALTER MATERIALIZED VIEW">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-alteropclass.html" title="ALTER OPERATOR CLASS">Next</a></td></tr></table><hr /></div><div class="refentry" id="SQL-ALTEROPERATOR"><div class="titlepage"></div><a id="id-1.9.3.20.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">ALTER OPERATOR</span></h2><p>ALTER OPERATOR — change the definition of an operator</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+ALTER OPERATOR <em class="replaceable"><code>name</code></em> ( { <em class="replaceable"><code>left_type</code></em> | NONE } , <em class="replaceable"><code>right_type</code></em> )
+    OWNER TO { <em class="replaceable"><code>new_owner</code></em> | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
+
+ALTER OPERATOR <em class="replaceable"><code>name</code></em> ( { <em class="replaceable"><code>left_type</code></em> | NONE } , <em class="replaceable"><code>right_type</code></em> )
+    SET SCHEMA <em class="replaceable"><code>new_schema</code></em>
+
+ALTER OPERATOR <em class="replaceable"><code>name</code></em> ( { <em class="replaceable"><code>left_type</code></em> | NONE } , <em class="replaceable"><code>right_type</code></em> )
+    SET ( {  RESTRICT = { <em class="replaceable"><code>res_proc</code></em> | NONE }
+           | JOIN = { <em class="replaceable"><code>join_proc</code></em> | NONE }
+           | COMMUTATOR = <em class="replaceable"><code>com_op</code></em>
+           | NEGATOR = <em class="replaceable"><code>neg_op</code></em>
+           | HASHES
+           | MERGES
+          } [, ... ] )
+</pre></div><div class="refsect1" id="id-1.9.3.20.5"><h2>Description</h2><p>
+   <code class="command">ALTER OPERATOR</code> changes the definition of
+   an operator.
+  </p><p>
+   You must own the operator to use <code class="command">ALTER OPERATOR</code>.
+   To alter the owner, you must be able to <code class="literal">SET ROLE</code> to the
+   new owning role, and that role must have <code class="literal">CREATE</code>
+   privilege on the operator's schema.
+   (These restrictions enforce that altering the owner
+   doesn't do anything you couldn't do by dropping and recreating the operator.
+   However, a superuser can alter ownership of any operator anyway.)
+  </p></div><div class="refsect1" id="id-1.9.3.20.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="replaceable"><code>name</code></em></span></dt><dd><p>
+      The name (optionally schema-qualified) of an existing operator.
+     </p></dd><dt><span class="term"><em class="replaceable"><code>left_type</code></em></span></dt><dd><p>
+      The data type of the operator's left operand; write
+      <code class="literal">NONE</code> if the operator has no left operand.
+     </p></dd><dt><span class="term"><em class="replaceable"><code>right_type</code></em></span></dt><dd><p>
+      The data type of the operator's right operand.
+     </p></dd><dt><span class="term"><em class="replaceable"><code>new_owner</code></em></span></dt><dd><p>
+      The new owner of the operator.
+     </p></dd><dt><span class="term"><em class="replaceable"><code>new_schema</code></em></span></dt><dd><p>
+      The new schema for the operator.
+     </p></dd><dt><span class="term"><em class="replaceable"><code>res_proc</code></em></span></dt><dd><p>
+         The restriction selectivity estimator function for this operator; write NONE to remove existing selectivity estimator.
+       </p></dd><dt><span class="term"><em class="replaceable"><code>join_proc</code></em></span></dt><dd><p>
+         The join selectivity estimator function for this operator; write NONE to remove existing selectivity estimator.
+       </p></dd><dt><span class="term"><em class="replaceable"><code>com_op</code></em></span></dt><dd><p>
+      The commutator of this operator. Can only be changed if the operator
+      does not have an existing commutator.
+     </p></dd><dt><span class="term"><em class="replaceable"><code>neg_op</code></em></span></dt><dd><p>
+      The negator of this operator. Can only be changed if the operator does
+      not have an existing negator.
+     </p></dd><dt><span class="term"><code class="literal">HASHES</code></span></dt><dd><p>
+      Indicates this operator can support a hash join. Can only be enabled and
+      not disabled.
+     </p></dd><dt><span class="term"><code class="literal">MERGES</code></span></dt><dd><p>
+      Indicates this operator can support a merge join. Can only be enabled
+      and not disabled.
+     </p></dd></dl></div></div><div class="refsect1" id="id-1.9.3.20.7"><h2>Notes</h2><p>
+   Refer to <a class="xref" href="xoper.html" title="36.14. User-Defined Operators">Section 36.14</a> and
+   <a class="xref" href="xoper-optimization.html" title="36.15. Operator Optimization Information">Section 36.15</a> for further information.
+  </p><p>
+   Since commutators come in pairs that are commutators of each other,
+   <code class="literal">ALTER OPERATOR SET COMMUTATOR</code> will also set the
+   commutator of the <em class="replaceable"><code>com_op</code></em>
+   to be the target operator.  Likewise, <code class="literal">ALTER OPERATOR SET
+   NEGATOR</code> will also set the negator of
+   the <em class="replaceable"><code>neg_op</code></em> to be the
+   target operator.  Therefore, you must own the commutator or negator
+   operator as well as the target operator.
+  </p></div><div class="refsect1" id="id-1.9.3.20.8"><h2>Examples</h2><p>
+   Change the owner of a custom operator <code class="literal">a @@ b</code> for type <code class="type">text</code>:
+</p><pre class="programlisting">
+ALTER OPERATOR @@ (text, text) OWNER TO joe;
+</pre><p>
+  </p><p>
+   Change the restriction and join selectivity estimator functions of a
+   custom operator <code class="literal">a &amp;&amp; b</code> for
+   type <code class="type">int[]</code>:
+</p><pre class="programlisting">
+ALTER OPERATOR &amp;&amp; (int[], int[]) SET (RESTRICT = _int_contsel, JOIN = _int_contjoinsel);
+</pre><p>
+  </p><p>
+   Mark the <code class="literal">&amp;&amp;</code> operator as being its own
+   commutator:
+</p><pre class="programlisting">
+ALTER OPERATOR &amp;&amp; (int[], int[]) SET (COMMUTATOR = &amp;&amp;);
+</pre><p>
+  </p></div><div class="refsect1" id="id-1.9.3.20.9"><h2>Compatibility</h2><p>
+   There is no <code class="command">ALTER OPERATOR</code> statement in
+   the SQL standard.
+  </p></div><div class="refsect1" id="id-1.9.3.20.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-createoperator.html" title="CREATE OPERATOR"><span class="refentrytitle">CREATE OPERATOR</span></a>, <a class="xref" href="sql-dropoperator.html" title="DROP OPERATOR"><span class="refentrytitle">DROP OPERATOR</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-altermaterializedview.html" title="ALTER MATERIALIZED VIEW">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-alteropclass.html" title="ALTER OPERATOR CLASS">Next</a></td></tr><tr><td width="40%" align="left" valign="top">ALTER MATERIALIZED VIEW </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> ALTER OPERATOR CLASS</td></tr></table></div></body></html>

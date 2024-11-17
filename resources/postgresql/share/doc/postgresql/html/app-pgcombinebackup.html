@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>pg_combinebackup</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="pgbench.html" title="pgbench" /><link rel="next" href="app-pgconfig.html" title="pg_config" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center"><span class="application">pg_combinebackup</span></th></tr><tr><td width="10%" align="left"><a accesskey="p" href="pgbench.html" title="pgbench">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="reference-client.html" title="PostgreSQL Client Applications">Up</a></td><th width="60%" align="center">PostgreSQL Client Applications</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="app-pgconfig.html" title="pg_config">Next</a></td></tr></table><hr /></div><div class="refentry" id="APP-PGCOMBINEBACKUP"><div class="titlepage"></div><a id="id-1.9.4.12.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle"><span class="application">pg_combinebackup</span></span></h2><p>pg_combinebackup — reconstruct a full backup from an incremental backup and dependent backups</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p id="id-1.9.4.12.4.1"><code class="command">pg_combinebackup</code> [<em class="replaceable"><code>option</code></em>...] [<em class="replaceable"><code>backup_directory</code></em>...]</p></div></div><div class="refsect1" id="id-1.9.4.12.5"><h2>Description</h2><p>
+   <span class="application">pg_combinebackup</span> is used to reconstruct a
+   synthetic full backup from an
+   <a class="link" href="continuous-archiving.html#BACKUP-INCREMENTAL-BACKUP" title="25.3.3. Making an Incremental Backup">incremental backup</a> and the
+   earlier backups upon which it depends.
+  </p><p>
+   Specify all of the required backups on the command line from oldest to newest.
+   That is, the first backup directory should be the path to the full backup, and
+   the last should be the path to the final incremental backup
+   that you wish to restore. The reconstructed backup will be written to the
+   output directory specified by the <code class="option">-o</code> option.
+  </p><p>
+   <span class="application">pg_combinebackup</span> will attempt to verify
+   that the backups you specify form a legal backup chain from which a correct
+   full backup can be reconstructed. However, it is not designed to help you
+   keep track of which backups depend on which other backups. If you remove
+   one or more of the previous backups upon which your incremental
+   backup relies, you will not be able to restore it. Moreover,
+   <span class="application">pg_combinebackup</span> only attempts to verify that the
+   backups have the correct relationship to each other, not that each
+   individual backup is intact; for that, use
+   <a class="xref" href="app-pgverifybackup.html" title="pg_verifybackup"><span class="refentrytitle"><span class="application">pg_verifybackup</span></span></a>.
+  </p><p>
+   Since the output of <span class="application">pg_combinebackup</span> is a
+   synthetic full backup, it can be used as an input to a future invocation of
+   <span class="application">pg_combinebackup</span>. The synthetic full backup would
+   be specified on the command line in lieu of the chain of backups from which
+   it was reconstructed.
+  </p></div><div class="refsect1" id="id-1.9.4.12.6"><h2>Options</h2><p>
+    </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="option">-d</code><br /></span><span class="term"><code class="option">--debug</code></span></dt><dd><p>
+        Print lots of debug logging output on <code class="filename">stderr</code>.
+       </p></dd><dt><span class="term"><code class="option">-n</code><br /></span><span class="term"><code class="option">--dry-run</code></span></dt><dd><p>
+        The <code class="option">-n</code>/<code class="option">--dry-run</code> option instructs
+        <code class="command">pg_combinebackup</code> to figure out what would be done
+        without actually creating the target directory or any output files.
+        It is particularly useful in combination with <code class="option">--debug</code>.
+       </p></dd><dt><span class="term"><code class="option">-N</code><br /></span><span class="term"><code class="option">--no-sync</code></span></dt><dd><p>
+        By default, <code class="command">pg_combinebackup</code> will wait for all files
+        to be written safely to disk.  This option causes
+        <code class="command">pg_combinebackup</code> to return without waiting, which is
+        faster, but means that a subsequent operating system crash can leave
+        the output backup corrupt.  Generally, this option is useful for testing
+        but should not be used when creating a production installation.
+       </p></dd><dt><span class="term"><code class="option">-o <em class="replaceable"><code>outputdir</code></em></code><br /></span><span class="term"><code class="option">--output=<em class="replaceable"><code>outputdir</code></em></code></span></dt><dd><p>
+        Specifies the output directory to which the synthetic full backup
+        should be written. Currently, this argument is required.
+       </p></dd><dt><span class="term"><code class="option">-T <em class="replaceable"><code>olddir</code></em>=<em class="replaceable"><code>newdir</code></em></code><br /></span><span class="term"><code class="option">--tablespace-mapping=<em class="replaceable"><code>olddir</code></em>=<em class="replaceable"><code>newdir</code></em></code></span></dt><dd><p>
+        Relocates the tablespace in directory <em class="replaceable"><code>olddir</code></em>
+        to <em class="replaceable"><code>newdir</code></em> during the backup.
+        <em class="replaceable"><code>olddir</code></em> is the absolute path of the tablespace
+        as it exists in the final backup specified on the command line,
+        and <em class="replaceable"><code>newdir</code></em> is the absolute path to use for the
+        tablespace in the reconstructed backup.  If either path needs to contain
+        an equal sign (<code class="literal">=</code>), precede that with a backslash.
+        This option can be specified multiple times for multiple tablespaces.
+       </p></dd><dt><span class="term"><code class="option">--clone</code></span></dt><dd><p>
+        Use efficient file cloning (also known as <span class="quote">“<span class="quote">reflinks</span>”</span> on
+        some systems) instead of copying files to the new data directory,
+        which can result in near-instantaneous copying of the data files.
+       </p><p>
+        If a backup manifest is not available or does not contain checksum of
+        the right type, file cloning will be used to copy the file, but the
+        file will be also read block-by-block for the checksum calculation.
+       </p><p>
+        File cloning is only supported on some operating systems and file
+        systems.  If it is selected but not supported, the
+        <span class="application">pg_combinebackup</span> run will error.  At present,
+        it is supported on Linux (kernel 4.5 or later) with Btrfs and XFS (on
+        file systems created with reflink support), and on macOS with APFS.
+       </p></dd><dt><span class="term"><code class="option">--copy</code></span></dt><dd><p>
+        Perform regular file copy.  This is the default.  (See also
+        <code class="option">--copy-file-range</code> and <code class="option">--clone</code>.)
+       </p></dd><dt><span class="term"><code class="option">--copy-file-range</code></span></dt><dd><p>
+        Use the <code class="function">copy_file_range</code> system call for efficient
+        copying.  On some file systems this gives results similar to
+        <code class="option">--clone</code>, sharing physical disk blocks, while on others
+        it may still copy blocks, but do so via an optimized path.  At present,
+        it is supported on Linux and FreeBSD.
+       </p><p>
+        If a backup manifest is not available or does not contain checksum of
+        the right type, <code class="function">copy_file_range</code> will be used to
+        copy the file, but the file will be also read block-by-block for the
+        checksum calculation.
+       </p></dd><dt><span class="term"><code class="option">--manifest-checksums=<em class="replaceable"><code>algorithm</code></em></code></span></dt><dd><p>
+        Like <a class="xref" href="app-pgbasebackup.html" title="pg_basebackup"><span class="refentrytitle"><span class="application">pg_basebackup</span></span></a>,
+        <span class="application">pg_combinebackup</span> writes a backup manifest
+        in the output directory. This option specifies the checksum algorithm
+        that should be applied to each file included in the backup manifest.
+        Currently, the available algorithms are <code class="literal">NONE</code>,
+        <code class="literal">CRC32C</code>, <code class="literal">SHA224</code>,
+        <code class="literal">SHA256</code>, <code class="literal">SHA384</code>,
+        and <code class="literal">SHA512</code>.  The default is <code class="literal">CRC32C</code>.
+       </p></dd><dt><span class="term"><code class="option">--no-manifest</code></span></dt><dd><p>
+        Disables generation of a backup manifest. If this option is not
+        specified, a backup manifest for the reconstructed backup will be
+        written to the output directory.
+       </p></dd><dt><span class="term"><code class="option">--sync-method=<em class="replaceable"><code>method</code></em></code></span></dt><dd><p>
+        When set to <code class="literal">fsync</code>, which is the default,
+        <code class="command">pg_combinebackup</code> will recursively open and synchronize
+        all files in the backup directory.  When the plain format is used, the
+        search for files will follow symbolic links for the WAL directory and
+        each configured tablespace.
+       </p><p>
+        On Linux, <code class="literal">syncfs</code> may be used instead to ask the
+        operating system to synchronize the whole file system that contains the
+        backup directory.  When the plain format is used,
+        <code class="command">pg_combinebackup</code> will also synchronize the file systems
+        that contain the WAL files and each tablespace.  See
+        <a class="xref" href="runtime-config-error-handling.html#GUC-RECOVERY-INIT-SYNC-METHOD">recovery_init_sync_method</a> for information about
+        the caveats to be aware of when using <code class="literal">syncfs</code>.
+       </p><p>
+        This option has no effect when <code class="option">--no-sync</code> is used.
+       </p></dd><dt><span class="term"><code class="option">-V</code><br /></span><span class="term"><code class="option">--version</code></span></dt><dd><p>
+        Prints the <span class="application">pg_combinebackup</span> version and
+        exits.
+       </p></dd><dt><span class="term"><code class="option">-?</code><br /></span><span class="term"><code class="option">--help</code></span></dt><dd><p>
+        Shows help about <span class="application">pg_combinebackup</span> command
+        line arguments, and exits.
+       </p></dd></dl></div><p>
+   </p></div><div class="refsect1" id="APP-PGCOMBINEBACKUP-LIMITATIONS"><h2>Limitations</h2><p>
+   <code class="literal">pg_combinebackup</code> does not recompute page checksums when
+   writing the output directory. Therefore, if any of the backups used for
+   reconstruction were taken with checksums disabled, but the final backup was
+   taken with checksums enabled, the resulting directory may contain pages
+   with invalid checksums.
+  </p><p>
+   To avoid this problem, taking a new full backup after changing the checksum
+   state of the cluster using <a class="xref" href="app-pgchecksums.html" title="pg_checksums"><span class="refentrytitle"><span class="application">pg_checksums</span></span></a> is
+   recommended. Otherwise, you can disable and then optionally reenable
+   checksums on the directory produced by <code class="literal">pg_combinebackup</code>
+   in order to correct the problem.
+  </p></div><div class="refsect1" id="id-1.9.4.12.8"><h2>Environment</h2><p>
+   This utility, like most other <span class="productname">PostgreSQL</span> utilities,
+   uses the environment variables supported by <span class="application">libpq</span>
+   (see <a class="xref" href="libpq-envars.html" title="32.15. Environment Variables">Section 32.15</a>).
+  </p><p>
+   The environment variable <code class="envar">PG_COLOR</code> specifies whether to use
+   color in diagnostic messages. Possible values are
+   <code class="literal">always</code>, <code class="literal">auto</code> and
+   <code class="literal">never</code>.
+  </p></div><div class="refsect1" id="id-1.9.4.12.9"><h2>See Also</h2><span class="simplelist"><a class="xref" href="app-pgbasebackup.html" title="pg_basebackup"><span class="refentrytitle"><span class="application">pg_basebackup</span></span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="pgbench.html" title="pgbench">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="reference-client.html" title="PostgreSQL Client Applications">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="app-pgconfig.html" title="pg_config">Next</a></td></tr><tr><td width="40%" align="left" valign="top"><span class="application">pgbench</span> </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> <span class="application">pg_config</span></td></tr></table></div></body></html>

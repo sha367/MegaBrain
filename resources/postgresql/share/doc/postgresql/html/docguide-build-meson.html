@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>J.4. Building the Documentation with Meson</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="docguide-build.html" title="J.3. Building the Documentation with Make" /><link rel="next" href="docguide-authoring.html" title="J.5. Documentation Authoring" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">J.4. Building the Documentation with Meson</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="docguide-build.html" title="J.3. Building the Documentation with Make">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="docguide.html" title="Appendix J. Documentation">Up</a></td><th width="60%" align="center">Appendix J. Documentation</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="docguide-authoring.html" title="J.5. Documentation Authoring">Next</a></td></tr></table><hr /></div><div class="sect1" id="DOCGUIDE-BUILD-MESON"><div class="titlepage"><div><div><h2 class="title" style="clear: both">J.4. Building the Documentation with Meson <a href="#DOCGUIDE-BUILD-MESON" class="id_link">#</a></h2></div></div></div><p>
+    To build the documentation using Meson, change to the
+    <code class="filename">build</code> directory before running one of these commands,
+    or add <code class="option">-C build</code> to the command.
+   </p><p>
+    To build just the <acronym class="acronym">HTML</acronym> version of the documentation:
+</p><pre class="screen">
+<code class="prompt">build$ </code><strong class="userinput"><code>ninja html</code></strong>
+</pre><p>
+    For a list of other documentation targets see
+    <a class="xref" href="install-meson.html#TARGETS-MESON-DOCUMENTATION" title="17.4.4.3. Documentation Targets">Section 17.4.4.3</a>.
+
+    The output appears in the
+    subdirectory <code class="filename">build/doc/src/sgml</code>.
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="docguide-build.html" title="J.3. Building the Documentation with Make">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="docguide.html" title="Appendix J. Documentation">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="docguide-authoring.html" title="J.5. Documentation Authoring">Next</a></td></tr><tr><td width="40%" align="left" valign="top">J.3. Building the Documentation with Make </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> J.5. Documentation Authoring</td></tr></table></div></body></html>

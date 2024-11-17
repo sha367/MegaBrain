@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 63. Write Ahead Logging for Extensions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="index-cost-estimation.html" title="62.6. Index Cost Estimation Functions" /><link rel="next" href="generic-wal.html" title="63.1. Generic WAL Records" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">Chapter 63. Write Ahead Logging for Extensions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="index-cost-estimation.html" title="62.6. Index Cost Estimation Functions">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="internals.html" title="Part VII. Internals">Up</a></td><th width="60%" align="center">Part VII. Internals</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="generic-wal.html" title="63.1. Generic WAL Records">Next</a></td></tr></table><hr /></div><div class="chapter" id="WAL-FOR-EXTENSIONS"><div class="titlepage"><div><div><h2 class="title">Chapter 63. Write Ahead Logging for Extensions</h2></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl class="toc"><dt><span class="sect1"><a href="generic-wal.html">63.1. Generic WAL Records</a></span></dt><dt><span class="sect1"><a href="custom-rmgr.html">63.2. Custom WAL Resource Managers</a></span></dt></dl></div><p>
+   Certain extensions, principally extensions that implement custom access
+   methods, may need to perform write-ahead logging in order to ensure
+   crash-safety. <span class="productname">PostgreSQL</span> provides two ways
+   for extensions to achieve this goal.
+  </p><p>
+   First, extensions can choose to use <a class="link" href="generic-wal.html" title="63.1. Generic WAL Records">generic
+   WAL</a>, a special type of WAL record which describes changes to pages
+   in a generic way. This method is simple to implement and does not require
+   that an extension library be loaded in order to apply the records. However,
+   generic WAL records will be ignored when performing logical decoding.
+  </p><p>
+   Second, extensions can choose to use a <a class="link" href="custom-rmgr.html" title="63.2. Custom WAL Resource Managers">custom
+   resource manager</a>. This method is more flexible, supports logical
+   decoding, and can sometimes generate much smaller write-ahead log records
+   than would be possible with generic WAL. However, it is more complex for an
+   extension to implement.
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="index-cost-estimation.html" title="62.6. Index Cost Estimation Functions">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="internals.html" title="Part VII. Internals">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="generic-wal.html" title="63.1. Generic WAL Records">Next</a></td></tr><tr><td width="40%" align="left" valign="top">62.6. Index Cost Estimation Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 63.1. Generic WAL Records</td></tr></table></div></body></html>

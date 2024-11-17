@@ -34,7 +34,9 @@ const getConfigs = (dirname: string) => {
     RESOURCES_PATH,
     LLM_PATH,
     VITE_PUBLIC,
-    MODEL_FILE_PATH
+    MODEL_FILE_PATH,
+    POSTGRES_PATH: path.join(RESOURCES_PATH, 'postgresql'),
+    DATA_PATH: path.join(RESOURCES_PATH, 'data'),
   }
 };
 

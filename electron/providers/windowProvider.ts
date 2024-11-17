@@ -22,9 +22,7 @@ export class WindowProvider {
   }
 
   static createWindow() {
-    console.log('========================');
-    console.log('=======Creating window=====');
-    console.log('========================');
+    console.log('Creating window');
     WindowProvider._win = new BrowserWindow({
       icon: path.join(CP.configs.VITE_PUBLIC, 'images/ollama-avatar.png'),
       width: 1080,

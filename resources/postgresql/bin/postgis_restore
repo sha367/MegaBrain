@@ -1,0 +1,2967 @@
+#!/usr/bin/env perl
+
+#
+# PostGIS - Spatial Types for PostgreSQL
+# http://postgis.net
+#
+# Copyright (C) 2004-2023 Sandro Santilli <strk@kbt.io>
+# Copyright (C) 2011 OpenGeo.org
+# Copyright (C) 2009 Paul Ramsey <pramsey@cleverelephant.ca>
+#
+# This is free software; you can redistribute and/or modify it under
+# the terms of the GNU General Public Licence. See the COPYING file.
+#
+#---------------------------------------------------------------------
+#
+# This script is aimed at restoring postgis data
+# from a dumpfile produced by pg_dump -Fc
+#
+# Basically it will restore all but things known to belong
+# to postgis. Will also convert some old known constructs
+# into new ones.
+#
+# Tested on:
+#
+#    pg-12/pgis-2.5.9 => pg-12/pgis-3.5.0dev
+#    pg-8.4.9/pgis-1.4.3    => pg-8.4.9/pgis-2.0.0SVN
+#    pg-8.4.9/pgis-2.0.0SVN => pg-8.4.9/pgis-2.0.0SVN
+#    pg-8.4.9/pgis-2.0.0SVN => pg-9.1.2/pgis-2.0.0SVN
+#    pg-9.1b3/pgis-1.5.3    => pg-9.1.1/pgis-2.0.0SVN
+#
+#---------------------------------------------------------------------
+
+use warnings;
+use strict;
+
+my $me = $0;
+
+my $usage = qq{
+Usage:	$me [-v] [-L TOC] [-s schema] <dumpfile>
+        Restore a custom dump (pg_dump -Fc) of a PostGIS-enabled database.
+        First dump the old database: pg_dump -Fc MYDB > MYDB.dmp
+        Then create a new database: createdb NEWDB
+        Then install PostGIS in the new database:
+           psql -f postgis/postgis.sql NEWDB
+        Also install PostGIS topology and raster, if you were using them:
+           psql -f topology/topology.sql NEWDB
+           psql -f raster/rtpostgis.sql NEWDB
+        Finally, pass the dump to this script and feed output to psql:
+           $me MYDB.dmp | psql NEWDB
+        The -v switch writes detailed report on stderr.
+        Use -L to provide a TOC rather than extracting it from the dump.
+        Use -s if you installed PostGIS in a custom schema.
+
+};
+
+my $DEBUG = 0;
+my $POSTGIS_SCHEMA;
+my $POSTGIS_TOC;
+
+# NOTE: the SRID limits here are being discussed:
+# http://lists.osgeo.org/pipermail/postgis-devel/2012-February/018440.html
+my $SRID_MAXIMUM = 999999;
+my $SRID_USER_MAXIMUM = 998999;
+
+while (@ARGV && $ARGV[0] =~ /^-/) {
+  my $arg = shift(@ARGV);
+  if ( $arg eq '-v' ) {
+    $DEBUG = 1;
+  }
+  elsif ( $arg eq '-s' ) {
+    $POSTGIS_SCHEMA = shift(@ARGV);
+  }
+  elsif ( $arg eq '-L' ) {
+    $POSTGIS_TOC = shift(@ARGV);
+  }
+  elsif ( $arg eq '--' ) {
+    last;
+  }
+  else {
+    print STDERR "Unknown switch " . $arg;
+    die $usage;
+  }
+}
+
+die $usage if (@ARGV < 1);
+
+my $dumpfile = $ARGV[0];
+my $manifest = $dumpfile;
+$manifest =~ s/\/$//; # strip trailing slash
+$manifest .= ".lst";
+my $hasTopology = 0;
+
+die "$me:\tUnable to find 'pg_dump' on the path.\n" if ! `pg_dump --version`;
+die "$me:\tUnable to find 'pg_restore' on the path.\n" if ! `pg_restore --version`;
+die "$me:\tUnable to open dump file '$dumpfile'.\n" if ! -r $dumpfile;
+
+print STDERR "Converting $dumpfile to ASCII on stdout...\n"
+  if $DEBUG;
+
+STDOUT->autoflush(1);
+
+######################################################################
+# Load the signatures of things to skip.
+#
+
+print STDERR "  Reading list of functions to ignore...\n"
+  if $DEBUG;
+
+my %skip = ();
+while(my $l = <DATA>) {
+  chop($l);
+  print STDERR "DATA: $l\n" if $DEBUG;
+  $l =~ s/\s//g;
+  $skip{$l} = 1;
+}
+
+######################################################################
+# Write a new manifest for the dump file, skipping the things that
+# are part of PostGIS
+#
+
+if(!defined($POSTGIS_TOC)) {
+  print STDERR "  Writing manifest of things to read from dump file...\n"
+    if $DEBUG;
+
+  open( DUMP, "pg_restore -f - -l $dumpfile |" ) || die "$me:\tCannot open dump file '$dumpfile'\n";
+} else {
+  open( DUMP, '<' . $POSTGIS_TOC) || die "$me:\tCannot open TOC file '$POSTGIS_TOC'\n";
+}
+open( MANIFEST, ">$manifest" ) || die "$me:\tCannot open manifest file '$manifest'\n";
+while( my $l = <DUMP> ) {
+
+  next if $l =~ /^\;/;
+  my $sigHR = linesignature($l);
+  next unless length($sigHR);
+  my $sig = $sigHR;
+  # always skip associated comments associated to objects,
+  # see https://trac.osgeo.org/postgis/ticket/3078
+  $sig =~ s/^COMMENT//g;
+  # always skip shelltype when type is skipped
+  # see https://trac.osgeo.org/postgis/ticket/5569#comment:16
+  $sig =~ s/^SHELLTYPE/TYPE/g;
+  $sig =~ s/\s//g;
+  $hasTopology = 1 if $sig eq 'SCHEMAtopology';
+
+	if ( not defined ($POSTGIS_SCHEMA) )
+	{
+		if ( $l =~ / TABLE DATA ([^ ]*) spatial_ref_sys / )
+		{
+			$POSTGIS_SCHEMA = $1;
+			print STDERR "  Setting postgis schema to $POSTGIS_SCHEMA, as found in the dump\n"
+			  if $DEBUG;
+		}
+	}
+
+  if ( $skip{$sig} ) {
+    print STDERR "SKIP: $sigHR\n" if $DEBUG;
+    next
+  }
+  print STDERR "KEEP: $sigHR\n" if $DEBUG;
+  print MANIFEST $l;
+
+}
+close(MANIFEST);
+close(DUMP) || die "$me: pg_restore returned an error\n";
+
+######################################################################
+# Convert the dump file into an ASCII file, stripping out the
+# unwanted bits.
+#
+print STDERR "  Writing ASCII to stdout...\n"
+  if $DEBUG;
+open( INPUT, "pg_restore -f - -L $manifest $dumpfile |") || die "$me:\tCan't run pg_restore\n";
+
+if ( defined $POSTGIS_SCHEMA ) {
+  print STDOUT "SET search_path = \"" . $POSTGIS_SCHEMA . "\";\n";
+}
+
+#
+# Disable topology metadata tables triggers to allow for population
+# in arbitrary order.
+#
+if ( $hasTopology ) {
+  print STDOUT "ALTER TABLE topology.layer DISABLE TRIGGER ALL;\n";
+}
+
+# Drop the spatial_ref_sys_srid_check to allow for custom invalid SRIDs in the dump
+print STDOUT "ALTER TABLE spatial_ref_sys DROP constraint "
+           . "spatial_ref_sys_srid_check;\n";
+# Drop the spatial_ref_sys primary key to allow for SRID conversions
+# which possibly end up taking the same spot
+print STDOUT "ALTER TABLE spatial_ref_sys DROP constraint "
+           . "spatial_ref_sys_pkey;\n";
+
+# Backup entries found in new spatial_ref_sys for later updating the
+print STDOUT "CREATE TEMP TABLE _pgis_restore_spatial_ref_sys AS "
+            ."SELECT * FROM spatial_ref_sys;\n";
+print STDOUT "DELETE FROM spatial_ref_sys;\n";
+
+my $inCopy;
+while( my $l = <INPUT> ) {
+  if ( $l =~ /^COPY .+ FROM stdin;$/ ) {
+    $inCopy = 1;
+  }
+  elsif ( $inCopy && $l =~ /^\\\.$/ ) {
+    $inCopy = 0;
+  }
+
+  next if !$inCopy && $l =~ /^ *--/;
+
+  if ( $l =~ /^SET search_path/ ) {
+    $l =~ s/; *$/, public;/;
+  }
+
+  # This is to avoid confusing OPERATOR CLASS and OPERATOR FAMILY
+  # with OPERATOR below
+  elsif ( $l =~ /CREATE OPERATOR CLASS/ || $l =~ /CREATE OPERATOR FAMILY/ )
+  {
+  }
+
+  # We can't skip OPERATORS from the manifest file
+  # because it doesn't contain enough information
+  # about the type the operator is for
+  elsif ( $l =~ /CREATE OPERATOR *([^ ,]*)/)
+  {
+    my $name = canonicalize_typename($1);
+    my $larg = undef;
+    my $rarg = undef;
+    my @sublines = ($l);
+    while( my $subline = <INPUT>)
+    {
+      push(@sublines, $subline);
+      last if $subline =~ /;[\t ]*$/;
+      if ( $subline =~ /leftarg *= *([^ ,]*)/i )
+      {
+        $larg=canonicalize_typename($1);
+      }
+      if ( $subline =~ /rightarg *= *([^ ,]*)/i )
+      {
+        $rarg=canonicalize_typename($1);
+      }
+    }
+
+    if ( ! $larg ) {
+      print STDERR "No larg, @sublines: [" . @sublines . "]\n";
+    }
+
+    my $sigHR = "OPERATOR " . $name .' ('.$larg.', '.$rarg.')';
+    my $sig = $sigHR; $sig =~ s/\s//g;
+
+    if ( $skip{$sig} )
+    {
+       print STDERR "SKIP: $sig\n" if $DEBUG;
+       next;
+    }
+
+    print STDERR "KEEP: $sig\n" if $DEBUG;
+    print STDOUT @sublines;
+    next;
+  }
+
+  # Rewrite spatial table constraints
+  #
+  # Example 1:
+  # CREATE TABLE geos_in (
+  #     id integer NOT NULL,
+  #     g public.geometry,
+  #     CONSTRAINT enforce_dims_g CHECK ((public.st_ndims(g) = 2)),
+  #     CONSTRAINT enforce_geotype_g CHECK (((public.geometrytype(g) = 'MULTILINESTRING'::text) OR (g IS NULL))),
+  #     CONSTRAINT enforce_srid_g CHECK ((public.st_srid(g) = (-1)))
+  # );
+  #
+  # Example 2:
+  # CREATE TABLE boszip (
+  #     gid integer NOT NULL,
+  #     zip5 character(5),
+  #     the_geom geometry,
+  #     CONSTRAINT enforce_dims_the_geom CHECK ((ndims(the_geom) = 2)),
+  #     CONSTRAINT enforce_geotype_the_geom CHECK (((geometrytype(the_geom) = 'MULTIPOLYGON'::text) OR (the_geom IS NULL))),
+  #     CONSTRAINT enforce_srid_the_geom CHECK ((srid(the_geom) = 2249))
+  # );
+  #
+  # Example 3:
+  # CREATE TABLE "PIANIFICAZIONE__ELEMENTO_LINEA" (
+  #     soft_gis_serial integer NOT NULL,
+  #     "G" public.geometry,
+  #     CONSTRAINT "enforce_dims_G" CHECK ((public.st_ndims("G") = 2)),
+  #     CONSTRAINT "enforce_geotype_G" CHECK (((public.geometrytype("G") = 'MULTICURVE'::text) OR ("G" IS NULL))),
+  #     CONSTRAINT "enforce_srid_G" CHECK ((public.st_srid("G") = (-1)))
+  # );
+  #
+  #
+  elsif ( $l =~ /CREATE TABLE *([^ ,]*)/)
+  {
+    print STDOUT $l;
+    while( my $subline = <INPUT>)
+    {
+      if ( $subline =~ /CONSTRAINT "?enforce_dims_/i ) {
+        $subline =~ s/\bndims\(/st_ndims(/;
+      }
+      if ( $subline =~ /CONSTRAINT "?enforce_srid_/i ) {
+        $subline =~ s/\bsrid\(/st_srid(/;
+        if ( $subline =~ /=\s\(?([-0-9][0-9]*)\)/ ) {
+          my $oldsrid = $1;
+          my $newsrid = clamp_srid($oldsrid);
+          $subline =~ s/=\s*(\(?)[-0-9][0-9]*/= $1$newsrid/;
+        } else {
+          print STDERR "WARNING: could not find SRID value in: $subline";
+        }
+      }
+      print STDOUT $subline;
+      last if $subline =~ /;[\t ]*$/;
+    }
+    next;
+  }
+
+  # Parse comments, to avoid skipping quoted comments
+  # See http://trac.osgeo.org/postgis/ticket/2759
+  elsif ( $l =~ /^COMMENT ON .* IS '(.*)/)
+  {
+    print STDOUT $l;
+    while( my $subline = <INPUT>)
+    # A comment ends with an odd number of single quotes and a semicolon
+    {
+      print STDOUT $subline;
+      last if ( $subline !~ /('*)[\t ]*;[\t ]*$/ || length($1) % 2 == 0)
+    }
+    next;
+  }
+
+  # Clamp SRIDS in spatial_ref_sys
+  elsif ( $l =~ /COPY spatial_ref_sys /)
+  {
+    print STDOUT $l;
+    while( my $subline = <INPUT>)
+    {
+      if ( $subline =~ /([0-9]*)\t/ ) {
+        my $oldsrid = $1;
+          my $newsrid = clamp_srid($oldsrid);
+          $subline =~ s/^[0-9]*\t/${newsrid}\t/;
+      }
+      print STDOUT $subline;
+      last if $subline =~ /^\\.$/;
+    }
+    next;
+  }
+
+  print STDOUT $l;
+
+}
+
+if ( defined $POSTGIS_SCHEMA ) {
+  print STDOUT "SET search_path = \"" . $POSTGIS_SCHEMA . "\";\n";
+}
+
+if ( $hasTopology ) {
+
+  # Re-enable topology.layer table triggers
+  print STDOUT "ALTER TABLE topology.layer ENABLE TRIGGER ALL;\n";
+
+  # Update topology SRID from geometry_columns view.
+  # This is mainly to fix srids of -1
+  # May be worth providing a "populate_topology_topology"
+  print STDOUT "UPDATE topology.topology t set srid = g.srid "
+             . "FROM geometry_columns g WHERE t.name = g.f_table_schema "
+             . "AND g.f_table_name = 'face' and f_geometry_column = 'mbr';\n";
+
+}
+
+# Update spatial_ref_sys with entries found in new table
+print STDOUT "UPDATE spatial_ref_sys o set auth_name = n.auth_name, "
+           . "auth_srid = n.auth_srid, srtext = n.srtext, "
+           . "proj4text = n.proj4text FROM "
+           . "_pgis_restore_spatial_ref_sys n WHERE o.srid = n.srid;\n";
+# Insert entries only found in new table
+print STDOUT "INSERT INTO spatial_ref_sys SELECT * FROM "
+           . "_pgis_restore_spatial_ref_sys n WHERE n.srid "
+           . "NOT IN ( SELECT srid FROM spatial_ref_sys );\n";
+# DROP TABLE _pgis_restore_spatial_ref_sys;
+print STDOUT "DROP TABLE _pgis_restore_spatial_ref_sys;\n";
+
+# Try re-enforcing spatial_ref_sys_srid_check, would fail if impossible
+# but you'd still have your data
+print STDOUT "ALTER TABLE spatial_ref_sys ADD constraint "
+           . "spatial_ref_sys_srid_check check "
+           . "( srid > 0 and srid < " . ($SRID_USER_MAXIMUM+1) ." ) ;\n";
+# Try re-enforcing spatial_ref_sys primary key, would fail if impossible
+# but you'd still have your data
+print STDOUT "ALTER TABLE spatial_ref_sys ENABLE TRIGGER ALL;\n";
+print STDOUT "ALTER TABLE spatial_ref_sys ADD PRIMARY KEY(srid);\n";
+
+
+print STDERR "Done.\n";
+
+######################################################################
+# Strip a dump file manifest line down to the unique elements of
+# type and signature.
+#
+sub linesignature {
+
+  my $line = shift;
+  my $sig;
+
+  $line =~ s/\n$//;
+  $line =~ s/\r$//;
+  $line =~ s/OPERATOR CLASS/OPERATORCLASS/;
+  $line =~ s/TABLE DATA/TABLEDATA/;
+  $line =~ s/SHELL TYPE/SHELLTYPE/;
+  $line =~ s/PROCEDURAL LANGUAGE/PROCEDURALLANGUAGE/;
+  $line =~ s/SEQUENCE SET/SEQUENCE_SET/;
+
+  if( $line =~ /^(\d+)\; (\d+) (\d+) FK (\w+) (\w+) (.*) (\w*)/ ) {
+    $sig = "FK " . $4 . " " . $6;
+  }
+  # We strip argument names from function comments
+  elsif ( $line =~ /COMMENT \w+ FUNCTION ([^\(]*)\((.*)\)/ )
+  {
+    my $name = $1;
+    my $args = $2;
+    my @args = split('\s*,\s*', $args);
+
+    # No inout indicator or out parameters for function signatures
+    my @inonly_args = clean_inout_arguments(@args);
+
+    # For *function* signature we are supposed to strip argument names
+    my @unnamed_args = strip_argument_names(@inonly_args);
+
+    $sig = "COMMENT FUNCTION $name(" . join(', ', @unnamed_args) . ")";
+  }
+  elsif( $line =~ /^(\d+)\; (\d+) (\d+) (\w+) - (\w+) (.*) (\w*)/ ) {
+    $sig = $4 . " " . $5 . " " . $6;
+  }
+  elsif( $line =~ /^(\d+)\; (\d+) (\d+) (\w+) (\w+) (.*) (\w*)/ ) {
+    $sig = $4 . " " . $6;
+  }
+  elsif( $line =~ /PROCEDURALLANGUAGE.*plpgsql/ ) {
+    $sig = "PROCEDURAL LANGUAGE plpgsql";
+  }
+  elsif ( $line =~ /SCHEMA - (\w+)/ ) {
+    $sig = "SCHEMA $1";
+  }
+  elsif ( $line =~ /SEQUENCE - (\w+)/ ) {
+    $sig = "SEQUENCE $1";
+  }
+  else {
+    # TODO: something smarter here...
+    $sig = $line
+  }
+
+  # Strip schema from signature
+  # TODO: restrict to POSTGIS_SCHEMA
+  $sig =~ s/[^\.(, ]*\.//g;
+
+  return $sig;
+
+}
+
+#
+# Canonicalize type names (they change between dump versions).
+# Here we also strip schema qualification
+#
+sub
+canonicalize_typename
+{
+	my $arg=shift;
+
+	# Lower case
+	$arg = lc($arg);
+
+	# Trim whitespaces
+	$arg =~ s/^\s*//;
+	$arg =~ s/\s*$//;
+
+	# Strip schema qualification
+	#$arg =~ s/^public.//;
+	$arg =~ s/^.*\.//;
+
+	# Handle type name changes
+	if ( $arg eq 'opaque' ) {
+		$arg = 'internal';
+	} elsif ( $arg eq 'boolean' ) {
+		$arg = 'bool';
+	} elsif ( $arg eq 'oldgeometry' ) {
+		$arg = 'geometry';
+	}
+
+	# Timestamp with or without time zone
+	if ( $arg =~ /timestamp .* time zone/ ) {
+		$arg = 'timestamp';
+	}
+
+	return $arg;
+}
+
+# Change SRID to be within allowed ranges
+sub
+clamp_srid
+{
+  my $oldsrid = shift;
+  my $newsrid = $oldsrid;
+
+  if ( $oldsrid < 0 ) {
+    $newsrid = 0;
+    printf STDERR "  WARNING: SRID $oldsrid converted to $newsrid (official UNKNOWN)\n";
+  } elsif ( $oldsrid > $SRID_MAXIMUM ) {
+    $newsrid = $SRID_USER_MAXIMUM + 1 +
+      # -1 is to reduce likelihood of clashes
+      # NOTE: must match core implementation (lwutil.c)
+      ( $oldsrid % ( $SRID_MAXIMUM - $SRID_USER_MAXIMUM - 1 ) );
+    printf STDERR "  WARNING: SRID $oldsrid converted to $newsrid (in reserved zone)\n";
+  } elsif ( $oldsrid > $SRID_USER_MAXIMUM ) {
+    printf STDERR "  WARNING: SRID $newsrid is in reserved zone\n";
+  }
+
+  return $newsrid;
+}
+
+# Example:
+#  INPUT: inout first double precision, second integer, OUT third text, fourth bool
+# OUTPUT: first double precision, second integer, fourth bool
+sub clean_inout_arguments {
+	my @args = @_;
+	my @out;
+	#print STDERR "DEBUG: to inout strip: " . join(',', @args) . "\n";
+	foreach ( @args )
+	{
+		my $a = $_;
+
+		#print "  XXX arg: [$a]\n";
+		# If the arg is composed by multiple words
+		# check for out and inout indicators
+		if ( $a =~ m/([^ ]*) (.*)/ )
+		{
+			# Skip from the first out parameter onward
+			last if $1 eq 'OUT';
+
+			# Hide the inout indicator
+			$a = $2 if $1 eq 'INOUT';
+		}
+		#print "  XXX arg became: $a\n";
+		push @out, $a;
+	}
+	#print STDERR "DEBUG: inout striped: " . join(',', @out) . "\n";
+	return @out;
+}
+
+# Remove argument names from array of arguments
+# Example:
+#  INPUT: int,named double precision,named text
+# OUTPUT: int,double precision,text
+sub strip_argument_names {
+	my @args = @_;
+  my %reserved_sql_word = (
+    'timestamp' => 1,
+    'double' => 1,
+    'character' => 1
+  );
+	my @out;
+	#print "XXX to strip: " . join(',', @args) . "\n";
+	foreach ( @args )
+	{
+		my $a = $_;
+
+		#print "  XXX arg: $a\n";
+		# Drop all but reserved words from multi-word arg
+		while ( $a =~ m/^([^ ]*) (.*)/ )
+		{
+			last if $reserved_sql_word{$1};
+			$a = $2;
+			#print "  XXX arg became: $a\n";
+		}
+		push @out, $a;
+	}
+	#print "XXX striped: " . join(',', @out) . "\n";
+	return @out;
+}
+
+
+######################################################################
+# Here are all the signatures we want to skip but we cannot derive
+# from current source
+#
+__END__
+ACL SCHEMA topology
+ACL TABLE geography_columns
+ACL TABLE geometry_columns
+ACL TABLE layer
+ACL TABLE raster_columns
+ACL TABLE raster_overviews
+ACL TABLE spatial_ref_sys
+ACL TABLE topology
+AGGREGATE accum_old(geometry)
+AGGREGATE cg_3dunion(geometry)
+AGGREGATE cg_union(geometry)
+AGGREGATE collect(geometry)
+AGGREGATE extent(geometry)
+AGGREGATE extent3d(geometry)
+AGGREGATE geomunion(geometry)
+AGGREGATE makeline(geometry)
+AGGREGATE memcollect(geometry)
+AGGREGATE memgeomunion(geometry)
+AGGREGATE polygonize(geometry)
+AGGREGATE st_3dextent(geometry)
+AGGREGATE st_3dunion(geometry)
+AGGREGATE st_accum(geometry)
+AGGREGATE st_accum_old(geometry)
+AGGREGATE st_asflatgeobuf(anyelement)
+AGGREGATE st_asflatgeobuf(anyelement, boolean)
+AGGREGATE st_asflatgeobuf(anyelement, boolean, text)
+AGGREGATE st_asgeobuf(anyelement)
+AGGREGATE st_asgeobuf(anyelement, text)
+AGGREGATE st_asmvt(anyelement)
+AGGREGATE st_asmvt(anyelement, text)
+AGGREGATE st_asmvt(anyelement, text, integer)
+AGGREGATE st_asmvt(anyelement, text, integer, text)
+AGGREGATE st_asmvt(anyelement, text, integer, text, text)
+AGGREGATE st_astwkb_agg(geometry, integer)
+AGGREGATE st_astwkb_agg(geometry, integer, bigint)
+AGGREGATE st_astwkbagg(geometry, integer)
+AGGREGATE st_astwkbagg(geometry, integer, bigint)
+AGGREGATE st_astwkbagg(geometry, integer, bigint, boolean)
+AGGREGATE st_astwkbagg(geometry, integer, bigint, boolean, boolean)
+AGGREGATE st_clusterintersecting(geometry)
+AGGREGATE st_clusterwithin(geometry, double precision)
+AGGREGATE st_collect(geometry)
+AGGREGATE st_countagg(raster, boolean)
+AGGREGATE st_countagg(raster, integer, boolean)
+AGGREGATE st_countagg(raster, integer, boolean, double precision)
+AGGREGATE st_coverageunion(geometry)
+AGGREGATE st_extent(geometry)
+AGGREGATE st_extent3d(geometry)
+AGGREGATE st_geomunion(geometry)
+AGGREGATE st_makeline(geometry)
+AGGREGATE st_memcollect(geometry)
+AGGREGATE st_memunion(geometry)
+AGGREGATE st_polygonize(geometry)
+AGGREGATE st_samealignment(raster)
+AGGREGATE st_summarystatsagg(raster, boolean, double precision)
+AGGREGATE st_summarystatsagg(raster, integer, boolean)
+AGGREGATE st_summarystatsagg(raster, integer, boolean, double precision)
+AGGREGATE st_union(geometry)
+AGGREGATE st_union(geometry, double precision)
+AGGREGATE st_union(raster)
+AGGREGATE st_union(raster, integer)
+AGGREGATE st_union(raster, integer, text)
+AGGREGATE st_union(raster, record[])
+AGGREGATE st_union(raster, text)
+AGGREGATE st_union(raster, text, text)
+AGGREGATE st_union(raster, text, text, text)
+AGGREGATE st_union(raster, text, text, text, double precision)
+AGGREGATE st_union(raster, text, text, text, double precision, text, text, text, double precision)
+AGGREGATE st_union(raster, text, text, text, double precision, text, text, text, double precision, text, text, text, double precision)
+AGGREGATE st_union(raster, unionarg[])
+AGGREGATE topoelementarray_agg(topoelement)
+CAST (box2d AS box3d)
+CAST (box2d AS geometry)
+CAST (box3d AS box)
+CAST (box3d AS box2d)
+CAST (box3d AS geometry)
+CAST (bytea AS geography)
+CAST (bytea AS geometry)
+CAST (geography AS bytea)
+CAST (geography AS geography)
+CAST (geography AS geometry)
+CAST (geometry AS box)
+CAST (geometry AS box2d)
+CAST (geometry AS box3d)
+CAST (geometry AS bytea)
+CAST (geometry AS geography)
+CAST (geometry AS geometry)
+CAST (geometry AS json)
+CAST (geometry AS jsonb)
+CAST (geometry AS path)
+CAST (geometry AS point)
+CAST (geometry AS polygon)
+CAST (geometry AS text)
+CAST (path AS geometry)
+CAST (point AS geometry)
+CAST (polygon AS geometry)
+CAST (text AS geometry)
+CAST CAST (box2d AS box3d)
+CAST CAST (box2d AS geometry)
+CAST CAST (box3d AS box)
+CAST CAST (box3d AS box2d)
+CAST CAST (box3d AS geometry)
+CAST CAST (bytea AS geography)
+CAST CAST (bytea AS geometry)
+CAST CAST (geography AS bytea)
+CAST CAST (geography AS geography)
+CAST CAST (geography AS geometry)
+CAST CAST (geometry AS box)
+CAST CAST (geometry AS box2d)
+CAST CAST (geometry AS box3d)
+CAST CAST (geometry AS bytea)
+CAST CAST (geometry AS geography)
+CAST CAST (geometry AS geometry)
+CAST CAST (geometry AS json)
+CAST CAST (geometry AS jsonb)
+CAST CAST (geometry AS path)
+CAST CAST (geometry AS point)
+CAST CAST (geometry AS polygon)
+CAST CAST (geometry AS text)
+CAST CAST (path AS geometry)
+CAST CAST (point AS geometry)
+CAST CAST (polygon AS geometry)
+CAST CAST (raster AS box3d)
+CAST CAST (raster AS bytea)
+CAST CAST (raster AS geometry)
+CAST CAST (text AS geometry)
+CAST CAST (topogeometry AS geometry)
+CAST CAST (topogeometry AS integer[])
+CONSTRAINT layer layer_pkey
+CONSTRAINT layer layer_schema_name_table_name_feature_column_key
+CONSTRAINT spatial_ref_sys spatial_ref_sys_pkey
+CONSTRAINT topology topology_name_key
+CONSTRAINT topology topology_pkey
+DEFAULT topology id
+DOMAIN topoelement
+DOMAIN topoelementarray
+FK CONSTRAINT layer layer_topology_id_fkey
+FUNCTION "json"(geometry)
+FUNCTION "jsonb"(geometry)
+FUNCTION __st_countagg_transfn(agg_count, raster, integer, boolean, double precision)
+FUNCTION _add_overview_constraint(name, name, name, name, name, name, integer)
+FUNCTION _add_raster_constraint(name, text)
+FUNCTION _add_raster_constraint_alignment(name, name, name)
+FUNCTION _add_raster_constraint_blocksize(name, name, name, text)
+FUNCTION _add_raster_constraint_coverage_tile(name, name, name)
+FUNCTION _add_raster_constraint_extent(name, name, name)
+FUNCTION _add_raster_constraint_nodata_values(name, name, name)
+FUNCTION _add_raster_constraint_num_bands(name, name, name)
+FUNCTION _add_raster_constraint_out_db(name, name, name)
+FUNCTION _add_raster_constraint_pixel_types(name, name, name)
+FUNCTION _add_raster_constraint_regular_blocking(name, name, name)
+FUNCTION _add_raster_constraint_scale(name, name, name, character)
+FUNCTION _add_raster_constraint_spatially_unique(name, name, name)
+FUNCTION _add_raster_constraint_srid(name, name, name)
+FUNCTION _asgmledge(integer, integer, integer, geometry, regclass, text, integer, integer, text, integer)
+FUNCTION _asgmlface(text, integer, regclass, text, integer, integer, text, integer)
+FUNCTION _asgmlnode(integer, geometry, text, integer, integer, text, integer)
+FUNCTION _checkedgelinking(integer, integer, integer, integer)
+FUNCTION _drop_overview_constraint(name, name, name)
+FUNCTION _drop_raster_constraint(name, name, name)
+FUNCTION _drop_raster_constraint_alignment(name, name, name)
+FUNCTION _drop_raster_constraint_blocksize(name, name, name, text)
+FUNCTION _drop_raster_constraint_coverage_tile(name, name, name)
+FUNCTION _drop_raster_constraint_extent(name, name, name)
+FUNCTION _drop_raster_constraint_nodata_values(name, name, name)
+FUNCTION _drop_raster_constraint_num_bands(name, name, name)
+FUNCTION _drop_raster_constraint_out_db(name, name, name)
+FUNCTION _drop_raster_constraint_pixel_types(name, name, name)
+FUNCTION _drop_raster_constraint_regular_blocking(name, name, name)
+FUNCTION _drop_raster_constraint_scale(name, name, name, character)
+FUNCTION _drop_raster_constraint_spatially_unique(name, name, name)
+FUNCTION _drop_raster_constraint_srid(name, name, name)
+FUNCTION _overview_constraint(raster, integer, name, name, name)
+FUNCTION _overview_constraint_info(name, name, name)
+FUNCTION _postgis_deprecate(text, text, text)
+FUNCTION _postgis_index_extent(regclass, text)
+FUNCTION _postgis_join_selectivity(regclass, text, regclass, text, text)
+FUNCTION _postgis_pgsql_version()
+FUNCTION _postgis_scripts_pgsql_version()
+FUNCTION _postgis_selectivity(regclass, text, geometry, text)
+FUNCTION _postgis_stats(regclass, text, text)
+FUNCTION _raster_constraint_info_alignment(name, name, name)
+FUNCTION _raster_constraint_info_blocksize(name, name, name, text)
+FUNCTION _raster_constraint_info_coverage_tile(name, name, name)
+FUNCTION _raster_constraint_info_extent(name, name, name)
+FUNCTION _raster_constraint_info_index(name, name, name)
+FUNCTION _raster_constraint_info_nodata_values(name, name, name)
+FUNCTION _raster_constraint_info_num_bands(name, name, name)
+FUNCTION _raster_constraint_info_out_db(name, name, name)
+FUNCTION _raster_constraint_info_pixel_types(name, name, name)
+FUNCTION _raster_constraint_info_regular_blocking(name, name, name)
+FUNCTION _raster_constraint_info_scale(name, name, name, character)
+FUNCTION _raster_constraint_info_spatially_unique(name, name, name)
+FUNCTION _raster_constraint_info_srid(name, name, name)
+FUNCTION _raster_constraint_nodata_values(raster)
+FUNCTION _raster_constraint_out_db(raster)
+FUNCTION _raster_constraint_pixel_types(raster)
+FUNCTION _registermissingfaces(character varying)
+FUNCTION _rename_raster_tables()
+FUNCTION _st_3ddfullywithin(geometry, geometry, double precision)
+FUNCTION _st_3ddwithin(geometry, geometry, double precision)
+FUNCTION _st_3dintersects(geometry, geometry)
+FUNCTION _st_addfacesplit(character varying, integer, integer, boolean)
+FUNCTION _st_adjacentedges(character varying, integer, integer)
+FUNCTION _st_asgeojson(integer, geography, integer, integer)
+FUNCTION _st_asgeojson(integer, geometry, integer, integer)
+FUNCTION _st_asgml(integer, geography, integer, integer, text)
+FUNCTION _st_asgml(integer, geography, integer, integer, text, text)
+FUNCTION _st_asgml(integer, geometry, integer, integer, text)
+FUNCTION _st_asgml(integer, geometry, integer, integer, text, text)
+FUNCTION _st_askml(integer, geography, integer, text)
+FUNCTION _st_askml(integer, geometry, integer, text)
+FUNCTION _st_aspect4ma(double precision[], integer[], text[])
+FUNCTION _st_aspect4ma(double precision[], text, text[])
+FUNCTION _st_aspect4ma(double precision[][][], integer[][], text[])
+FUNCTION _st_asraster(geometry, double precision, double precision, integer, integer, text[], double precision[], double precision[], double precision, double precision, double precision, double precision, double precision, double precision, boolean)
+FUNCTION _st_asx3d(integer, geometry, integer, integer, text)
+FUNCTION _st_bestsrid(geography)
+FUNCTION _st_bestsrid(geography, geography)
+FUNCTION _st_buffer(geometry, double precision, cstring)
+FUNCTION _st_clip(raster, integer[], geometry, double precision[], boolean)
+FUNCTION _st_clip(raster, integer[], geometry, double precision[], boolean, boolean)
+FUNCTION _st_colormap(raster, integer, text, text)
+FUNCTION _st_concavehull(geometry)
+FUNCTION _st_contains(geometry, geometry)
+FUNCTION _st_contains(geometry, raster, integer)
+FUNCTION _st_contains(raster, geometry, integer)
+FUNCTION _st_contains(raster, integer, raster, integer)
+FUNCTION _st_containsproperly(geometry, geometry)
+FUNCTION _st_containsproperly(raster, integer, raster, integer)
+FUNCTION _st_convertarray4ma(double precision[])
+FUNCTION _st_convertarray4ma(double precision[][])
+FUNCTION _st_count(raster, integer, boolean, double precision)
+FUNCTION _st_count(text, text, integer, boolean, double precision)
+FUNCTION _st_countagg_finalfn(agg_count)
+FUNCTION _st_countagg_transfn(agg_count, raster, boolean)
+FUNCTION _st_countagg_transfn(agg_count, raster, integer, boolean)
+FUNCTION _st_countagg_transfn(agg_count, raster, integer, boolean, double precision)
+FUNCTION _st_coveredby(geography, geography)
+FUNCTION _st_coveredby(geometry, geometry)
+FUNCTION _st_coveredby(raster, integer, raster, integer)
+FUNCTION _st_covers(geography, geography)
+FUNCTION _st_covers(geometry, geometry)
+FUNCTION _st_covers(raster, integer, raster, integer)
+FUNCTION _st_crosses(geometry, geometry)
+FUNCTION _st_dfullywithin(geometry, geometry, double precision)
+FUNCTION _st_dfullywithin(raster, integer, raster, integer, double precision)
+FUNCTION _st_distance(geography, geography, double precision, boolean)
+FUNCTION _st_distancetree(geography, geography)
+FUNCTION _st_distancetree(geography, geography, double precision, boolean)
+FUNCTION _st_distanceuncached(geography, geography)
+FUNCTION _st_distanceuncached(geography, geography, boolean)
+FUNCTION _st_distanceuncached(geography, geography, double precision, boolean)
+FUNCTION _st_dumpaswktpolygons(raster, integer)
+FUNCTION _st_dumppoints(geometry, integer[])
+FUNCTION _st_dwithin(geography, geography, double precision, boolean)
+FUNCTION _st_dwithin(geometry, geometry, double precision)
+FUNCTION _st_dwithin(raster, integer, raster, integer, double precision)
+FUNCTION _st_dwithinuncached(geography, geography, double precision)
+FUNCTION _st_dwithinuncached(geography, geography, double precision, boolean)
+FUNCTION _st_equals(geometry, geometry)
+FUNCTION _st_expand(geography, double precision)
+FUNCTION _st_gdalwarp(raster, text, double precision, integer, double precision, double precision, double precision, double precision, double precision, double precision, integer, integer)
+FUNCTION _st_geomfromgml(text, integer)
+FUNCTION _st_grayscale4ma(double precision[], integer[], text[])
+FUNCTION _st_grayscale4ma(double precision[][][], integer[][], text[])
+FUNCTION _st_hillshade4ma(double precision[], integer[], text[])
+FUNCTION _st_hillshade4ma(double precision[], text, text[])
+FUNCTION _st_hillshade4ma(double precision[][][], integer[][], text[])
+FUNCTION _st_histogram(raster, integer, boolean, double precision, integer, double precision[], boolean, double precision, double precision)
+FUNCTION _st_histogram(text, text, integer, boolean, double precision, integer, double precision[], boolean)
+FUNCTION _st_intersects(geometry, geometry)
+FUNCTION _st_intersects(geometry, raster, integer)
+FUNCTION _st_intersects(raster, geometry, integer)
+FUNCTION _st_intersects(raster, integer, raster, integer)
+FUNCTION _st_linecrossingdirection(geometry, geometry)
+FUNCTION _st_longestline(geometry, geometry)
+FUNCTION _st_mapalgebra(rastbandarg[], regprocedure, text, integer, integer, text, raster, double precision[], boolean, text[])
+FUNCTION _st_mapalgebra(rastbandarg[], regprocedure, text, integer, integer, text, raster, double precision[][], boolean, text[])
+FUNCTION _st_mapalgebra(rastbandarg[], regprocedure, text, integer, integer, text, raster, text[])
+FUNCTION _st_mapalgebra(rastbandarg[], text, text, text, text, text, double precision)
+FUNCTION _st_mapalgebra4unionfinal1(raster)
+FUNCTION _st_mapalgebra4unionstate(raster, raster)
+FUNCTION _st_mapalgebra4unionstate(raster, raster, integer)
+FUNCTION _st_mapalgebra4unionstate(raster, raster, integer, text)
+FUNCTION _st_mapalgebra4unionstate(raster, raster, text)
+FUNCTION _st_mapalgebra4unionstate(raster, raster, text, text, text, double precision, text, text, text, double precision)
+FUNCTION _st_maxdistance(geometry, geometry)
+FUNCTION _st_mintolerance(character varying, geometry)
+FUNCTION _st_mintolerance(geometry)
+FUNCTION _st_neighborhood(raster, integer, integer, integer, integer, integer, boolean)
+FUNCTION _st_orderingequals(geometry, geometry)
+FUNCTION _st_overlaps(geometry, geometry)
+FUNCTION _st_overlaps(geometry, raster, integer)
+FUNCTION _st_overlaps(raster, geometry, integer)
+FUNCTION _st_overlaps(raster, integer, raster, integer)
+FUNCTION _st_pixelascentroids(raster, integer, integer, integer, boolean)
+FUNCTION _st_pixelaspolygons(raster, integer, integer, integer, boolean)
+FUNCTION _st_pointoutside(geography)
+FUNCTION _st_quantile(raster, integer, boolean, double precision, double precision[])
+FUNCTION _st_quantile(text, text, integer, boolean, double precision, double precision[])
+FUNCTION _st_raster2worldcoord(raster, integer, integer)
+FUNCTION _st_rastertoworldcoord(raster, integer, integer)
+FUNCTION _st_reclass(raster, reclassarg[])
+FUNCTION _st_remedgecheck(character varying, integer, integer, integer, integer)
+FUNCTION _st_resample(raster, text, double precision, integer, double precision, double precision, double precision, double precision, double precision, double precision)
+FUNCTION _st_resample(raster, text, double precision, integer, double precision, double precision, double precision, double precision, double precision, double precision, integer, integer)
+FUNCTION _st_roughness4ma(double precision[], integer[], text[])
+FUNCTION _st_roughness4ma(double precision[][][], integer[][], text[])
+FUNCTION _st_samealignment_finalfn(agg_samealignment)
+FUNCTION _st_samealignment_transfn(agg_samealignment, raster)
+FUNCTION _st_setvalues(raster, integer, integer, integer, double precision[], boolean[], boolean, double precision, boolean)
+FUNCTION _st_setvalues(raster, integer, integer, integer, double precision[][], boolean[][], boolean, double precision, boolean)
+FUNCTION _st_slope4ma(double precision[], integer[], text[])
+FUNCTION _st_slope4ma(double precision[], text, text[])
+FUNCTION _st_slope4ma(double precision[][][], integer[][], text[])
+FUNCTION _st_sortablehash(geometry)
+FUNCTION _st_summarystats(raster, integer, boolean, double precision)
+FUNCTION _st_summarystats(text, text, integer, boolean, double precision)
+FUNCTION _st_summarystats_finalfn(internal)
+FUNCTION _st_summarystats_transfn(internal, raster, boolean, double precision)
+FUNCTION _st_summarystats_transfn(internal, raster, integer, boolean)
+FUNCTION _st_summarystats_transfn(internal, raster, integer, boolean, double precision)
+FUNCTION _st_tile(raster, integer, integer, integer[])
+FUNCTION _st_tile(raster, integer, integer, integer[], boolean, double precision)
+FUNCTION _st_touches(geometry, geometry)
+FUNCTION _st_touches(geometry, raster, integer)
+FUNCTION _st_touches(raster, geometry, integer)
+FUNCTION _st_touches(raster, integer, raster, integer)
+FUNCTION _st_tpi4ma(double precision[], integer[], text[])
+FUNCTION _st_tpi4ma(double precision[][][], integer[][], text[])
+FUNCTION _st_tri4ma(double precision[], integer[], text[])
+FUNCTION _st_tri4ma(double precision[][][], integer[][], text[])
+FUNCTION _st_union_finalfn(internal)
+FUNCTION _st_union_transfn(internal, raster)
+FUNCTION _st_union_transfn(internal, raster, integer)
+FUNCTION _st_union_transfn(internal, raster, integer, text)
+FUNCTION _st_union_transfn(internal, raster, text)
+FUNCTION _st_union_transfn(internal, raster, unionarg[])
+FUNCTION _st_valuecount(raster, integer, boolean, double precision[], double precision)
+FUNCTION _st_valuecount(text, text, integer, boolean, double precision[], double precision)
+FUNCTION _st_voronoi(geometry, geometry, double precision, boolean)
+FUNCTION _st_within(geometry, geometry)
+FUNCTION _st_within(raster, integer, raster, integer)
+FUNCTION _st_world2rastercoord(raster, double precision, double precision)
+FUNCTION _st_worldtorastercoord(raster, double precision, double precision)
+FUNCTION _topogeo_addlinestringnoface(character varying, geometry, double precision)
+FUNCTION _updaterastersrid(name, name, name, integer)
+FUNCTION _validatetopologyedgelinking(geometry)
+FUNCTION _validatetopologygetfaceshellmaximaledgering(character varying, integer)
+FUNCTION _validatetopologygetringedges(integer)
+FUNCTION _validatetopologyrings(geometry)
+FUNCTION addauth(text)
+FUNCTION addbbox(geometry)
+FUNCTION addedge(character varying, geometry)
+FUNCTION addface(character varying, geometry, boolean)
+FUNCTION addgeometrycolumn(character varying, character varying, character varying, character varying, integer, character varying, integer)
+FUNCTION addgeometrycolumn(character varying, character varying, character varying, character varying, integer, character varying, integer, boolean)
+FUNCTION addgeometrycolumn(character varying, character varying, character varying, integer, character varying, integer)
+FUNCTION addgeometrycolumn(character varying, character varying, character varying, integer, character varying, integer, boolean)
+FUNCTION addgeometrycolumn(character varying, character varying, integer, character varying, integer)
+FUNCTION addgeometrycolumn(character varying, character varying, integer, character varying, integer, boolean)
+FUNCTION addnode(character varying, geometry)
+FUNCTION addnode(character varying, geometry, boolean, boolean)
+FUNCTION addoverviewconstraints(name, name, name, name, integer)
+FUNCTION addoverviewconstraints(name, name, name, name, name, name, integer)
+FUNCTION addpoint(geometry, geometry)
+FUNCTION addpoint(geometry, geometry, integer)
+FUNCTION addrastercolumn(character varying, character varying, character varying, character varying, integer, character varying[], boolean, boolean, double precision[], double precision, double precision, integer, integer, geometry)
+FUNCTION addrastercolumn(character varying, character varying, character varying, integer, character varying[], boolean, boolean, double precision[], double precision, double precision, integer, integer, geometry)
+FUNCTION addrastercolumn(character varying, character varying, integer, character varying[], boolean, boolean, double precision[], double precision, double precision, integer, integer, geometry)
+FUNCTION addrasterconstraints(name, name, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
+FUNCTION addrasterconstraints(name, name, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
+FUNCTION addrasterconstraints(name, name, name, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
+FUNCTION addrasterconstraints(name, name, name, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
+FUNCTION addrasterconstraints(name, name, name, text[])
+FUNCTION addrasterconstraints(name, name, text[])
+FUNCTION addtopogeometrycolumn(character varying, character varying, character varying, character varying, character varying)
+FUNCTION addtopogeometrycolumn(character varying, character varying, character varying, character varying, character varying, integer)
+FUNCTION addtosearchpath(character varying)
+FUNCTION affine(geometry, double precision, double precision, double precision, double precision, double precision, double precision)
+FUNCTION affine(geometry, double precision, double precision, double precision, double precision, double precision, double precision, double precision, double precision, double precision, double precision, double precision, double precision)
+FUNCTION area(geometry)
+FUNCTION area2d(geometry)
+FUNCTION asbinary(geometry)
+FUNCTION asbinary(geometry, text)
+FUNCTION asewkb(geometry)
+FUNCTION asewkb(geometry, text)
+FUNCTION asewkt(geometry)
+FUNCTION asgml(geometry)
+FUNCTION asgml(geometry, integer)
+FUNCTION asgml(topogeometry)
+FUNCTION asgml(topogeometry, regclass)
+FUNCTION asgml(topogeometry, regclass, text)
+FUNCTION asgml(topogeometry, text)
+FUNCTION asgml(topogeometry, text, integer, integer)
+FUNCTION asgml(topogeometry, text, integer, integer, regclass)
+FUNCTION asgml(topogeometry, text, integer, integer, regclass, text)
+FUNCTION asgml(topogeometry, text, integer, integer, regclass, text, integer)
+FUNCTION ashexewkb(geometry)
+FUNCTION ashexewkb(geometry, text)
+FUNCTION askml(geometry)
+FUNCTION askml(geometry, integer)
+FUNCTION askml(integer, geometry, integer)
+FUNCTION assvg(geometry)
+FUNCTION assvg(geometry, integer)
+FUNCTION assvg(geometry, integer, integer)
+FUNCTION astext(geometry)
+FUNCTION astopojson(topogeometry, regclass)
+FUNCTION azimuth(geometry, geometry)
+FUNCTION bdmpolyfromtext(text, integer)
+FUNCTION bdpolyfromtext(text, integer)
+FUNCTION boundary(geometry)
+FUNCTION box(box3d)
+FUNCTION box(geometry)
+FUNCTION box2d(box3d)
+FUNCTION box2d(geometry)
+FUNCTION box2d(raster)
+FUNCTION box2d_contain(box2d, box2d)
+FUNCTION box2d_contained(box2d, box2d)
+FUNCTION box2d_in(cstring)
+FUNCTION box2d_intersects(box2d, box2d)
+FUNCTION box2d_left(box2d, box2d)
+FUNCTION box2d_out(box2d)
+FUNCTION box2d_overlap(box2d, box2d)
+FUNCTION box2d_overleft(box2d, box2d)
+FUNCTION box2d_overright(box2d, box2d)
+FUNCTION box2d_right(box2d, box2d)
+FUNCTION box2d_same(box2d, box2d)
+FUNCTION box2df_in(cstring)
+FUNCTION box2df_out(box2df)
+FUNCTION box3d(box2d)
+FUNCTION box3d(geometry)
+FUNCTION box3d(raster)
+FUNCTION box3d_in(cstring)
+FUNCTION box3d_out(box3d)
+FUNCTION box3dtobox(box3d)
+FUNCTION buffer(geometry, double precision)
+FUNCTION buffer(geometry, double precision, integer)
+FUNCTION buildarea(geometry)
+FUNCTION bytea(geography)
+FUNCTION bytea(geometry)
+FUNCTION bytea(raster)
+FUNCTION cache_bbox()
+FUNCTION centroid(geometry)
+FUNCTION cg_3darea(geometry)
+FUNCTION cg_3dconvexhull(geometry)
+FUNCTION cg_3ddifference(geometry, geometry)
+FUNCTION cg_3ddistance(geometry, geometry)
+FUNCTION cg_3dintersection(geometry, geometry)
+FUNCTION cg_3dintersects(geometry, geometry)
+FUNCTION cg_3dunion(geometry, geometry)
+FUNCTION cg_alphashape(geometry, double precision, boolean)
+FUNCTION cg_approxconvexpartition(geometry)
+FUNCTION cg_approximatemedialaxis(geometry)
+FUNCTION cg_area(geometry)
+FUNCTION cg_constraineddelaunaytriangles(geometry)
+FUNCTION cg_difference(geometry, geometry)
+FUNCTION cg_distance(geometry, geometry)
+FUNCTION cg_extrude(geometry, double precision, double precision, double precision)
+FUNCTION cg_extrudestraightskeleton(geometry, double precision, double precision)
+FUNCTION cg_forcelhr(geometry)
+FUNCTION cg_greeneapproxconvexpartition(geometry)
+FUNCTION cg_intersection(geometry, geometry)
+FUNCTION cg_intersects(geometry, geometry)
+FUNCTION cg_isplanar(geometry)
+FUNCTION cg_issolid(geometry)
+FUNCTION cg_makesolid(geometry)
+FUNCTION cg_minkowskisum(geometry, geometry)
+FUNCTION cg_optimalalphashape(geometry, boolean, integer)
+FUNCTION cg_optimalconvexpartition(geometry)
+FUNCTION cg_orientation(geometry)
+FUNCTION cg_straightskeleton(geometry, boolean)
+FUNCTION cg_tesselate(geometry)
+FUNCTION cg_triangulate(geometry)
+FUNCTION cg_union(geometry, geometry)
+FUNCTION cg_visibility(geometry, geometry)
+FUNCTION cg_visibility(geometry, geometry, geometry)
+FUNCTION cg_volume(geometry)
+FUNCTION cg_ymonotonepartition(geometry)
+FUNCTION checkauth(text, text)
+FUNCTION checkauth(text, text, text)
+FUNCTION checkauthtrigger()
+FUNCTION cleartopogeom(topogeometry)
+FUNCTION collect(geometry, geometry)
+FUNCTION collect_garray(geometry[])
+FUNCTION collector(geometry, geometry)
+FUNCTION combine_bbox(box2d, geometry)
+FUNCTION combine_bbox(box3d, geometry)
+FUNCTION contains(geometry, geometry)
+FUNCTION contains_2d(box2df, box2df)
+FUNCTION contains_2d(box2df, geometry)
+FUNCTION contains_2d(geometry, box2df)
+FUNCTION convexhull(geometry)
+FUNCTION copytopology(character varying, character varying)
+FUNCTION createtopogeom(character varying, integer, integer)
+FUNCTION createtopogeom(character varying, integer, integer, topoelementarray)
+FUNCTION createtopology(character varying)
+FUNCTION createtopology(character varying, integer)
+FUNCTION createtopology(character varying, integer, double precision)
+FUNCTION createtopology(character varying, integer, double precision, boolean)
+FUNCTION crosses(geometry, geometry)
+FUNCTION difference(geometry, geometry)
+FUNCTION dimension(geometry)
+FUNCTION disablelongtransactions()
+FUNCTION disjoint(geometry, geometry)
+FUNCTION distance(geometry, geometry)
+FUNCTION distance_sphere(geometry, geometry)
+FUNCTION distance_spheroid(geometry, geometry, spheroid)
+FUNCTION dropbbox(geometry)
+FUNCTION dropgeometrycolumn(character varying, character varying)
+FUNCTION dropgeometrycolumn(character varying, character varying, character varying)
+FUNCTION dropgeometrycolumn(character varying, character varying, character varying, character varying)
+FUNCTION dropgeometrytable(character varying)
+FUNCTION dropgeometrytable(character varying, character varying)
+FUNCTION dropgeometrytable(character varying, character varying, character varying)
+FUNCTION dropoverviewconstraints(name, name)
+FUNCTION dropoverviewconstraints(name, name, name)
+FUNCTION droprastercolumn(character varying, character varying)
+FUNCTION droprastercolumn(character varying, character varying, character varying)
+FUNCTION droprastercolumn(character varying, character varying, character varying, character varying)
+FUNCTION droprasterconstraints(name, name, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
+FUNCTION droprasterconstraints(name, name, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
+FUNCTION droprasterconstraints(name, name, name, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
+FUNCTION droprasterconstraints(name, name, name, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
+FUNCTION droprasterconstraints(name, name, name, text[])
+FUNCTION droprasterconstraints(name, name, text[])
+FUNCTION droprastertable(character varying)
+FUNCTION droprastertable(character varying, character varying)
+FUNCTION droprastertable(character varying, character varying, character varying)
+FUNCTION droptopogeometrycolumn(character varying, character varying, character varying)
+FUNCTION droptopology(character varying)
+FUNCTION dump(geometry)
+FUNCTION dumpaswktpolygons(raster, integer)
+FUNCTION dumprings(geometry)
+FUNCTION enablelongtransactions()
+FUNCTION endpoint(geometry)
+FUNCTION envelope(geometry)
+FUNCTION equals(geometry, geometry)
+FUNCTION equals(topogeometry, topogeometry)
+FUNCTION estimated_extent(text, text)
+FUNCTION estimated_extent(text, text, text)
+FUNCTION expand(box2d, double precision)
+FUNCTION expand(box3d, double precision)
+FUNCTION expand(geometry, double precision)
+FUNCTION exteriorring(geometry)
+FUNCTION find_extent(text, text)
+FUNCTION find_extent(text, text, text)
+FUNCTION find_srid(character varying, character varying, character varying)
+FUNCTION findlayer(integer, integer)
+FUNCTION findlayer(name, name, name)
+FUNCTION findlayer(regclass, name)
+FUNCTION findlayer(topogeometry)
+FUNCTION findtopology(integer)
+FUNCTION findtopology(name, name, name)
+FUNCTION findtopology(regclass, name)
+FUNCTION findtopology(text)
+FUNCTION findtopology(topogeometry)
+FUNCTION fix_geometry_columns()
+FUNCTION force_2d(geometry)
+FUNCTION force_3d(geometry)
+FUNCTION force_3dm(geometry)
+FUNCTION force_3dz(geometry)
+FUNCTION force_4d(geometry)
+FUNCTION force_collection(geometry)
+FUNCTION forcerhr(geometry)
+FUNCTION geog_brin_inclusion_add_value(internal, internal, internal, internal)
+FUNCTION geography(bytea)
+FUNCTION geography(geography, integer, boolean)
+FUNCTION geography(geometry)
+FUNCTION geography_analyze(internal)
+FUNCTION geography_cmp(geography, geography)
+FUNCTION geography_distance_knn(geography, geography)
+FUNCTION geography_eq(geography, geography)
+FUNCTION geography_ge(geography, geography)
+FUNCTION geography_gist_compress(internal)
+FUNCTION geography_gist_consistent(internal, geography, integer)
+FUNCTION geography_gist_decompress(internal)
+FUNCTION geography_gist_distance(internal, geography, integer)
+FUNCTION geography_gist_join_selectivity(internal, oid, internal, smallint)
+FUNCTION geography_gist_penalty(internal, internal, internal)
+FUNCTION geography_gist_picksplit(internal, internal)
+FUNCTION geography_gist_same(box2d, box2d, internal)
+FUNCTION geography_gist_selectivity(internal, oid, internal, integer)
+FUNCTION geography_gist_union(bytea, internal)
+FUNCTION geography_gt(geography, geography)
+FUNCTION geography_in(cstring, oid, integer)
+FUNCTION geography_le(geography, geography)
+FUNCTION geography_lt(geography, geography)
+FUNCTION geography_out(geography)
+FUNCTION geography_overlaps(geography, geography)
+FUNCTION geography_recv(internal, oid, integer)
+FUNCTION geography_send(geography)
+FUNCTION geography_spgist_choose_nd(internal, internal)
+FUNCTION geography_spgist_compress_nd(internal)
+FUNCTION geography_spgist_config_nd(internal, internal)
+FUNCTION geography_spgist_inner_consistent_nd(internal, internal)
+FUNCTION geography_spgist_leaf_consistent_nd(internal, internal)
+FUNCTION geography_spgist_picksplit_nd(internal, internal)
+FUNCTION geography_typmod_in(cstring[])
+FUNCTION geography_typmod_out(integer)
+FUNCTION geom2d_brin_inclusion_add_value(internal, internal, internal, internal)
+FUNCTION geom3d_brin_inclusion_add_value(internal, internal, internal, internal)
+FUNCTION geom4d_brin_inclusion_add_value(internal, internal, internal, internal)
+FUNCTION geom_accum(geometry[], geometry)
+FUNCTION geomcollfromtext(text)
+FUNCTION geomcollfromtext(text, integer)
+FUNCTION geomcollfromwkb(bytea)
+FUNCTION geomcollfromwkb(bytea, integer)
+FUNCTION geometry(box2d)
+FUNCTION geometry(box3d)
+FUNCTION geometry(bytea)
+FUNCTION geometry(geography)
+FUNCTION geometry(geometry, integer, boolean)
+FUNCTION geometry(path)
+FUNCTION geometry(point)
+FUNCTION geometry(polygon)
+FUNCTION geometry(text)
+FUNCTION geometry(topogeometry)
+FUNCTION geometry_above(geometry, geometry)
+FUNCTION geometry_analyze(internal)
+FUNCTION geometry_below(geometry, geometry)
+FUNCTION geometry_cmp(geometry, geometry)
+FUNCTION geometry_contained_3d(geometry, geometry)
+FUNCTION geometry_contained_by_raster(geometry, raster)
+FUNCTION geometry_contains(geometry, geometry)
+FUNCTION geometry_contains_3d(geometry, geometry)
+FUNCTION geometry_contains_nd(geometry, geometry)
+FUNCTION geometry_distance_box(geometry, geometry)
+FUNCTION geometry_distance_box_nd(geometry, geometry)
+FUNCTION geometry_distance_centroid(geometry, geometry)
+FUNCTION geometry_distance_centroid_nd(geometry, geometry)
+FUNCTION geometry_distance_cpa(geometry, geometry)
+FUNCTION geometry_eq(geometry, geometry)
+FUNCTION geometry_ge(geometry, geometry)
+FUNCTION geometry_gist_compress_2d(internal)
+FUNCTION geometry_gist_compress_nd(internal)
+FUNCTION geometry_gist_consistent_2d(internal, geometry, integer)
+FUNCTION geometry_gist_consistent_nd(internal, geometry, integer)
+FUNCTION geometry_gist_decompress_2d(internal)
+FUNCTION geometry_gist_decompress_nd(internal)
+FUNCTION geometry_gist_distance_2d(internal, geometry, integer)
+FUNCTION geometry_gist_distance_nd(internal, geometry, integer)
+FUNCTION geometry_gist_joinsel_2d(internal, oid, internal, smallint)
+FUNCTION geometry_gist_penalty_2d(internal, internal, internal)
+FUNCTION geometry_gist_penalty_nd(internal, internal, internal)
+FUNCTION geometry_gist_picksplit_2d(internal, internal)
+FUNCTION geometry_gist_picksplit_nd(internal, internal)
+FUNCTION geometry_gist_same_2d(geometry, geometry, internal)
+FUNCTION geometry_gist_same_nd(geometry, geometry, internal)
+FUNCTION geometry_gist_sel_2d(internal, oid, internal, integer)
+FUNCTION geometry_gist_sortsupport_2d(internal)
+FUNCTION geometry_gist_union_2d(bytea, internal)
+FUNCTION geometry_gist_union_nd(bytea, internal)
+FUNCTION geometry_gt(geometry, geometry)
+FUNCTION geometry_hash(geometry)
+FUNCTION geometry_in(cstring)
+FUNCTION geometry_le(geometry, geometry)
+FUNCTION geometry_left(geometry, geometry)
+FUNCTION geometry_lt(geometry, geometry)
+FUNCTION geometry_neq(geometry, geometry)
+FUNCTION geometry_out(geometry)
+FUNCTION geometry_overabove(geometry, geometry)
+FUNCTION geometry_overbelow(geometry, geometry)
+FUNCTION geometry_overlaps(geometry, geometry)
+FUNCTION geometry_overlaps_3d(geometry, geometry)
+FUNCTION geometry_overlaps_nd(geometry, geometry)
+FUNCTION geometry_overleft(geometry, geometry)
+FUNCTION geometry_overright(geometry, geometry)
+FUNCTION geometry_raster_contain(geometry, raster)
+FUNCTION geometry_raster_overlap(geometry, raster)
+FUNCTION geometry_recv(internal)
+FUNCTION geometry_right(geometry, geometry)
+FUNCTION geometry_same(geometry, geometry)
+FUNCTION geometry_same_3d(geometry, geometry)
+FUNCTION geometry_same_nd(geometry, geometry)
+FUNCTION geometry_send(geometry)
+FUNCTION geometry_sortsupport(internal)
+FUNCTION geometry_spgist_choose_2d(internal, internal)
+FUNCTION geometry_spgist_choose_3d(internal, internal)
+FUNCTION geometry_spgist_choose_nd(internal, internal)
+FUNCTION geometry_spgist_compress_2d(internal)
+FUNCTION geometry_spgist_compress_3d(internal)
+FUNCTION geometry_spgist_compress_nd(internal)
+FUNCTION geometry_spgist_config_2d(internal, internal)
+FUNCTION geometry_spgist_config_3d(internal, internal)
+FUNCTION geometry_spgist_config_nd(internal, internal)
+FUNCTION geometry_spgist_inner_consistent_2d(internal, internal)
+FUNCTION geometry_spgist_inner_consistent_3d(internal, internal)
+FUNCTION geometry_spgist_inner_consistent_nd(internal, internal)
+FUNCTION geometry_spgist_leaf_consistent_2d(internal, internal)
+FUNCTION geometry_spgist_leaf_consistent_3d(internal, internal)
+FUNCTION geometry_spgist_leaf_consistent_nd(internal, internal)
+FUNCTION geometry_spgist_picksplit_2d(internal, internal)
+FUNCTION geometry_spgist_picksplit_3d(internal, internal)
+FUNCTION geometry_spgist_picksplit_nd(internal, internal)
+FUNCTION geometry_typmod_in(cstring[])
+FUNCTION geometry_typmod_out(integer)
+FUNCTION geometry_within(geometry, geometry)
+FUNCTION geometry_within_nd(geometry, geometry)
+FUNCTION geometryfromtext(text)
+FUNCTION geometryfromtext(text, integer)
+FUNCTION geometryn(geometry, integer)
+FUNCTION geometrytype(geography)
+FUNCTION geometrytype(geometry)
+FUNCTION geometrytype(topogeometry)
+FUNCTION geomfromewkb(bytea)
+FUNCTION geomfromewkt(text)
+FUNCTION geomfromtext(text)
+FUNCTION geomfromtext(text, integer)
+FUNCTION geomfromwkb(bytea)
+FUNCTION geomfromwkb(bytea, integer)
+FUNCTION geomunion(geometry, geometry)
+FUNCTION geosnoop(geometry)
+FUNCTION get_proj4_from_srid(integer)
+FUNCTION getbbox(geometry)
+FUNCTION getedgebypoint(character varying, geometry, double precision)
+FUNCTION getfacebypoint(character varying, geometry, double precision)
+FUNCTION getfacecontainingpoint(text, geometry)
+FUNCTION getnodebypoint(character varying, geometry, double precision)
+FUNCTION getnodeedges(character varying, integer)
+FUNCTION getringedges(character varying, integer, integer)
+FUNCTION getsrid(geometry)
+FUNCTION gettopogeomelementarray(character varying, integer, integer)
+FUNCTION gettopogeomelementarray(topogeometry)
+FUNCTION gettopogeomelements(character varying, integer, integer)
+FUNCTION gettopogeomelements(topogeometry)
+FUNCTION gettopologyid(character varying)
+FUNCTION gettopologyname(integer)
+FUNCTION gettopologysrid(character varying)
+FUNCTION gettransactionid()
+FUNCTION gidx_in(cstring)
+FUNCTION gidx_out(gidx)
+FUNCTION gserialized_gist_joinsel_2d(internal, oid, internal, smallint)
+FUNCTION gserialized_gist_joinsel_nd(internal, oid, internal, smallint)
+FUNCTION gserialized_gist_sel_2d(internal, oid, internal, integer)
+FUNCTION gserialized_gist_sel_nd(internal, oid, internal, integer)
+FUNCTION hasbbox(geometry)
+FUNCTION interiorringn(geometry, integer)
+FUNCTION intersection(geometry, geometry)
+FUNCTION intersects(geometry, geometry)
+FUNCTION intersects(topogeometry, topogeometry)
+FUNCTION is_contained_2d(box2df, box2df)
+FUNCTION is_contained_2d(box2df, geometry)
+FUNCTION is_contained_2d(geometry, box2df)
+FUNCTION isclosed(geometry)
+FUNCTION isempty(geometry)
+FUNCTION isring(geometry)
+FUNCTION issimple(geometry)
+FUNCTION isvalid(geometry)
+FUNCTION json(geometry)
+FUNCTION jsonb(geometry)
+FUNCTION jtsnoop(geometry)
+FUNCTION layertrigger()
+FUNCTION length(geometry)
+FUNCTION length2d(geometry)
+FUNCTION length2d_spheroid(geometry, spheroid)
+FUNCTION length3d(geometry)
+FUNCTION length3d_spheroid(geometry, spheroid)
+FUNCTION length_spheroid(geometry, spheroid)
+FUNCTION line_interpolate_point(geometry, double precision)
+FUNCTION line_locate_point(geometry, geometry)
+FUNCTION line_substring(geometry, double precision, double precision)
+FUNCTION linefrommultipoint(geometry)
+FUNCTION linefromtext(text)
+FUNCTION linefromtext(text, integer)
+FUNCTION linefromwkb(bytea)
+FUNCTION linefromwkb(bytea, integer)
+FUNCTION linemerge(geometry)
+FUNCTION linestringfromtext(text)
+FUNCTION linestringfromtext(text, integer)
+FUNCTION linestringfromwkb(bytea)
+FUNCTION linestringfromwkb(bytea, integer)
+FUNCTION locate_along_measure(geometry, double precision)
+FUNCTION locate_between_measures(geometry, double precision, double precision)
+FUNCTION lockrow(text, text, text)
+FUNCTION lockrow(text, text, text, text)
+FUNCTION lockrow(text, text, text, text, timestamp without time zone)
+FUNCTION lockrow(text, text, text, text, timestamp)
+FUNCTION lockrow(text, text, text, timestamp without time zone)
+FUNCTION lockrow(text, text, text, timestamp)
+FUNCTION longtransactionsenabled()
+FUNCTION m(geometry)
+FUNCTION makebox2d(geometry, geometry)
+FUNCTION makebox3d(geometry, geometry)
+FUNCTION makeline(geometry, geometry)
+FUNCTION makeline_garray(geometry[])
+FUNCTION makepoint(double precision, double precision)
+FUNCTION makepoint(double precision, double precision, double precision)
+FUNCTION makepoint(double precision, double precision, double precision, double precision)
+FUNCTION makepointm(double precision, double precision, double precision)
+FUNCTION makepolygon(geometry)
+FUNCTION makepolygon(geometry, geometry[])
+FUNCTION max_distance(geometry, geometry)
+FUNCTION mem_size(geometry)
+FUNCTION mlinefromtext(text)
+FUNCTION mlinefromtext(text, integer)
+FUNCTION mlinefromwkb(bytea)
+FUNCTION mlinefromwkb(bytea, integer)
+FUNCTION mpointfromtext(text)
+FUNCTION mpointfromtext(text, integer)
+FUNCTION mpointfromwkb(bytea)
+FUNCTION mpointfromwkb(bytea, integer)
+FUNCTION mpolyfromtext(text)
+FUNCTION mpolyfromtext(text, integer)
+FUNCTION mpolyfromwkb(bytea)
+FUNCTION mpolyfromwkb(bytea, integer)
+FUNCTION multi(geometry)
+FUNCTION multilinefromwkb(bytea)
+FUNCTION multilinefromwkb(bytea, integer)
+FUNCTION multilinestringfromtext(text)
+FUNCTION multilinestringfromtext(text, integer)
+FUNCTION multipointfromtext(text)
+FUNCTION multipointfromtext(text, integer)
+FUNCTION multipointfromwkb(bytea)
+FUNCTION multipointfromwkb(bytea, integer)
+FUNCTION multipolyfromwkb(bytea)
+FUNCTION multipolyfromwkb(bytea, integer)
+FUNCTION multipolygonfromtext(text)
+FUNCTION multipolygonfromtext(text, integer)
+FUNCTION ndims(geometry)
+FUNCTION noop(geometry)
+FUNCTION npoints(geometry)
+FUNCTION nrings(geometry)
+FUNCTION numgeometries(geometry)
+FUNCTION numinteriorring(geometry)
+FUNCTION numinteriorrings(geometry)
+FUNCTION numpoints(geometry)
+FUNCTION overlaps(geometry, geometry)
+FUNCTION overlaps_2d(box2df, box2df)
+FUNCTION overlaps_2d(box2df, geometry)
+FUNCTION overlaps_2d(geometry, box2df)
+FUNCTION overlaps_geog(geography, gidx)
+FUNCTION overlaps_geog(gidx, geography)
+FUNCTION overlaps_geog(gidx, gidx)
+FUNCTION overlaps_nd(geometry, gidx)
+FUNCTION overlaps_nd(gidx, geometry)
+FUNCTION overlaps_nd(gidx, gidx)
+FUNCTION path(geometry)
+FUNCTION perimeter2d(geometry)
+FUNCTION perimeter3d(geometry)
+FUNCTION pgis_abs_in(cstring)
+FUNCTION pgis_abs_out(pgis_abs)
+FUNCTION pgis_asflatgeobuf_finalfn(internal)
+FUNCTION pgis_asflatgeobuf_transfn(internal, anyelement)
+FUNCTION pgis_asflatgeobuf_transfn(internal, anyelement, boolean)
+FUNCTION pgis_asflatgeobuf_transfn(internal, anyelement, boolean, text)
+FUNCTION pgis_asgeobuf_finalfn(internal)
+FUNCTION pgis_asgeobuf_transfn(internal, anyelement)
+FUNCTION pgis_asgeobuf_transfn(internal, anyelement, text)
+FUNCTION pgis_asmvt_combinefn(internal, internal)
+FUNCTION pgis_asmvt_deserialfn(bytea, internal)
+FUNCTION pgis_asmvt_finalfn(internal)
+FUNCTION pgis_asmvt_serialfn(internal)
+FUNCTION pgis_asmvt_transfn(internal, anyelement)
+FUNCTION pgis_asmvt_transfn(internal, anyelement, text)
+FUNCTION pgis_asmvt_transfn(internal, anyelement, text, integer)
+FUNCTION pgis_asmvt_transfn(internal, anyelement, text, integer, text)
+FUNCTION pgis_asmvt_transfn(internal, anyelement, text, integer, text, text)
+FUNCTION pgis_geometry_accum_finalfn(internal)
+FUNCTION pgis_geometry_accum_finalfn(pgis_abs)
+FUNCTION pgis_geometry_accum_transfn(internal, geometry)
+FUNCTION pgis_geometry_accum_transfn(internal, geometry, double precision)
+FUNCTION pgis_geometry_accum_transfn(internal, geometry, double precision, integer)
+FUNCTION pgis_geometry_accum_transfn(pgis_abs, geometry)
+FUNCTION pgis_geometry_clusterintersecting_finalfn(internal)
+FUNCTION pgis_geometry_clusterwithin_finalfn(internal)
+FUNCTION pgis_geometry_collect_finalfn(internal)
+FUNCTION pgis_geometry_collect_finalfn(pgis_abs)
+FUNCTION pgis_geometry_coverageunion_finalfn(internal)
+FUNCTION pgis_geometry_makeline_finalfn(internal)
+FUNCTION pgis_geometry_makeline_finalfn(pgis_abs)
+FUNCTION pgis_geometry_polygonize_finalfn(internal)
+FUNCTION pgis_geometry_polygonize_finalfn(pgis_abs)
+FUNCTION pgis_geometry_union_finalfn(internal)
+FUNCTION pgis_geometry_union_finalfn(pgis_abs)
+FUNCTION pgis_geometry_union_parallel_combinefn(internal, internal)
+FUNCTION pgis_geometry_union_parallel_deserialfn(bytea, internal)
+FUNCTION pgis_geometry_union_parallel_finalfn(internal)
+FUNCTION pgis_geometry_union_parallel_serialfn(internal)
+FUNCTION pgis_geometry_union_parallel_transfn(internal, geometry)
+FUNCTION pgis_geometry_union_parallel_transfn(internal, geometry, double precision)
+FUNCTION pgis_geometry_union_transfn(internal, geometry)
+FUNCTION pgis_twkb_accum_finalfn(internal)
+FUNCTION pgis_twkb_accum_transfn(internal, geometry, integer)
+FUNCTION pgis_twkb_accum_transfn(internal, geometry, integer, bigint)
+FUNCTION pgis_twkb_accum_transfn(internal, geometry, integer, bigint, boolean)
+FUNCTION pgis_twkb_accum_transfn(internal, geometry, integer, bigint, boolean, boolean)
+FUNCTION point(geometry)
+FUNCTION point_inside_circle(geometry, double precision, double precision, double precision)
+FUNCTION pointfromtext(text)
+FUNCTION pointfromtext(text, integer)
+FUNCTION pointfromwkb(bytea)
+FUNCTION pointfromwkb(bytea, integer)
+FUNCTION pointn(geometry, integer)
+FUNCTION pointonsurface(geometry)
+FUNCTION polyfromtext(text)
+FUNCTION polyfromtext(text, integer)
+FUNCTION polyfromwkb(bytea)
+FUNCTION polyfromwkb(bytea, integer)
+FUNCTION polygon(geometry)
+FUNCTION polygonfromtext(text)
+FUNCTION polygonfromtext(text, integer)
+FUNCTION polygonfromwkb(bytea)
+FUNCTION polygonfromwkb(bytea, integer)
+FUNCTION polygonize(character varying)
+FUNCTION polygonize_garray(geometry[])
+FUNCTION populate_geometry_columns()
+FUNCTION populate_geometry_columns(boolean)
+FUNCTION populate_geometry_columns(oid)
+FUNCTION populate_geometry_columns(oid, boolean)
+FUNCTION populate_topology_layer()
+FUNCTION postgis_addbbox(geometry)
+FUNCTION postgis_cache_bbox()
+FUNCTION postgis_constraint_dims(text, text, text)
+FUNCTION postgis_constraint_srid(text, text, text)
+FUNCTION postgis_constraint_type(text, text, text)
+FUNCTION postgis_dropbbox(geometry)
+FUNCTION postgis_extensions_upgrade()
+FUNCTION postgis_extensions_upgrade(text)
+FUNCTION postgis_full_version()
+FUNCTION postgis_gdal_version()
+FUNCTION postgis_geos_compiled_version()
+FUNCTION postgis_geos_noop(geometry)
+FUNCTION postgis_geos_version()
+FUNCTION postgis_getbbox(geometry)
+FUNCTION postgis_hasbbox(geometry)
+FUNCTION postgis_index_supportfn(internal)
+FUNCTION postgis_lib_build_date()
+FUNCTION postgis_lib_revision()
+FUNCTION postgis_lib_version()
+FUNCTION postgis_libjson_version()
+FUNCTION postgis_liblwgeom_version()
+FUNCTION postgis_libprotobuf_version()
+FUNCTION postgis_libxml_version()
+FUNCTION postgis_noop(geometry)
+FUNCTION postgis_noop(raster)
+FUNCTION postgis_proj_compiled_version()
+FUNCTION postgis_proj_version()
+FUNCTION postgis_raster_lib_build_date()
+FUNCTION postgis_raster_lib_version()
+FUNCTION postgis_raster_scripts_installed()
+FUNCTION postgis_scripts_build_date()
+FUNCTION postgis_scripts_installed()
+FUNCTION postgis_scripts_released()
+FUNCTION postgis_sfcgal_full_version()
+FUNCTION postgis_sfcgal_noop(geometry)
+FUNCTION postgis_sfcgal_scripts_installed()
+FUNCTION postgis_sfcgal_version()
+FUNCTION postgis_srs(text, text)
+FUNCTION postgis_srs_all()
+FUNCTION postgis_srs_codes(text)
+FUNCTION postgis_srs_search(geometry, text)
+FUNCTION postgis_svn_version()
+FUNCTION postgis_topology_scripts_installed()
+FUNCTION postgis_transform_geometry(geometry, text, text, integer)
+FUNCTION postgis_transform_pipeline_geometry(geometry, text, boolean, integer)
+FUNCTION postgis_type_name(character varying, integer, boolean)
+FUNCTION postgis_typmod_dims(integer)
+FUNCTION postgis_typmod_srid(integer)
+FUNCTION postgis_typmod_type(integer)
+FUNCTION postgis_uses_stats()
+FUNCTION postgis_version()
+FUNCTION postgis_wagyu_version()
+FUNCTION probe_geometry_columns()
+FUNCTION public.postgis_topology_scripts_installed()
+FUNCTION raster_above(raster, raster)
+FUNCTION raster_below(raster, raster)
+FUNCTION raster_contain(raster, raster)
+FUNCTION raster_contained(raster, raster)
+FUNCTION raster_contained_by_geometry(raster, geometry)
+FUNCTION raster_eq(raster, raster)
+FUNCTION raster_geometry_contain(raster, geometry)
+FUNCTION raster_geometry_overlap(raster, geometry)
+FUNCTION raster_hash(raster)
+FUNCTION raster_in(cstring)
+FUNCTION raster_left(raster, raster)
+FUNCTION raster_out(raster)
+FUNCTION raster_overabove(raster, raster)
+FUNCTION raster_overbelow(raster, raster)
+FUNCTION raster_overlap(raster, raster)
+FUNCTION raster_overleft(raster, raster)
+FUNCTION raster_overright(raster, raster)
+FUNCTION raster_right(raster, raster)
+FUNCTION raster_same(raster, raster)
+FUNCTION relate(geometry, geometry)
+FUNCTION relate(geometry, geometry, text)
+FUNCTION relationtrigger()
+FUNCTION removepoint(geometry, integer)
+FUNCTION removeunusedprimitives(text, geometry)
+FUNCTION rename_geometry_table_constraints()
+FUNCTION renametopogeometrycolumn(regclass, name, name)
+FUNCTION renametopology(character varying, character varying)
+FUNCTION reverse(geometry)
+FUNCTION rotate(geometry, double precision)
+FUNCTION rotatex(geometry, double precision)
+FUNCTION rotatey(geometry, double precision)
+FUNCTION rotatez(geometry, double precision)
+FUNCTION scale(geometry, double precision, double precision)
+FUNCTION scale(geometry, double precision, double precision, double precision)
+FUNCTION se_envelopesintersect(geometry, geometry)
+FUNCTION se_is3d(geometry)
+FUNCTION se_ismeasured(geometry)
+FUNCTION se_locatealong(geometry, double precision)
+FUNCTION se_locatebetween(geometry, double precision, double precision)
+FUNCTION se_m(geometry)
+FUNCTION se_z(geometry)
+FUNCTION segmentize(geometry, double precision)
+FUNCTION setpoint(geometry, integer, geometry)
+FUNCTION setsrid(geometry, integer)
+FUNCTION shift_longitude(geometry)
+FUNCTION simplify(geometry, double precision)
+FUNCTION snaptogrid(geometry, double precision)
+FUNCTION snaptogrid(geometry, double precision, double precision)
+FUNCTION snaptogrid(geometry, double precision, double precision, double precision, double precision)
+FUNCTION snaptogrid(geometry, geometry, double precision, double precision, double precision, double precision)
+FUNCTION spheroid_in(cstring)
+FUNCTION spheroid_out(spheroid)
+FUNCTION srid(geometry)
+FUNCTION st_3darea(geometry)
+FUNCTION st_3dclosestpoint(geometry, geometry)
+FUNCTION st_3dconvexhull(geometry)
+FUNCTION st_3ddfullywithin(geometry, geometry, double precision)
+FUNCTION st_3ddifference(geometry, geometry)
+FUNCTION st_3ddistance(geometry, geometry)
+FUNCTION st_3ddwithin(geometry, geometry, double precision)
+FUNCTION st_3dintersection(geometry, geometry)
+FUNCTION st_3dintersects(geometry, geometry)
+FUNCTION st_3dlength(geometry)
+FUNCTION st_3dlength_spheroid(geometry, spheroid)
+FUNCTION st_3dlineinterpolatepoint(geometry, double precision)
+FUNCTION st_3dlongestline(geometry, geometry)
+FUNCTION st_3dmakebox(geometry, geometry)
+FUNCTION st_3dmaxdistance(geometry, geometry)
+FUNCTION st_3dperimeter(geometry)
+FUNCTION st_3dshortestline(geometry, geometry)
+FUNCTION st_3dunion(geometry, geometry)
+FUNCTION st_above(raster, raster)
+FUNCTION st_addband(raster, addbandarg[])
+FUNCTION st_addband(raster, integer, text)
+FUNCTION st_addband(raster, integer, text, double precision)
+FUNCTION st_addband(raster, integer, text, double precision, double precision)
+FUNCTION st_addband(raster, integer, text, integer[], double precision)
+FUNCTION st_addband(raster, raster)
+FUNCTION st_addband(raster, raster, integer)
+FUNCTION st_addband(raster, raster, integer, integer)
+FUNCTION st_addband(raster, raster[], integer)
+FUNCTION st_addband(raster, raster[], integer, integer)
+FUNCTION st_addband(raster, text)
+FUNCTION st_addband(raster, text, double precision)
+FUNCTION st_addband(raster, text, double precision, double precision)
+FUNCTION st_addband(raster, text, integer[], integer, double precision)
+FUNCTION st_addbbox(geometry)
+FUNCTION st_addedgemodface(character varying, integer, integer, geometry)
+FUNCTION st_addedgenewfaces(character varying, integer, integer, geometry)
+FUNCTION st_addisoedge(character varying, integer, integer, geometry)
+FUNCTION st_addisonode(character varying, integer, geometry)
+FUNCTION st_addmeasure(geometry, double precision, double precision)
+FUNCTION st_addpoint(geometry, geometry)
+FUNCTION st_addpoint(geometry, geometry, integer)
+FUNCTION st_affine(geometry, double precision, double precision, double precision, double precision, double precision, double precision)
+FUNCTION st_affine(geometry, double precision, double precision, double precision, double precision, double precision, double precision, double precision, double precision, double precision, double precision, double precision, double precision)
+FUNCTION st_alphashape(geometry, double precision, boolean)
+FUNCTION st_angle(geometry, geometry)
+FUNCTION st_angle(geometry, geometry, geometry, geometry)
+FUNCTION st_approxcount(raster, boolean, double precision)
+FUNCTION st_approxcount(raster, double precision)
+FUNCTION st_approxcount(raster, integer, boolean, double precision)
+FUNCTION st_approxcount(raster, integer, double precision)
+FUNCTION st_approxcount(text, text, boolean, double precision)
+FUNCTION st_approxcount(text, text, double precision)
+FUNCTION st_approxcount(text, text, integer, boolean, double precision)
+FUNCTION st_approxcount(text, text, integer, double precision)
+FUNCTION st_approxhistogram(raster, double precision)
+FUNCTION st_approxhistogram(raster, integer, boolean, double precision, integer, boolean)
+FUNCTION st_approxhistogram(raster, integer, boolean, double precision, integer, double precision[], boolean)
+FUNCTION st_approxhistogram(raster, integer, double precision)
+FUNCTION st_approxhistogram(raster, integer, double precision, integer, boolean)
+FUNCTION st_approxhistogram(raster, integer, double precision, integer, double precision[], boolean)
+FUNCTION st_approxhistogram(text, text, double precision)
+FUNCTION st_approxhistogram(text, text, integer, boolean, double precision, integer, boolean)
+FUNCTION st_approxhistogram(text, text, integer, boolean, double precision, integer, double precision[], boolean)
+FUNCTION st_approxhistogram(text, text, integer, double precision)
+FUNCTION st_approxhistogram(text, text, integer, double precision, integer, boolean)
+FUNCTION st_approxhistogram(text, text, integer, double precision, integer, double precision[], boolean)
+FUNCTION st_approximatemedialaxis(geometry)
+FUNCTION st_approxquantile(raster, boolean, double precision)
+FUNCTION st_approxquantile(raster, double precision)
+FUNCTION st_approxquantile(raster, double precision, double precision)
+FUNCTION st_approxquantile(raster, double precision, double precision[])
+FUNCTION st_approxquantile(raster, double precision[])
+FUNCTION st_approxquantile(raster, integer, boolean, double precision, double precision)
+FUNCTION st_approxquantile(raster, integer, boolean, double precision, double precision[])
+FUNCTION st_approxquantile(raster, integer, double precision, double precision)
+FUNCTION st_approxquantile(raster, integer, double precision, double precision[])
+FUNCTION st_approxquantile(text, text, boolean, double precision)
+FUNCTION st_approxquantile(text, text, double precision)
+FUNCTION st_approxquantile(text, text, double precision, double precision)
+FUNCTION st_approxquantile(text, text, double precision, double precision[])
+FUNCTION st_approxquantile(text, text, double precision[])
+FUNCTION st_approxquantile(text, text, integer, boolean, double precision, double precision)
+FUNCTION st_approxquantile(text, text, integer, boolean, double precision, double precision[])
+FUNCTION st_approxquantile(text, text, integer, double precision, double precision)
+FUNCTION st_approxquantile(text, text, integer, double precision, double precision[])
+FUNCTION st_approxsummarystats(raster, boolean, double precision)
+FUNCTION st_approxsummarystats(raster, double precision)
+FUNCTION st_approxsummarystats(raster, integer, boolean, double precision)
+FUNCTION st_approxsummarystats(raster, integer, double precision)
+FUNCTION st_approxsummarystats(text, text, boolean)
+FUNCTION st_approxsummarystats(text, text, double precision)
+FUNCTION st_approxsummarystats(text, text, integer, boolean, double precision)
+FUNCTION st_approxsummarystats(text, text, integer, double precision)
+FUNCTION st_area(geography)
+FUNCTION st_area(geography, boolean)
+FUNCTION st_area(geometry)
+FUNCTION st_area(text)
+FUNCTION st_area2d(geometry)
+FUNCTION st_asbinary(geography)
+FUNCTION st_asbinary(geography, text)
+FUNCTION st_asbinary(geometry)
+FUNCTION st_asbinary(geometry, text)
+FUNCTION st_asbinary(raster)
+FUNCTION st_asbinary(raster, boolean)
+FUNCTION st_asbinary(text)
+FUNCTION st_asencodedpolyline(geometry, integer)
+FUNCTION st_asewkb(geometry)
+FUNCTION st_asewkb(geometry, text)
+FUNCTION st_asewkt(geography)
+FUNCTION st_asewkt(geography, integer)
+FUNCTION st_asewkt(geometry)
+FUNCTION st_asewkt(geometry, integer)
+FUNCTION st_asewkt(text)
+FUNCTION st_asgdalraster(raster, text, text[], integer)
+FUNCTION st_asgeojson(geography)
+FUNCTION st_asgeojson(geography, integer)
+FUNCTION st_asgeojson(geography, integer, integer)
+FUNCTION st_asgeojson(geometry)
+FUNCTION st_asgeojson(geometry, integer)
+FUNCTION st_asgeojson(geometry, integer, integer)
+FUNCTION st_asgeojson(integer, geography)
+FUNCTION st_asgeojson(integer, geography, integer)
+FUNCTION st_asgeojson(integer, geography, integer, integer)
+FUNCTION st_asgeojson(integer, geometry)
+FUNCTION st_asgeojson(integer, geometry, integer)
+FUNCTION st_asgeojson(integer, geometry, integer, integer)
+FUNCTION st_asgeojson(record, text, integer, boolean)
+FUNCTION st_asgeojson(record, text, integer, boolean, text)
+FUNCTION st_asgeojson(text)
+FUNCTION st_asgml(geography)
+FUNCTION st_asgml(geography, integer)
+FUNCTION st_asgml(geography, integer, integer)
+FUNCTION st_asgml(geography, integer, integer, text, text)
+FUNCTION st_asgml(geometry)
+FUNCTION st_asgml(geometry, integer)
+FUNCTION st_asgml(geometry, integer, integer)
+FUNCTION st_asgml(integer, geography)
+FUNCTION st_asgml(integer, geography, integer)
+FUNCTION st_asgml(integer, geography, integer, integer)
+FUNCTION st_asgml(integer, geography, integer, integer, text)
+FUNCTION st_asgml(integer, geography, integer, integer, text, text)
+FUNCTION st_asgml(integer, geometry)
+FUNCTION st_asgml(integer, geometry, integer)
+FUNCTION st_asgml(integer, geometry, integer, integer)
+FUNCTION st_asgml(integer, geometry, integer, integer, text)
+FUNCTION st_asgml(integer, geometry, integer, integer, text, text)
+FUNCTION st_asgml(text)
+FUNCTION st_ashexewkb(geometry)
+FUNCTION st_ashexewkb(geometry, text)
+FUNCTION st_ashexwkb(raster, boolean)
+FUNCTION st_asjpeg(raster, integer, integer)
+FUNCTION st_asjpeg(raster, integer, text[])
+FUNCTION st_asjpeg(raster, integer[], integer)
+FUNCTION st_asjpeg(raster, integer[], text[])
+FUNCTION st_asjpeg(raster, text[])
+FUNCTION st_askml(geography)
+FUNCTION st_askml(geography, integer)
+FUNCTION st_askml(geography, integer, text)
+FUNCTION st_askml(geometry)
+FUNCTION st_askml(geometry, integer)
+FUNCTION st_askml(geometry, integer, text)
+FUNCTION st_askml(integer, geography, integer)
+FUNCTION st_askml(integer, geography, integer, text)
+FUNCTION st_askml(integer, geometry, integer)
+FUNCTION st_askml(integer, geometry, integer, text)
+FUNCTION st_askml(text)
+FUNCTION st_aslatlontext(geometry)
+FUNCTION st_aslatlontext(geometry, text)
+FUNCTION st_asmarc21(geometry, text)
+FUNCTION st_asmvtgeom(geometry, box2d, integer, integer, boolean)
+FUNCTION st_aspect(raster, integer, raster, text, text, boolean)
+FUNCTION st_aspect(raster, integer, text)
+FUNCTION st_aspect(raster, integer, text, boolean)
+FUNCTION st_aspect(raster, integer, text, text, boolean)
+FUNCTION st_aspng(raster, integer, integer)
+FUNCTION st_aspng(raster, integer, text[])
+FUNCTION st_aspng(raster, integer[], integer)
+FUNCTION st_aspng(raster, integer[], text[])
+FUNCTION st_aspng(raster, text[])
+FUNCTION st_asraster(geometry, double precision, double precision, double precision, double precision, text, double precision, double precision, double precision, double precision, boolean)
+FUNCTION st_asraster(geometry, double precision, double precision, double precision, double precision, text[], double precision[], double precision[], double precision, double precision, boolean)
+FUNCTION st_asraster(geometry, double precision, double precision, text, double precision, double precision, double precision, double precision, double precision, double precision)
+FUNCTION st_asraster(geometry, double precision, double precision, text, double precision, double precision, double precision, double precision, double precision, double precision, boolean)
+FUNCTION st_asraster(geometry, double precision, double precision, text[], double precision[], double precision[], double precision, double precision, double precision, double precision, boolean)
+FUNCTION st_asraster(geometry, integer, integer, double precision, double precision, text, double precision, double precision, double precision, double precision)
+FUNCTION st_asraster(geometry, integer, integer, double precision, double precision, text, double precision, double precision, double precision, double precision, boolean)
+FUNCTION st_asraster(geometry, integer, integer, double precision, double precision, text[], double precision[], double precision[], double precision, double precision)
+FUNCTION st_asraster(geometry, integer, integer, double precision, double precision, text[], double precision[], double precision[], double precision, double precision, boolean)
+FUNCTION st_asraster(geometry, integer, integer, text, double precision, double precision, double precision, double precision, double precision, double precision)
+FUNCTION st_asraster(geometry, integer, integer, text, double precision, double precision, double precision, double precision, double precision, double precision, boolean)
+FUNCTION st_asraster(geometry, integer, integer, text[], double precision[], double precision[], double precision, double precision, double precision, double precision)
+FUNCTION st_asraster(geometry, integer, integer, text[], double precision[], double precision[], double precision, double precision, double precision, double precision, boolean)
+FUNCTION st_asraster(geometry, raster, text, double precision, double precision)
+FUNCTION st_asraster(geometry, raster, text, double precision, double precision, boolean)
+FUNCTION st_asraster(geometry, raster, text[], double precision[], double precision[], boolean)
+FUNCTION st_assvg(geography)
+FUNCTION st_assvg(geography, integer)
+FUNCTION st_assvg(geography, integer, integer)
+FUNCTION st_assvg(geometry)
+FUNCTION st_assvg(geometry, integer)
+FUNCTION st_assvg(geometry, integer, integer)
+FUNCTION st_assvg(text)
+FUNCTION st_astext(bytea)
+FUNCTION st_astext(geography)
+FUNCTION st_astext(geography, integer)
+FUNCTION st_astext(geometry)
+FUNCTION st_astext(geometry, integer)
+FUNCTION st_astext(text)
+FUNCTION st_astiff(raster, integer[], text, integer)
+FUNCTION st_astiff(raster, integer[], text[], integer)
+FUNCTION st_astiff(raster, text, integer)
+FUNCTION st_astiff(raster, text[], integer)
+FUNCTION st_astwkb(geometry, integer, bigint, boolean, boolean)
+FUNCTION st_astwkb(geometry, integer, integer, integer, boolean, boolean)
+FUNCTION st_astwkb(geometry[], bigint[], integer, integer, integer, boolean, boolean)
+FUNCTION st_aswkb(raster, boolean)
+FUNCTION st_asx3d(geometry)
+FUNCTION st_asx3d(geometry, integer)
+FUNCTION st_asx3d(geometry, integer, integer)
+FUNCTION st_azimuth(geography, geography)
+FUNCTION st_azimuth(geometry, geometry)
+FUNCTION st_band(raster, integer)
+FUNCTION st_band(raster, integer[])
+FUNCTION st_band(raster, text, character)
+FUNCTION st_bandfilesize(raster, integer)
+FUNCTION st_bandfiletimestamp(raster, integer)
+FUNCTION st_bandisnodata(raster)
+FUNCTION st_bandisnodata(raster, boolean)
+FUNCTION st_bandisnodata(raster, integer)
+FUNCTION st_bandisnodata(raster, integer, boolean)
+FUNCTION st_bandmetadata(raster, integer)
+FUNCTION st_bandmetadata(raster, integer[])
+FUNCTION st_bandnodatavalue(raster)
+FUNCTION st_bandnodatavalue(raster, integer)
+FUNCTION st_bandpath(raster)
+FUNCTION st_bandpath(raster, integer)
+FUNCTION st_bandpixeltype(raster)
+FUNCTION st_bandpixeltype(raster, integer)
+FUNCTION st_bandsurface(raster, integer)
+FUNCTION st_bdmpolyfromtext(text, integer)
+FUNCTION st_bdpolyfromtext(text, integer)
+FUNCTION st_below(raster, raster)
+FUNCTION st_boundary(geometry)
+FUNCTION st_boundingdiagonal(geometry, boolean)
+FUNCTION st_box(box3d)
+FUNCTION st_box(geometry)
+FUNCTION st_box2d(box3d)
+FUNCTION st_box2d(geometry)
+FUNCTION st_box2d_contain(box2d, box2d)
+FUNCTION st_box2d_contained(box2d, box2d)
+FUNCTION st_box2d_in(cstring)
+FUNCTION st_box2d_intersects(box2d, box2d)
+FUNCTION st_box2d_left(box2d, box2d)
+FUNCTION st_box2d_out(box2d)
+FUNCTION st_box2d_overlap(box2d, box2d)
+FUNCTION st_box2d_overleft(box2d, box2d)
+FUNCTION st_box2d_overright(box2d, box2d)
+FUNCTION st_box2d_right(box2d, box2d)
+FUNCTION st_box2d_same(box2d, box2d)
+FUNCTION st_box2dfromgeohash(text, integer)
+FUNCTION st_box3d(box2d)
+FUNCTION st_box3d(geometry)
+FUNCTION st_box3d_in(cstring)
+FUNCTION st_box3d_out(box3d)
+FUNCTION st_buffer(geography, double precision)
+FUNCTION st_buffer(geography, double precision, integer)
+FUNCTION st_buffer(geography, double precision, text)
+FUNCTION st_buffer(geometry, double precision)
+FUNCTION st_buffer(geometry, double precision, cstring)
+FUNCTION st_buffer(geometry, double precision, integer)
+FUNCTION st_buffer(geometry, double precision, text)
+FUNCTION st_buffer(text, double precision)
+FUNCTION st_buffer(text, double precision, integer)
+FUNCTION st_buffer(text, double precision, text)
+FUNCTION st_buildarea(geometry)
+FUNCTION st_bytea(geometry)
+FUNCTION st_bytea(raster)
+FUNCTION st_cache_bbox()
+FUNCTION st_centroid(geography, boolean)
+FUNCTION st_centroid(geometry)
+FUNCTION st_centroid(text)
+FUNCTION st_chaikinsmoothing(geometry, integer, boolean)
+FUNCTION st_changeedgegeom(character varying, integer, geometry)
+FUNCTION st_cleangeometry(geometry)
+FUNCTION st_clip(raster, geometry, boolean)
+FUNCTION st_clip(raster, geometry, boolean, boolean)
+FUNCTION st_clip(raster, geometry, double precision, boolean)
+FUNCTION st_clip(raster, geometry, double precision, boolean, boolean)
+FUNCTION st_clip(raster, geometry, double precision[], boolean)
+FUNCTION st_clip(raster, geometry, double precision[], boolean, boolean)
+FUNCTION st_clip(raster, integer, geometry, boolean)
+FUNCTION st_clip(raster, integer, geometry, boolean, boolean)
+FUNCTION st_clip(raster, integer, geometry, double precision, boolean)
+FUNCTION st_clip(raster, integer, geometry, double precision, boolean, boolean)
+FUNCTION st_clip(raster, integer, geometry, double precision[], boolean)
+FUNCTION st_clip(raster, integer[], geometry, double precision[], boolean)
+FUNCTION st_clip(raster, integer[], geometry, double precision[], boolean, boolean)
+FUNCTION st_clipbybox2d(geometry, box2d)
+FUNCTION st_closestpoint(geography, geography, boolean)
+FUNCTION st_closestpoint(geometry, geometry)
+FUNCTION st_closestpoint(text, text)
+FUNCTION st_closestpointofapproach(geometry, geometry)
+FUNCTION st_clusterdbscan(geometry, double precision, integer)
+FUNCTION st_clusterintersecting(geometry[])
+FUNCTION st_clusterintersectingwin(geometry)
+FUNCTION st_clusterkmeans(geometry, integer)
+FUNCTION st_clusterkmeans(geometry, integer, double precision)
+FUNCTION st_clusterwithin(geometry[], double precision)
+FUNCTION st_clusterwithinwin(geometry, double precision)
+FUNCTION st_collect(geometry, geometry)
+FUNCTION st_collect(geometry[])
+FUNCTION st_collect_garray(geometry[])
+FUNCTION st_collectionextract(geometry)
+FUNCTION st_collectionextract(geometry, integer)
+FUNCTION st_collectionhomogenize(geometry)
+FUNCTION st_collector(geometry, geometry)
+FUNCTION st_colormap(raster, integer, text, text)
+FUNCTION st_colormap(raster, text, text)
+FUNCTION st_combine_bbox(box2d, geometry)
+FUNCTION st_combine_bbox(box3d, geometry)
+FUNCTION st_combinebbox(box2d, geometry)
+FUNCTION st_combinebbox(box3d, box3d)
+FUNCTION st_combinebbox(box3d, geometry)
+FUNCTION st_concavehull(geometry, double precision, boolean)
+FUNCTION st_concavehull(geometry, float)
+FUNCTION st_concavehull(geometry, float, boolean)
+FUNCTION st_constraineddelaunaytriangles(geometry)
+FUNCTION st_contain(raster, raster)
+FUNCTION st_contained(raster, raster)
+FUNCTION st_contains(geometry, geometry)
+FUNCTION st_contains(geometry, raster, integer)
+FUNCTION st_contains(raster, geometry, integer)
+FUNCTION st_contains(raster, integer, geometry)
+FUNCTION st_contains(raster, integer, raster, integer)
+FUNCTION st_contains(raster, raster)
+FUNCTION st_containsproperly(geometry, geometry)
+FUNCTION st_containsproperly(raster, integer, raster, integer)
+FUNCTION st_containsproperly(raster, raster)
+FUNCTION st_contour(raster, integer, double precision, double precision, double precision[], boolean)
+FUNCTION st_convexhull(geometry)
+FUNCTION st_convexhull(raster)
+FUNCTION st_coorddim(geometry)
+FUNCTION st_count(raster, boolean)
+FUNCTION st_count(raster, integer, boolean)
+FUNCTION st_count(text, text, boolean)
+FUNCTION st_count(text, text, integer, boolean)
+FUNCTION st_coverageinvalidedges(geometry, double precision)
+FUNCTION st_coverageinvalidlocations(geometry, double precision)
+FUNCTION st_coveragesimplify(geometry, double precision, boolean)
+FUNCTION st_coverageunion(geometry[])
+FUNCTION st_coveredby(geography, geography)
+FUNCTION st_coveredby(geometry, geometry)
+FUNCTION st_coveredby(raster, integer, raster, integer)
+FUNCTION st_coveredby(raster, raster)
+FUNCTION st_coveredby(text, text)
+FUNCTION st_covers(geography, geography)
+FUNCTION st_covers(geometry, geometry)
+FUNCTION st_covers(raster, integer, raster, integer)
+FUNCTION st_covers(raster, raster)
+FUNCTION st_covers(text, text)
+FUNCTION st_cpawithin(geometry, geometry, double precision)
+FUNCTION st_createoverview(regclass, name, integer, text)
+FUNCTION st_createtopogeo(character varying, geometry)
+FUNCTION st_crosses(geometry, geometry)
+FUNCTION st_curven(geometry, integer)
+FUNCTION st_curvetoline(geometry)
+FUNCTION st_curvetoline(geometry, double precision, integer, integer)
+FUNCTION st_curvetoline(geometry, integer)
+FUNCTION st_delaunaytriangles(geometry, double precision, integer)
+FUNCTION st_dfullywithin(geometry, geometry, double precision)
+FUNCTION st_dfullywithin(raster, integer, raster, integer, double precision)
+FUNCTION st_dfullywithin(raster, raster, double precision)
+FUNCTION st_difference(geometry, geometry)
+FUNCTION st_difference(geometry, geometry, double precision)
+FUNCTION st_dimension(geometry)
+FUNCTION st_disjoint(geometry, geometry)
+FUNCTION st_disjoint(raster, integer, raster, integer)
+FUNCTION st_disjoint(raster, raster)
+FUNCTION st_distance(geography, geography)
+FUNCTION st_distance(geography, geography, boolean)
+FUNCTION st_distance(geography, geography, double precision, boolean)
+FUNCTION st_distance(geometry, geometry)
+FUNCTION st_distance(text, text)
+FUNCTION st_distance_sphere(geometry, geometry)
+FUNCTION st_distance_spheroid(geometry, geometry, spheroid)
+FUNCTION st_distancecpa(geometry, geometry)
+FUNCTION st_distancesphere(geometry, geometry)
+FUNCTION st_distancesphere(geometry, geometry, double precision)
+FUNCTION st_distancespheroid(geometry, geometry)
+FUNCTION st_distancespheroid(geometry, geometry, spheroid)
+FUNCTION st_distinct4ma(double precision[], integer[], text[])
+FUNCTION st_distinct4ma(double precision[], text, text[])
+FUNCTION st_distinct4ma(double precision[][][], integer[][], text[])
+FUNCTION st_distinct4ma(float[][], text, text[])
+FUNCTION st_dropbbox(geometry)
+FUNCTION st_dump(geometry)
+FUNCTION st_dumpaspolygons(raster)
+FUNCTION st_dumpaspolygons(raster, integer)
+FUNCTION st_dumpaspolygons(raster, integer, boolean)
+FUNCTION st_dumppoints(geometry)
+FUNCTION st_dumprings(geometry)
+FUNCTION st_dumpsegments(geometry)
+FUNCTION st_dumpvalues(raster, integer, boolean)
+FUNCTION st_dumpvalues(raster, integer[], boolean)
+FUNCTION st_dwithin(geography, geography, double precision)
+FUNCTION st_dwithin(geography, geography, double precision, boolean)
+FUNCTION st_dwithin(geometry, geometry, double precision)
+FUNCTION st_dwithin(raster, integer, raster, integer, double precision)
+FUNCTION st_dwithin(raster, raster, double precision)
+FUNCTION st_dwithin(text, text, double precision)
+FUNCTION st_endpoint(geometry)
+FUNCTION st_envelope(geometry)
+FUNCTION st_envelope(raster)
+FUNCTION st_equals(geometry, geometry)
+FUNCTION st_estimated_extent(text, text)
+FUNCTION st_estimated_extent(text, text, text)
+FUNCTION st_estimatedextent(text, text)
+FUNCTION st_estimatedextent(text, text, text)
+FUNCTION st_estimatedextent(text, text, text, boolean)
+FUNCTION st_expand(box2d, double precision)
+FUNCTION st_expand(box2d, double precision, double precision)
+FUNCTION st_expand(box3d, double precision)
+FUNCTION st_expand(box3d, double precision, double precision, double precision)
+FUNCTION st_expand(geometry, double precision)
+FUNCTION st_expand(geometry, double precision, double precision, double precision, double precision)
+FUNCTION st_exteriorring(geometry)
+FUNCTION st_extrude(geometry, double precision, double precision, double precision)
+FUNCTION st_filterbym(geometry, double precision, double precision, boolean)
+FUNCTION st_find_extent(text, text)
+FUNCTION st_find_extent(text, text, text)
+FUNCTION st_findextent(text, text)
+FUNCTION st_findextent(text, text, text)
+FUNCTION st_flipcoordinates(geometry)
+FUNCTION st_force2d(geometry)
+FUNCTION st_force3d(geometry)
+FUNCTION st_force3d(geometry, double precision)
+FUNCTION st_force3dm(geometry)
+FUNCTION st_force3dm(geometry, double precision)
+FUNCTION st_force3dz(geometry)
+FUNCTION st_force3dz(geometry, double precision)
+FUNCTION st_force4d(geometry)
+FUNCTION st_force4d(geometry, double precision, double precision)
+FUNCTION st_force_2d(geometry)
+FUNCTION st_force_3d(geometry)
+FUNCTION st_force_3dm(geometry)
+FUNCTION st_force_3dz(geometry)
+FUNCTION st_force_4d(geometry)
+FUNCTION st_force_collection(geometry)
+FUNCTION st_forcecollection(geometry)
+FUNCTION st_forcecurve(geometry)
+FUNCTION st_forcelhr(geometry)
+FUNCTION st_forcepolygonccw(geometry)
+FUNCTION st_forcepolygoncw(geometry)
+FUNCTION st_forcerhr(geometry)
+FUNCTION st_forcesfs(geometry)
+FUNCTION st_forcesfs(geometry, text)
+FUNCTION st_frechetdistance(geometry, geometry, double precision)
+FUNCTION st_fromflatgeobuf(anyelement, bytea)
+FUNCTION st_fromflatgeobuftotable(text, text, bytea)
+FUNCTION st_fromgdalraster(bytea, integer)
+FUNCTION st_gdaldrivers()
+FUNCTION st_gdalopenoptions(text[])
+FUNCTION st_generatepoints(geometry, integer)
+FUNCTION st_generatepoints(geometry, integer, integer)
+FUNCTION st_generatepoints(geometry, numeric)
+FUNCTION st_geogfromtext(text)
+FUNCTION st_geogfromwkb(bytea)
+FUNCTION st_geographyfromtext(text)
+FUNCTION st_geohash(geography, integer)
+FUNCTION st_geohash(geometry)
+FUNCTION st_geohash(geometry, integer)
+FUNCTION st_geom_accum(geometry[], geometry)
+FUNCTION st_geomcollfromtext(text)
+FUNCTION st_geomcollfromtext(text, integer)
+FUNCTION st_geomcollfromwkb(bytea)
+FUNCTION st_geomcollfromwkb(bytea, integer)
+FUNCTION st_geometricmedian(geometry, double precision, integer, boolean)
+FUNCTION st_geometry(box2d)
+FUNCTION st_geometry(box3d)
+FUNCTION st_geometry(bytea)
+FUNCTION st_geometry(text)
+FUNCTION st_geometry_analyze(internal)
+FUNCTION st_geometry_cmp(geometry, geometry)
+FUNCTION st_geometry_eq(geometry, geometry)
+FUNCTION st_geometry_ge(geometry, geometry)
+FUNCTION st_geometry_gt(geometry, geometry)
+FUNCTION st_geometry_in(cstring)
+FUNCTION st_geometry_le(geometry, geometry)
+FUNCTION st_geometry_lt(geometry, geometry)
+FUNCTION st_geometry_out(geometry)
+FUNCTION st_geometry_recv(internal)
+FUNCTION st_geometry_send(geometry)
+FUNCTION st_geometryfromtext(text)
+FUNCTION st_geometryfromtext(text, integer)
+FUNCTION st_geometryn(geometry, integer)
+FUNCTION st_geometrytype(geometry)
+FUNCTION st_geometrytype(topogeometry)
+FUNCTION st_geomfromewkb(bytea)
+FUNCTION st_geomfromewkt(text)
+FUNCTION st_geomfromgeohash(text, integer)
+FUNCTION st_geomfromgeojson(json)
+FUNCTION st_geomfromgeojson(jsonb)
+FUNCTION st_geomfromgeojson(text)
+FUNCTION st_geomfromgml(text)
+FUNCTION st_geomfromgml(text, integer)
+FUNCTION st_geomfromkml(text)
+FUNCTION st_geomfrommarc21(text)
+FUNCTION st_geomfromtext(text)
+FUNCTION st_geomfromtext(text, integer)
+FUNCTION st_geomfromtwkb(bytea)
+FUNCTION st_geomfromwkb(bytea)
+FUNCTION st_geomfromwkb(bytea, integer)
+FUNCTION st_georeference(raster)
+FUNCTION st_georeference(raster, text)
+FUNCTION st_geotransform(raster)
+FUNCTION st_getfaceedges(character varying, integer)
+FUNCTION st_getfacegeometry(character varying, integer)
+FUNCTION st_gmltosql(text)
+FUNCTION st_gmltosql(text, integer)
+FUNCTION st_grayscale(rastbandarg[], text)
+FUNCTION st_grayscale(raster, integer, integer, integer, text)
+FUNCTION st_hasarc(geometry)
+FUNCTION st_hasbbox(geometry)
+FUNCTION st_hasm(geometry)
+FUNCTION st_hasnoband(raster)
+FUNCTION st_hasnoband(raster, integer)
+FUNCTION st_hasz(geometry)
+FUNCTION st_hausdorffdistance(geometry, geometry)
+FUNCTION st_hausdorffdistance(geometry, geometry, double precision)
+FUNCTION st_height(raster)
+FUNCTION st_hexagon(double precision, integer, integer, geometry)
+FUNCTION st_hexagongrid(double precision, geometry)
+FUNCTION st_hillshade(raster, integer, raster, text, double precision, double precision, double precision, double precision, boolean)
+FUNCTION st_hillshade(raster, integer, text, double precision, double precision, double precision, double precision, boolean)
+FUNCTION st_hillshade(raster, integer, text, float, float, float, float)
+FUNCTION st_hillshade(raster, integer, text, float, float, float, float, boolean)
+FUNCTION st_histogram(raster, integer, boolean, integer, boolean)
+FUNCTION st_histogram(raster, integer, boolean, integer, double precision[], boolean)
+FUNCTION st_histogram(raster, integer, integer, boolean)
+FUNCTION st_histogram(raster, integer, integer, double precision[], boolean)
+FUNCTION st_histogram(text, text, integer, boolean, integer, boolean)
+FUNCTION st_histogram(text, text, integer, boolean, integer, double precision[], boolean)
+FUNCTION st_histogram(text, text, integer, integer, boolean)
+FUNCTION st_histogram(text, text, integer, integer, double precision[], boolean)
+FUNCTION st_inittopogeo(character varying)
+FUNCTION st_interiorringn(geometry, integer)
+FUNCTION st_interpolatepoint(geometry, geometry)
+FUNCTION st_interpolateraster(geometry, text, raster, integer)
+FUNCTION st_intersection(geography, geography)
+FUNCTION st_intersection(geometry, geometry)
+FUNCTION st_intersection(geometry, geometry, double precision)
+FUNCTION st_intersection(geometry, raster)
+FUNCTION st_intersection(geometry, raster, integer)
+FUNCTION st_intersection(raster, geometry)
+FUNCTION st_intersection(raster, geometry, regprocedure)
+FUNCTION st_intersection(raster, geometry, text, regprocedure)
+FUNCTION st_intersection(raster, integer, geometry)
+FUNCTION st_intersection(raster, integer, geometry, regprocedure)
+FUNCTION st_intersection(raster, integer, geometry, text, regprocedure)
+FUNCTION st_intersection(raster, integer, raster, integer, double precision)
+FUNCTION st_intersection(raster, integer, raster, integer, double precision[])
+FUNCTION st_intersection(raster, integer, raster, integer, regprocedure)
+FUNCTION st_intersection(raster, integer, raster, integer, text, double precision)
+FUNCTION st_intersection(raster, integer, raster, integer, text, double precision[])
+FUNCTION st_intersection(raster, integer, raster, integer, text, regprocedure)
+FUNCTION st_intersection(raster, raster, double precision)
+FUNCTION st_intersection(raster, raster, double precision[])
+FUNCTION st_intersection(raster, raster, integer, integer)
+FUNCTION st_intersection(raster, raster, regprocedure)
+FUNCTION st_intersection(raster, raster, text, double precision)
+FUNCTION st_intersection(raster, raster, text, double precision[])
+FUNCTION st_intersection(raster, raster, text, regprocedure)
+FUNCTION st_intersection(text, text)
+FUNCTION st_intersects(geography, geography)
+FUNCTION st_intersects(geometry, geometry)
+FUNCTION st_intersects(geometry, raster)
+FUNCTION st_intersects(geometry, raster, boolean)
+FUNCTION st_intersects(geometry, raster, integer)
+FUNCTION st_intersects(geometry, raster, integer, boolean)
+FUNCTION st_intersects(raster, boolean, geometry)
+FUNCTION st_intersects(raster, geometry)
+FUNCTION st_intersects(raster, geometry, integer)
+FUNCTION st_intersects(raster, integer, boolean, geometry)
+FUNCTION st_intersects(raster, integer, geometry)
+FUNCTION st_intersects(raster, integer, raster, integer)
+FUNCTION st_intersects(raster, raster)
+FUNCTION st_intersects(text, text)
+FUNCTION st_invdistweight4ma(double precision[], integer[], text[])
+FUNCTION st_invdistweight4ma(double precision[][][], integer[][], text[])
+FUNCTION st_inversetransformpipeline(geometry, text, integer)
+FUNCTION st_isclosed(geometry)
+FUNCTION st_iscollection(geometry)
+FUNCTION st_iscoveragetile(raster, raster, integer, integer)
+FUNCTION st_isempty(geometry)
+FUNCTION st_isempty(raster)
+FUNCTION st_isplanar(geometry)
+FUNCTION st_ispolygonccw(geometry)
+FUNCTION st_ispolygoncw(geometry)
+FUNCTION st_isring(geometry)
+FUNCTION st_issimple(geometry)
+FUNCTION st_issolid(geometry)
+FUNCTION st_isvalid(geometry)
+FUNCTION st_isvalid(geometry, integer)
+FUNCTION st_isvaliddetail(geometry)
+FUNCTION st_isvaliddetail(geometry, integer)
+FUNCTION st_isvalidreason(geometry)
+FUNCTION st_isvalidreason(geometry, integer)
+FUNCTION st_isvalidtrajectory(geometry)
+FUNCTION st_largestemptycircle(geometry, double precision, geometry)
+FUNCTION st_left(raster, raster)
+FUNCTION st_length(geography)
+FUNCTION st_length(geography, boolean)
+FUNCTION st_length(geometry)
+FUNCTION st_length(text)
+FUNCTION st_length2d(geometry)
+FUNCTION st_length2d_spheroid(geometry, spheroid)
+FUNCTION st_length2dspheroid(geometry, spheroid)
+FUNCTION st_length3d(geometry)
+FUNCTION st_length_spheroid(geometry, spheroid)
+FUNCTION st_length_spheroid3d(geometry, spheroid)
+FUNCTION st_lengthspheroid(geometry, spheroid)
+FUNCTION st_letters(text, json)
+FUNCTION st_line_interpolate_point(geometry, double precision)
+FUNCTION st_line_locate_point(geometry, geometry)
+FUNCTION st_line_substring(geometry, double precision, double precision)
+FUNCTION st_linecrossingdirection(geometry, geometry)
+FUNCTION st_lineextend(geometry, double precision, double precision)
+FUNCTION st_linefromencodedpolyline(text, integer)
+FUNCTION st_linefrommultipoint(geometry)
+FUNCTION st_linefromtext(text)
+FUNCTION st_linefromtext(text, integer)
+FUNCTION st_linefromwkb(bytea)
+FUNCTION st_linefromwkb(bytea, integer)
+FUNCTION st_lineinterpolatepoint(geography, double precision, boolean)
+FUNCTION st_lineinterpolatepoint(geometry, double precision)
+FUNCTION st_lineinterpolatepoint(text, double precision)
+FUNCTION st_lineinterpolatepoints(geography, double precision, boolean, boolean)
+FUNCTION st_lineinterpolatepoints(geometry, double precision, boolean)
+FUNCTION st_lineinterpolatepoints(text, double precision)
+FUNCTION st_linelocatepoint(geography, geography, boolean)
+FUNCTION st_linelocatepoint(geometry, geometry)
+FUNCTION st_linelocatepoint(text, text)
+FUNCTION st_linemerge(geometry)
+FUNCTION st_linemerge(geometry, boolean)
+FUNCTION st_linestringfromwkb(bytea)
+FUNCTION st_linestringfromwkb(bytea, integer)
+FUNCTION st_linesubstring(geography, double precision, double precision)
+FUNCTION st_linesubstring(geometry, double precision, double precision)
+FUNCTION st_linesubstring(text, double precision, double precision)
+FUNCTION st_linetocurve(geometry)
+FUNCTION st_locate_along_measure(geometry, double precision)
+FUNCTION st_locate_between_measures(geometry, double precision, double precision)
+FUNCTION st_locatealong(geometry, double precision, double precision)
+FUNCTION st_locatebetween(geometry, double precision, double precision, double precision)
+FUNCTION st_locatebetweenelevations(geometry, double precision, double precision)
+FUNCTION st_longestline(geometry, geometry)
+FUNCTION st_m(geometry)
+FUNCTION st_makebox2d(geometry, geometry)
+FUNCTION st_makebox3d(geometry, geometry)
+FUNCTION st_makeemptycoverage(integer, integer, integer, integer, double precision, double precision, double precision, double precision, double precision, double precision, integer)
+FUNCTION st_makeemptyraster(integer, integer, double precision, double precision, double precision)
+FUNCTION st_makeemptyraster(integer, integer, double precision, double precision, double precision, double precision, double precision, double precision)
+FUNCTION st_makeemptyraster(integer, integer, double precision, double precision, double precision, double precision, double precision, double precision, integer)
+FUNCTION st_makeemptyraster(raster)
+FUNCTION st_makeenvelope(double precision, double precision, double precision, double precision, integer)
+FUNCTION st_makeline(geometry, geometry)
+FUNCTION st_makeline(geometry[])
+FUNCTION st_makeline_garray(geometry[])
+FUNCTION st_makepoint(double precision, double precision)
+FUNCTION st_makepoint(double precision, double precision, double precision)
+FUNCTION st_makepoint(double precision, double precision, double precision, double precision)
+FUNCTION st_makepointm(double precision, double precision, double precision)
+FUNCTION st_makepolygon(geometry)
+FUNCTION st_makepolygon(geometry, geometry[])
+FUNCTION st_makesolid(geometry)
+FUNCTION st_makevalid(geometry)
+FUNCTION st_makevalid(geometry, text)
+FUNCTION st_mapalgebra(rastbandarg[], regprocedure, text, text, raster, integer, integer, text[])
+FUNCTION st_mapalgebra(raster, integer, raster, integer, regprocedure, text, text, raster, integer, integer, text[])
+FUNCTION st_mapalgebra(raster, integer, raster, integer, text, text, text, text, text, double precision)
+FUNCTION st_mapalgebra(raster, integer, regprocedure, double precision [][], boolean, text, text, raster, text[])
+FUNCTION st_mapalgebra(raster, integer, regprocedure, double precision[], boolean, text, text, raster, text[])
+FUNCTION st_mapalgebra(raster, integer, regprocedure, text, text, raster, integer, integer, text[])
+FUNCTION st_mapalgebra(raster, integer, text, text, double precision)
+FUNCTION st_mapalgebra(raster, integer, text, text, text)
+FUNCTION st_mapalgebra(raster, integer[], regprocedure, text, text, raster, integer, integer, text[])
+FUNCTION st_mapalgebra(raster, raster, text, text, text, text, text, double precision)
+FUNCTION st_mapalgebra(raster, text, text, double precision)
+FUNCTION st_mapalgebraexpr(raster, integer, raster, integer, text, text, text, text, text, double precision)
+FUNCTION st_mapalgebraexpr(raster, integer, text, text, double precision)
+FUNCTION st_mapalgebraexpr(raster, integer, text, text, text)
+FUNCTION st_mapalgebraexpr(raster, raster, text, text, text, text, text, double precision)
+FUNCTION st_mapalgebraexpr(raster, text, text, double precision)
+FUNCTION st_mapalgebraexpr(raster, text, text, text)
+FUNCTION st_mapalgebrafct(raster, integer, raster, integer, regprocedure, text, text, text[])
+FUNCTION st_mapalgebrafct(raster, integer, regprocedure)
+FUNCTION st_mapalgebrafct(raster, integer, regprocedure, text[])
+FUNCTION st_mapalgebrafct(raster, integer, text, regprocedure)
+FUNCTION st_mapalgebrafct(raster, integer, text, regprocedure, text[])
+FUNCTION st_mapalgebrafct(raster, raster, regprocedure, text, text, text[])
+FUNCTION st_mapalgebrafct(raster, raster, regprocedure, text[])
+FUNCTION st_mapalgebrafct(raster, regprocedure)
+FUNCTION st_mapalgebrafct(raster, regprocedure, text[])
+FUNCTION st_mapalgebrafct(raster, text, regprocedure)
+FUNCTION st_mapalgebrafct(raster, text, regprocedure, text[])
+FUNCTION st_mapalgebrafctngb(raster, integer, text, integer, integer, regprocedure, text, text[])
+FUNCTION st_max4ma(double precision[], integer[], text[])
+FUNCTION st_max4ma(double precision[], text, text[])
+FUNCTION st_max4ma(double precision[][][], integer[][], text[])
+FUNCTION st_max4ma(float[][], text, text[])
+FUNCTION st_max_distance(geometry, geometry)
+FUNCTION st_maxdistance(geometry, geometry)
+FUNCTION st_maximuminscribedcircle(geometry)
+FUNCTION st_mean4ma(double precision[], integer[], text[])
+FUNCTION st_mean4ma(double precision[], text, text[])
+FUNCTION st_mean4ma(double precision[][][], integer[][], text[])
+FUNCTION st_mean4ma(float[][], text, text[])
+FUNCTION st_mem_size(geometry)
+FUNCTION st_memsize(geometry)
+FUNCTION st_memsize(raster)
+FUNCTION st_metadata(raster)
+FUNCTION st_min4ma(double precision[], integer[], text[])
+FUNCTION st_min4ma(double precision[], text, text[])
+FUNCTION st_min4ma(double precision[][][], integer[][], text[])
+FUNCTION st_min4ma(float[][], text, text[])
+FUNCTION st_minconvexhull(raster, integer)
+FUNCTION st_mindist4ma(double precision[], integer[], text[])
+FUNCTION st_mindist4ma(double precision[][][], integer[][], text[])
+FUNCTION st_minimumboundingcircle(geometry)
+FUNCTION st_minimumboundingcircle(geometry, integer)
+FUNCTION st_minimumboundingradius(geometry)
+FUNCTION st_minimumclearance(geometry)
+FUNCTION st_minimumclearanceline(geometry)
+FUNCTION st_minkowskisum(geometry, geometry)
+FUNCTION st_minpossibleval(text)
+FUNCTION st_minpossiblevalue(text)
+FUNCTION st_mlinefromtext(text)
+FUNCTION st_mlinefromtext(text, integer)
+FUNCTION st_mlinefromwkb(bytea)
+FUNCTION st_mlinefromwkb(bytea, integer)
+FUNCTION st_modedgeheal(character varying, integer, integer)
+FUNCTION st_modedgesplit(character varying, integer, geometry)
+FUNCTION st_moveisonode(character varying, integer, geometry)
+FUNCTION st_mpointfromtext(text)
+FUNCTION st_mpointfromtext(text, integer)
+FUNCTION st_mpointfromwkb(bytea)
+FUNCTION st_mpointfromwkb(bytea, integer)
+FUNCTION st_mpolyfromtext(text)
+FUNCTION st_mpolyfromtext(text, integer)
+FUNCTION st_mpolyfromwkb(bytea)
+FUNCTION st_mpolyfromwkb(bytea, integer)
+FUNCTION st_multi(geometry)
+FUNCTION st_multilinefromwkb(bytea)
+FUNCTION st_multilinestringfromtext(text)
+FUNCTION st_multilinestringfromtext(text, integer)
+FUNCTION st_multipointfromtext(text)
+FUNCTION st_multipointfromwkb(bytea)
+FUNCTION st_multipointfromwkb(bytea, integer)
+FUNCTION st_multipolyfromwkb(bytea)
+FUNCTION st_multipolyfromwkb(bytea, integer)
+FUNCTION st_multipolygonfromtext(text)
+FUNCTION st_multipolygonfromtext(text, integer)
+FUNCTION st_ndims(geometry)
+FUNCTION st_nearestvalue(raster, geometry, boolean)
+FUNCTION st_nearestvalue(raster, integer, geometry, boolean)
+FUNCTION st_nearestvalue(raster, integer, integer, boolean)
+FUNCTION st_nearestvalue(raster, integer, integer, integer, boolean)
+FUNCTION st_neighborhood(raster, geometry, integer, boolean)
+FUNCTION st_neighborhood(raster, geometry, integer, integer, boolean)
+FUNCTION st_neighborhood(raster, integer, geometry, integer, boolean)
+FUNCTION st_neighborhood(raster, integer, geometry, integer, integer, boolean)
+FUNCTION st_neighborhood(raster, integer, integer, integer, boolean)
+FUNCTION st_neighborhood(raster, integer, integer, integer, integer, boolean)
+FUNCTION st_neighborhood(raster, integer, integer, integer, integer, integer, boolean)
+FUNCTION st_newedgeheal(character varying, integer, integer)
+FUNCTION st_newedgessplit(character varying, integer, geometry)
+FUNCTION st_node(geometry)
+FUNCTION st_noop(geometry)
+FUNCTION st_normalize(geometry)
+FUNCTION st_notsamealignmentreason(raster, raster)
+FUNCTION st_npoints(geometry)
+FUNCTION st_nrings(geometry)
+FUNCTION st_numbands(raster)
+FUNCTION st_numcurves(geometry)
+FUNCTION st_numgeometries(geometry)
+FUNCTION st_numinteriorring(geometry)
+FUNCTION st_numinteriorrings(geometry)
+FUNCTION st_numpatches(geometry)
+FUNCTION st_numpoints(geometry)
+FUNCTION st_offsetcurve(geometry, double precision, text)
+FUNCTION st_optimalalphashape(geometry, boolean, integer)
+FUNCTION st_orderingequals(geometry, geometry)
+FUNCTION st_orientation(geometry)
+FUNCTION st_orientedenvelope(geometry)
+FUNCTION st_overabove(raster, raster)
+FUNCTION st_overbelow(raster, raster)
+FUNCTION st_overlap(raster, raster)
+FUNCTION st_overlaps(geometry, geometry)
+FUNCTION st_overlaps(geometry, raster, integer)
+FUNCTION st_overlaps(raster, geometry, integer)
+FUNCTION st_overlaps(raster, integer, geometry)
+FUNCTION st_overlaps(raster, integer, raster, integer)
+FUNCTION st_overlaps(raster, raster)
+FUNCTION st_overleft(raster, raster)
+FUNCTION st_overright(raster, raster)
+FUNCTION st_patchn(geometry, integer)
+FUNCTION st_perimeter(geography)
+FUNCTION st_perimeter(geography, boolean)
+FUNCTION st_perimeter(geometry)
+FUNCTION st_perimeter2d(geometry)
+FUNCTION st_perimeter3d(geometry)
+FUNCTION st_pixelascentroid(raster, integer, integer)
+FUNCTION st_pixelascentroids(raster, integer, boolean)
+FUNCTION st_pixelaspoint(raster, integer, integer)
+FUNCTION st_pixelaspoints(raster, integer, boolean)
+FUNCTION st_pixelaspolygon(raster, integer, integer)
+FUNCTION st_pixelaspolygon(raster, integer, integer, integer)
+FUNCTION st_pixelaspolygons(raster)
+FUNCTION st_pixelaspolygons(raster, integer)
+FUNCTION st_pixelaspolygons(raster, integer, boolean)
+FUNCTION st_pixelheight(raster)
+FUNCTION st_pixelofvalue(raster, double precision, boolean)
+FUNCTION st_pixelofvalue(raster, double precision[], boolean)
+FUNCTION st_pixelofvalue(raster, integer, double precision, boolean)
+FUNCTION st_pixelofvalue(raster, integer, double precision[], boolean)
+FUNCTION st_pixelwidth(raster)
+FUNCTION st_point(double precision, double precision)
+FUNCTION st_point(double precision, double precision, integer)
+FUNCTION st_point_inside_circle(geometry, double precision, double precision, double precision)
+FUNCTION st_pointfromgeohash(text, integer)
+FUNCTION st_pointfromtext(text)
+FUNCTION st_pointfromtext(text, integer)
+FUNCTION st_pointfromwkb(bytea)
+FUNCTION st_pointfromwkb(bytea, integer)
+FUNCTION st_pointinsidecircle(geometry, double precision, double precision, double precision)
+FUNCTION st_pointm(double precision, double precision, double precision, integer)
+FUNCTION st_pointn(geometry, integer)
+FUNCTION st_pointonsurface(geometry)
+FUNCTION st_points(geometry)
+FUNCTION st_pointz(double precision, double precision, double precision, integer)
+FUNCTION st_pointzm(double precision, double precision, double precision, double precision, integer)
+FUNCTION st_polyfromtext(text)
+FUNCTION st_polyfromtext(text, integer)
+FUNCTION st_polyfromwkb(bytea)
+FUNCTION st_polyfromwkb(bytea, integer)
+FUNCTION st_polygon(geometry, integer)
+FUNCTION st_polygon(raster)
+FUNCTION st_polygon(raster, integer)
+FUNCTION st_polygonfromtext(text)
+FUNCTION st_polygonfromtext(text, integer)
+FUNCTION st_polygonfromwkb(bytea)
+FUNCTION st_polygonfromwkb(bytea, integer)
+FUNCTION st_polygonize(geometry[])
+FUNCTION st_polygonize_garray(geometry[])
+FUNCTION st_project(geography, double precision, double precision)
+FUNCTION st_project(geography, geography, double precision)
+FUNCTION st_project(geometry, double precision, double precision)
+FUNCTION st_project(geometry, geometry, double precision)
+FUNCTION st_quantile(raster, boolean, double precision)
+FUNCTION st_quantile(raster, double precision)
+FUNCTION st_quantile(raster, double precision[])
+FUNCTION st_quantile(raster, integer, boolean, double precision)
+FUNCTION st_quantile(raster, integer, boolean, double precision[])
+FUNCTION st_quantile(raster, integer, double precision)
+FUNCTION st_quantile(raster, integer, double precision[])
+FUNCTION st_quantile(text, text, boolean, double precision)
+FUNCTION st_quantile(text, text, double precision)
+FUNCTION st_quantile(text, text, double precision[])
+FUNCTION st_quantile(text, text, integer, boolean, double precision)
+FUNCTION st_quantile(text, text, integer, boolean, double precision[])
+FUNCTION st_quantile(text, text, integer, double precision)
+FUNCTION st_quantile(text, text, integer, double precision[])
+FUNCTION st_quantizecoordinates(geometry, integer, integer, integer, integer)
+FUNCTION st_range4ma(double precision[], integer[], text[])
+FUNCTION st_range4ma(double precision[], text, text[])
+FUNCTION st_range4ma(double precision[][][], integer[][], text[])
+FUNCTION st_range4ma(float[][], text, text[])
+FUNCTION st_raster2worldcoord(raster, integer, integer)
+FUNCTION st_raster2worldcoordx(raster, integer)
+FUNCTION st_raster2worldcoordx(raster, integer, integer)
+FUNCTION st_raster2worldcoordy(raster, integer)
+FUNCTION st_raster2worldcoordy(raster, integer, integer)
+FUNCTION st_rastertoworldcoord(raster, integer, integer)
+FUNCTION st_rastertoworldcoord(raster, integer, integer, double precision)
+FUNCTION st_rastertoworldcoordx(raster, integer)
+FUNCTION st_rastertoworldcoordx(raster, integer, integer)
+FUNCTION st_rastertoworldcoordy(raster, integer)
+FUNCTION st_rastertoworldcoordy(raster, integer, integer)
+FUNCTION st_rastfromhexwkb(text)
+FUNCTION st_rastfromwkb(bytea)
+FUNCTION st_reclass(raster, integer, text, text, double precision)
+FUNCTION st_reclass(raster, reclassarg[])
+FUNCTION st_reclass(raster, text, text)
+FUNCTION st_reduceprecision(geometry, double precision)
+FUNCTION st_relate(geometry, geometry)
+FUNCTION st_relate(geometry, geometry, integer)
+FUNCTION st_relate(geometry, geometry, text)
+FUNCTION st_relatematch(text, text)
+FUNCTION st_remedgemodface(character varying, integer)
+FUNCTION st_remedgenewface(character varying, integer)
+FUNCTION st_remisonode(character varying, integer)
+FUNCTION st_removeirrelevantpointsforview(geometry, box2d)
+FUNCTION st_removeirrelevantpointsforview(geometry, box2d, boolean)
+FUNCTION st_removeisoedge(character varying, integer)
+FUNCTION st_removeisonode(character varying, integer)
+FUNCTION st_removepoint(geometry, integer)
+FUNCTION st_removerepeatedpoints(geometry)
+FUNCTION st_removerepeatedpoints(geometry, double precision)
+FUNCTION st_removesmallparts(geometry, double precision, double precision)
+FUNCTION st_resample(raster, double precision, double precision, double precision, double precision, double precision, double precision, text, double precision)
+FUNCTION st_resample(raster, integer, double precision, double precision, double precision, double precision, double precision, double precision, text, double precision)
+FUNCTION st_resample(raster, integer, integer, double precision, double precision, double precision, double precision, text, double precision)
+FUNCTION st_resample(raster, integer, integer, integer, double precision, double precision, double precision, double precision, text, double precision)
+FUNCTION st_resample(raster, raster, boolean, text, double precision)
+FUNCTION st_resample(raster, raster, text, double precision)
+FUNCTION st_resample(raster, raster, text, double precision, boolean)
+FUNCTION st_rescale(raster, double precision, double precision, text, double precision)
+FUNCTION st_rescale(raster, double precision, text, double precision)
+FUNCTION st_resize(raster, double precision, double precision, text, double precision)
+FUNCTION st_resize(raster, integer, integer, text, double precision)
+FUNCTION st_resize(raster, text, text, text, double precision)
+FUNCTION st_reskew(raster, double precision, double precision, text, double precision)
+FUNCTION st_reskew(raster, double precision, text, double precision)
+FUNCTION st_retile(regclass, name, geometry, double precision, double precision, integer, integer, text)
+FUNCTION st_reverse(geometry)
+FUNCTION st_right(raster, raster)
+FUNCTION st_rotate(geometry, double precision)
+FUNCTION st_rotate(geometry, double precision, double precision, double precision)
+FUNCTION st_rotate(geometry, double precision, geometry)
+FUNCTION st_rotatex(geometry, double precision)
+FUNCTION st_rotatey(geometry, double precision)
+FUNCTION st_rotatez(geometry, double precision)
+FUNCTION st_rotation(raster)
+FUNCTION st_roughness(raster, integer, raster, text, boolean)
+FUNCTION st_roughness(raster, integer, text, boolean)
+FUNCTION st_same(raster, raster)
+FUNCTION st_samealignment(double precision, double precision, double precision, double precision, double precision, double precision, double precision, double precision, double precision, double precision, double precision, double precision)
+FUNCTION st_samealignment(raster, raster)
+FUNCTION st_scale(geometry, double precision, double precision)
+FUNCTION st_scale(geometry, double precision, double precision, double precision)
+FUNCTION st_scale(geometry, geometry)
+FUNCTION st_scale(geometry, geometry, geometry)
+FUNCTION st_scalex(raster)
+FUNCTION st_scaley(raster)
+FUNCTION st_scroll(geometry, geometry)
+FUNCTION st_segmentize(geography, double precision)
+FUNCTION st_segmentize(geometry, double precision)
+FUNCTION st_setbandindex(raster, integer, integer, boolean)
+FUNCTION st_setbandisnodata(raster)
+FUNCTION st_setbandisnodata(raster, integer)
+FUNCTION st_setbandnodatavalue(raster, double precision)
+FUNCTION st_setbandnodatavalue(raster, integer, double precision)
+FUNCTION st_setbandnodatavalue(raster, integer, double precision, boolean)
+FUNCTION st_setbandpath(raster, integer, text, integer, boolean)
+FUNCTION st_seteffectivearea(geometry, double precision)
+FUNCTION st_seteffectivearea(geometry, double precision, integer)
+FUNCTION st_setgeoreference(raster, double precision, double precision, double precision, double precision, double precision, double precision)
+FUNCTION st_setgeoreference(raster, text)
+FUNCTION st_setgeoreference(raster, text, text)
+FUNCTION st_setgeotransform(raster, double precision, double precision, double precision, double precision, double precision, double precision)
+FUNCTION st_setm(raster, geometry, text, integer)
+FUNCTION st_setpoint(geometry, integer, geometry)
+FUNCTION st_setrotation(raster, double precision)
+FUNCTION st_setscale(raster, double precision)
+FUNCTION st_setscale(raster, double precision, double precision)
+FUNCTION st_setskew(raster, double precision)
+FUNCTION st_setskew(raster, double precision, double precision)
+FUNCTION st_setsrid(geography, integer)
+FUNCTION st_setsrid(geometry, integer)
+FUNCTION st_setsrid(raster, integer)
+FUNCTION st_setupperleft(raster, double precision, double precision)
+FUNCTION st_setvalue(raster, geometry, double precision)
+FUNCTION st_setvalue(raster, integer, geometry, double precision)
+FUNCTION st_setvalue(raster, integer, integer, double precision)
+FUNCTION st_setvalue(raster, integer, integer, integer, double precision)
+FUNCTION st_setvalues(raster, integer, geomval[], boolean)
+FUNCTION st_setvalues(raster, integer, integer, integer, double precision[], boolean[], boolean)
+FUNCTION st_setvalues(raster, integer, integer, integer, double precision[], double precision, boolean)
+FUNCTION st_setvalues(raster, integer, integer, integer, double precision[][], boolean[][], boolean)
+FUNCTION st_setvalues(raster, integer, integer, integer, double precision[][], double precision, boolean)
+FUNCTION st_setvalues(raster, integer, integer, integer, integer, double precision, boolean)
+FUNCTION st_setvalues(raster, integer, integer, integer, integer, integer, double precision, boolean)
+FUNCTION st_setz(raster, geometry, text, integer)
+FUNCTION st_sharedpaths(geometry, geometry)
+FUNCTION st_shift_longitude(geometry)
+FUNCTION st_shiftlongitude(geometry)
+FUNCTION st_shortestline(geography, geography, boolean)
+FUNCTION st_shortestline(geometry, geometry)
+FUNCTION st_shortestline(text, text)
+FUNCTION st_simplify(geometry, double precision)
+FUNCTION st_simplify(geometry, double precision, boolean)
+FUNCTION st_simplify(topogeometry, double precision)
+FUNCTION st_simplifypolygonhull(geometry, double precision, boolean)
+FUNCTION st_simplifypreservetopology(geometry, double precision)
+FUNCTION st_simplifyvw(geometry, double precision)
+FUNCTION st_skewx(raster)
+FUNCTION st_skewy(raster)
+FUNCTION st_slope(raster, integer, raster, text, text, double precision, boolean)
+FUNCTION st_slope(raster, integer, text)
+FUNCTION st_slope(raster, integer, text, boolean)
+FUNCTION st_slope(raster, integer, text, text, double precision, boolean)
+FUNCTION st_snap(geometry, geometry, double precision)
+FUNCTION st_snaptogrid(geometry, double precision)
+FUNCTION st_snaptogrid(geometry, double precision, double precision)
+FUNCTION st_snaptogrid(geometry, double precision, double precision, double precision, double precision)
+FUNCTION st_snaptogrid(geometry, geometry, double precision, double precision, double precision, double precision)
+FUNCTION st_snaptogrid(raster, double precision, double precision, double precision, double precision, text, double precision)
+FUNCTION st_snaptogrid(raster, double precision, double precision, double precision, text, double precision)
+FUNCTION st_snaptogrid(raster, double precision, double precision, text, double precision, double precision, double precision)
+FUNCTION st_spheroid_in(cstring)
+FUNCTION st_spheroid_out(spheroid)
+FUNCTION st_split(geometry, geometry)
+FUNCTION st_square(double precision, integer, integer, geometry)
+FUNCTION st_squaregrid(double precision, geometry)
+FUNCTION st_srid(geography)
+FUNCTION st_srid(geometry)
+FUNCTION st_srid(raster)
+FUNCTION st_srid(topogeometry)
+FUNCTION st_startpoint(geometry)
+FUNCTION st_stddev4ma(double precision[], integer[], text[])
+FUNCTION st_stddev4ma(double precision[], text, text[])
+FUNCTION st_stddev4ma(double precision[][][], integer[][], text[])
+FUNCTION st_stddev4ma(float[][], text, text[])
+FUNCTION st_straightskeleton(geometry)
+FUNCTION st_subdivide(geometry, integer)
+FUNCTION st_subdivide(geometry, integer, double precision)
+FUNCTION st_sum4ma(double precision[], integer[], text[])
+FUNCTION st_sum4ma(double precision[], text, text[])
+FUNCTION st_sum4ma(double precision[][][], integer[][], text[])
+FUNCTION st_sum4ma(float[][], text, text[])
+FUNCTION st_summary(geography)
+FUNCTION st_summary(geometry)
+FUNCTION st_summary(raster)
+FUNCTION st_summarystats(raster, boolean)
+FUNCTION st_summarystats(raster, integer, boolean)
+FUNCTION st_summarystats(text, text, boolean)
+FUNCTION st_summarystats(text, text, integer, boolean)
+FUNCTION st_swapordinates(geometry, cstring)
+FUNCTION st_symdifference(geometry, geometry)
+FUNCTION st_symdifference(geometry, geometry, double precision)
+FUNCTION st_symmetricdifference(geometry, geometry)
+FUNCTION st_tesselate(geometry)
+FUNCTION st_text(geometry)
+FUNCTION st_tile(raster, integer, integer)
+FUNCTION st_tile(raster, integer, integer, boolean, double precision)
+FUNCTION st_tile(raster, integer, integer, integer)
+FUNCTION st_tile(raster, integer, integer, integer, boolean, double precision)
+FUNCTION st_tile(raster, integer, integer, integer[])
+FUNCTION st_tile(raster, integer[], integer, integer)
+FUNCTION st_tile(raster, integer[], integer, integer, boolean, double precision)
+FUNCTION st_tileenvelope(integer, integer, integer, geometry)
+FUNCTION st_tileenvelope(integer, integer, integer, geometry, double precision)
+FUNCTION st_touches(geometry, geometry)
+FUNCTION st_touches(geometry, raster, integer)
+FUNCTION st_touches(raster, geometry, integer)
+FUNCTION st_touches(raster, integer, geometry)
+FUNCTION st_touches(raster, integer, raster, integer)
+FUNCTION st_touches(raster, raster)
+FUNCTION st_tpi(raster, integer, raster, text, boolean)
+FUNCTION st_tpi(raster, integer, text, boolean)
+FUNCTION st_transform(geometry, integer)
+FUNCTION st_transform(geometry, text)
+FUNCTION st_transform(geometry, text, integer)
+FUNCTION st_transform(geometry, text, text)
+FUNCTION st_transform(raster, integer, double precision, double precision, text, double precision)
+FUNCTION st_transform(raster, integer, double precision, text, double precision)
+FUNCTION st_transform(raster, integer, text, double precision, double precision, double precision)
+FUNCTION st_transform(raster, raster, text, double precision)
+FUNCTION st_transformpipeline(geometry, text, integer)
+FUNCTION st_translate(geometry, double precision, double precision)
+FUNCTION st_translate(geometry, double precision, double precision, double precision)
+FUNCTION st_transscale(geometry, double precision, double precision, double precision, double precision)
+FUNCTION st_tri(raster, integer, raster, text, boolean)
+FUNCTION st_tri(raster, integer, text, boolean)
+FUNCTION st_triangulatepolygon(geometry)
+FUNCTION st_unaryunion(geometry)
+FUNCTION st_unaryunion(geometry, double precision)
+FUNCTION st_union(geometry, geometry)
+FUNCTION st_union(geometry, geometry, double precision)
+FUNCTION st_union(geometry[])
+FUNCTION st_unite_garray(geometry[])
+FUNCTION st_upperleftx(raster)
+FUNCTION st_upperlefty(raster)
+FUNCTION st_value(raster, geometry)
+FUNCTION st_value(raster, geometry, boolean)
+FUNCTION st_value(raster, geometry, double precision)
+FUNCTION st_value(raster, integer, geometry)
+FUNCTION st_value(raster, integer, geometry, boolean)
+FUNCTION st_value(raster, integer, geometry, boolean, text)
+FUNCTION st_value(raster, integer, geometry, double precision)
+FUNCTION st_value(raster, integer, integer)
+FUNCTION st_value(raster, integer, integer, boolean)
+FUNCTION st_value(raster, integer, integer, integer)
+FUNCTION st_value(raster, integer, integer, integer, boolean)
+FUNCTION st_valuecount(raster, double precision, double precision)
+FUNCTION st_valuecount(raster, double precision[], double precision)
+FUNCTION st_valuecount(raster, integer, boolean, double precision, double precision)
+FUNCTION st_valuecount(raster, integer, boolean, double precision[], double precision)
+FUNCTION st_valuecount(raster, integer, double precision, double precision)
+FUNCTION st_valuecount(raster, integer, double precision[], double precision)
+FUNCTION st_valuecount(text, text, double precision, double precision)
+FUNCTION st_valuecount(text, text, double precision[], double precision)
+FUNCTION st_valuecount(text, text, integer, boolean, double precision, double precision)
+FUNCTION st_valuecount(text, text, integer, boolean, double precision[], double precision)
+FUNCTION st_valuecount(text, text, integer, double precision, double precision)
+FUNCTION st_valuecount(text, text, integer, double precision[], double precision)
+FUNCTION st_valuepercent(raster, double precision, double precision)
+FUNCTION st_valuepercent(raster, double precision[], double precision)
+FUNCTION st_valuepercent(raster, integer, boolean, double precision, double precision)
+FUNCTION st_valuepercent(raster, integer, boolean, double precision[], double precision)
+FUNCTION st_valuepercent(raster, integer, double precision, double precision)
+FUNCTION st_valuepercent(raster, integer, double precision[], double precision)
+FUNCTION st_valuepercent(text, text, double precision, double precision)
+FUNCTION st_valuepercent(text, text, double precision[], double precision)
+FUNCTION st_valuepercent(text, text, integer, boolean, double precision, double precision)
+FUNCTION st_valuepercent(text, text, integer, boolean, double precision[], double precision)
+FUNCTION st_valuepercent(text, text, integer, double precision, double precision)
+FUNCTION st_valuepercent(text, text, integer, double precision[], double precision)
+FUNCTION st_volume(geometry)
+FUNCTION st_voronoi(geometry, geometry, double precision, boolean)
+FUNCTION st_voronoilines(geometry, double precision, geometry)
+FUNCTION st_voronoipolygons(geometry, double precision, geometry)
+FUNCTION st_width(raster)
+FUNCTION st_within(geometry, geometry)
+FUNCTION st_within(raster, integer, raster, integer)
+FUNCTION st_within(raster, raster)
+FUNCTION st_wkbtosql(bytea)
+FUNCTION st_wkttosql(text)
+FUNCTION st_world2rastercoord(raster, double precision, double precision)
+FUNCTION st_world2rastercoord(raster, geometry)
+FUNCTION st_world2rastercoordx(raster, double precision)
+FUNCTION st_world2rastercoordx(raster, double precision, double precision)
+FUNCTION st_world2rastercoordx(raster, geometry)
+FUNCTION st_world2rastercoordy(raster, double precision)
+FUNCTION st_world2rastercoordy(raster, double precision, double precision)
+FUNCTION st_world2rastercoordy(raster, geometry)
+FUNCTION st_worldtorastercoord(raster, double precision, double precision)
+FUNCTION st_worldtorastercoord(raster, geometry)
+FUNCTION st_worldtorastercoordx(raster, double precision)
+FUNCTION st_worldtorastercoordx(raster, double precision, double precision)
+FUNCTION st_worldtorastercoordx(raster, geometry)
+FUNCTION st_worldtorastercoordy(raster, double precision)
+FUNCTION st_worldtorastercoordy(raster, double precision, double precision)
+FUNCTION st_worldtorastercoordy(raster, geometry)
+FUNCTION st_wrapx(geometry, double precision, double precision)
+FUNCTION st_x(geometry)
+FUNCTION st_xmax(box3d)
+FUNCTION st_xmin(box3d)
+FUNCTION st_y(geometry)
+FUNCTION st_ymax(box3d)
+FUNCTION st_ymin(box3d)
+FUNCTION st_z(geometry)
+FUNCTION st_zmax(box3d)
+FUNCTION st_zmflag(geometry)
+FUNCTION st_zmin(box3d)
+FUNCTION startpoint(geometry)
+FUNCTION summary(geometry)
+FUNCTION symdifference(geometry, geometry)
+FUNCTION symmetricdifference(geometry, geometry)
+FUNCTION text(geometry)
+FUNCTION topoelement(topogeometry)
+FUNCTION topoelementarray_append(topoelementarray, topoelement)
+FUNCTION topogeo_addgeometry(character varying, geometry, double precision)
+FUNCTION topogeo_addlinestring(character varying, geometry, double precision)
+FUNCTION topogeo_addpoint(character varying, geometry, double precision)
+FUNCTION topogeo_addpolygon(character varying, geometry, double precision)
+FUNCTION topogeo_loadgeometry(character varying, geometry, double precision)
+FUNCTION topogeom_addelement(topogeometry, topoelement)
+FUNCTION topogeom_addtopogeom(topogeometry, topogeometry)
+FUNCTION topogeom_remelement(topogeometry, topoelement)
+FUNCTION topologysummary(character varying)
+FUNCTION totopogeom(geometry, character varying, integer, double precision)
+FUNCTION totopogeom(geometry, topogeometry, double precision)
+FUNCTION touches(geometry, geometry)
+FUNCTION transform(geometry, integer)
+FUNCTION transform_geometry(geometry, text, text, integer)
+FUNCTION translate(geometry, double precision, double precision)
+FUNCTION translate(geometry, double precision, double precision, double precision)
+FUNCTION transscale(geometry, double precision, double precision, double precision, double precision)
+FUNCTION unite_garray(geometry[])
+FUNCTION unlockrows(text)
+FUNCTION updategeometrysrid(character varying, character varying, character varying, character varying, integer)
+FUNCTION updategeometrysrid(character varying, character varying, character varying, integer)
+FUNCTION updategeometrysrid(character varying, character varying, integer)
+FUNCTION updaterastersrid(name, name, integer)
+FUNCTION updaterastersrid(name, name, name, integer)
+FUNCTION validatetopology(character varying)
+FUNCTION validatetopology(character varying, geometry)
+FUNCTION validatetopologyrelation(character varying)
+FUNCTION within(geometry, geometry)
+FUNCTION x(geometry)
+FUNCTION xmax(box3d)
+FUNCTION xmin(box3d)
+FUNCTION y(geometry)
+FUNCTION ymax(box3d)
+FUNCTION ymin(box3d)
+FUNCTION z(geometry)
+FUNCTION zmax(box3d)
+FUNCTION zmflag(geometry)
+FUNCTION zmin(box3d)
+OPERATOR &&
+OPERATOR &&&
+OPERATOR &/&
+OPERATOR &<
+OPERATOR &<|
+OPERATOR &>
+OPERATOR <
+OPERATOR <#>
+OPERATOR <->
+OPERATOR <<
+OPERATOR <<->>
+OPERATOR <<@
+OPERATOR <<|
+OPERATOR <=
+OPERATOR <>
+OPERATOR =
+OPERATOR >
+OPERATOR >=
+OPERATOR >>
+OPERATOR @
+OPERATOR @>>
+OPERATOR @@
+OPERATOR public brin_geography_inclusion_ops
+OPERATOR public brin_geometry_inclusion_ops_2d
+OPERATOR public brin_geometry_inclusion_ops_3d
+OPERATOR public brin_geometry_inclusion_ops_4d
+OPERATOR public btree_geography_ops
+OPERATOR public btree_geometry_ops
+OPERATOR public gist_geography_ops
+OPERATOR public gist_geometry_ops_2d
+OPERATOR public gist_geometry_ops_nd
+OPERATOR public hash_geometry_ops
+OPERATOR public hash_raster_ops
+OPERATOR public spgist_geography_ops_nd
+OPERATOR public spgist_geometry_ops_2d
+OPERATOR public spgist_geometry_ops_3d
+OPERATOR public spgist_geometry_ops_nd
+OPERATOR |&>
+OPERATOR |=|
+OPERATOR |>>
+OPERATOR ~
+OPERATOR ~=
+OPERATOR ~==
+OPERATOR ~~
+OPERATOR ~~=
+OPERATOR&&&(geometry,geometry)
+OPERATOR&&&(geometry,gidx)
+OPERATOR&&&(gidx,geometry)
+OPERATOR&&&(gidx,gidx)
+OPERATOR&&(box2df,box2df)
+OPERATOR&&(box2df,geometry)
+OPERATOR&&(geography,geography)
+OPERATOR&&(geography,gidx)
+OPERATOR&&(geometry,box2df)
+OPERATOR&&(geometry,geometry)
+OPERATOR&&(gidx,geography)
+OPERATOR&&(gidx,gidx)
+OPERATOR&/&(geometry,geometry)
+OPERATOR&<(geometry,geometry)
+OPERATOR&<|(geometry,geometry)
+OPERATOR&>(geometry,geometry)
+OPERATOR<#>(geometry,geometry)
+OPERATOR<(geography,geography)
+OPERATOR<(geometry,geometry)
+OPERATOR<->(geography,geography)
+OPERATOR<->(geometry,geometry)
+OPERATOR<<(geometry,geometry)
+OPERATOR<<->>(geometry,geometry)
+OPERATOR<<@(geometry,geometry)
+OPERATOR<<|(geometry,geometry)
+OPERATOR<=(geography,geography)
+OPERATOR<=(geometry,geometry)
+OPERATOR=(geography,geography)
+OPERATOR=(geometry,geometry)
+OPERATOR>(geography,geography)
+OPERATOR>(geometry,geometry)
+OPERATOR>=(geography,geography)
+OPERATOR>=(geometry,geometry)
+OPERATOR>>(geometry,geometry)
+OPERATOR@(box2df,box2df)
+OPERATOR@(box2df,geometry)
+OPERATOR@(geometry,box2df)
+OPERATOR@(geometry,geometry)
+OPERATOR@>>(geometry,geometry)
+OPERATOR@@(geometry,geometry)
+OPERATORCLASS brin_geography_inclusion_ops
+OPERATORCLASS brin_geometry_inclusion_ops_2d
+OPERATORCLASS brin_geometry_inclusion_ops_3d
+OPERATORCLASS brin_geometry_inclusion_ops_4d
+OPERATORCLASS btree_geography_ops
+OPERATORCLASS btree_geometry_ops
+OPERATORCLASS gist_geography_ops
+OPERATORCLASS gist_geometry_ops_2d
+OPERATORCLASS gist_geometry_ops_nd
+OPERATORCLASS hash_geometry_ops
+OPERATORCLASS hash_raster_ops
+OPERATORCLASS spgist_geography_ops_nd
+OPERATORCLASS spgist_geometry_ops_2d
+OPERATORCLASS spgist_geometry_ops_3d
+OPERATORCLASS spgist_geometry_ops_nd
+OPERATOR|&>(geometry,geometry)
+OPERATOR|=|(geometry,geometry)
+OPERATOR|>>(geometry,geometry)
+OPERATOR~(box2df,box2df)
+OPERATOR~(box2df,geometry)
+OPERATOR~(geometry,box2df)
+OPERATOR~(geometry,geometry)
+OPERATOR~=(geometry,geometry)
+OPERATOR~==(geometry,geometry)
+OPERATOR~~(geometry,geometry)
+OPERATOR~~=(geometry,geometry)
+RULE geometry_columns geometry_columns_delete
+RULE geometry_columns geometry_columns_insert
+RULE geometry_columns geometry_columns_update
+SCHEMA topology
+SEQUENCE BY topology topology_id_seq
+SEQUENCE topology topology_id_seq
+SEQUENCE topology_id_seq
+SHELLTYPE box2d
+SHELLTYPE box2df
+SHELLTYPE box3d
+SHELLTYPE geography
+SHELLTYPE geometry
+SHELLTYPE gidx
+SHELLTYPE raster
+SHELLTYPE spheroid
+TABLE layer
+TABLE spatial_ref_sys
+TABLE topology
+TABLEDATA spatial_ref_sys
+TRIGGER layer layer_integrity_checks
+TYPE addbandarg
+TYPE agg_count
+TYPE agg_samealignment
+TYPE bandmetadata;
+TYPE box2d
+TYPE box2df
+TYPE box3d
+TYPE geography
+TYPE geometry
+TYPE geometry_dump
+TYPE geomval
+TYPE geomvalxy;
+TYPE getfaceedges_returntype
+TYPE gidx
+TYPE histogram;
+TYPE pgis_abs
+TYPE quantile;
+TYPE rastbandarg
+TYPE raster
+TYPE reclassarg
+TYPE spheroid
+TYPE summarystats
+TYPE topoelement
+TYPE topoelementarray
+TYPE topogeometry
+TYPE unionarg
+TYPE valid_detail
+TYPE validatetopology_returntype
+TYPE valuecount;
+TYPE wktgeomval;
+VIEW geography_columns
+VIEW geometry_columns
+VIEW raster_columns
+VIEW raster_overviews

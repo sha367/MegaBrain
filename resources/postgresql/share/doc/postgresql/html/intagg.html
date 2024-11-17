@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>F.18. intagg — integer aggregator and enumerator</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="hstore.html" title="F.17. hstore — hstore key/value datatype" /><link rel="next" href="intarray.html" title="F.19. intarray — manipulate arrays of integers" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">F.18. intagg — integer aggregator and enumerator</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="hstore.html" title="F.17. hstore — hstore key/value datatype">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules and Extensions">Up</a></td><th width="60%" align="center">Appendix F. Additional Supplied Modules and Extensions</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="intarray.html" title="F.19. intarray — manipulate arrays of integers">Next</a></td></tr></table><hr /></div><div class="sect1" id="INTAGG"><div class="titlepage"><div><div><h2 class="title" style="clear: both">F.18. intagg — integer aggregator and enumerator <a href="#INTAGG" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="intagg.html#INTAGG-FUNCTIONS">F.18.1. Functions</a></span></dt><dt><span class="sect2"><a href="intagg.html#INTAGG-SAMPLES">F.18.2. Sample Uses</a></span></dt></dl></div><a id="id-1.11.7.28.2" class="indexterm"></a><p>
+  The <code class="filename">intagg</code> module provides an integer aggregator and an
+  enumerator.  <code class="filename">intagg</code> is now obsolete, because there
+  are built-in functions that provide a superset of its capabilities.
+  However, the module is still provided as a compatibility wrapper around
+  the built-in functions.
+ </p><div class="sect2" id="INTAGG-FUNCTIONS"><div class="titlepage"><div><div><h3 class="title">F.18.1. Functions <a href="#INTAGG-FUNCTIONS" class="id_link">#</a></h3></div></div></div><a id="id-1.11.7.28.4.2" class="indexterm"></a><a id="id-1.11.7.28.4.3" class="indexterm"></a><p>
+  The aggregator is an aggregate function
+  <code class="function">int_array_aggregate(integer)</code>
+  that produces an integer array
+  containing exactly the integers it is fed.
+  This is a wrapper around <code class="function">array_agg</code>,
+  which does the same thing for any array type.
+ </p><a id="id-1.11.7.28.4.5" class="indexterm"></a><p>
+  The enumerator is a function
+  <code class="function">int_array_enum(integer[])</code>
+  that returns <code class="type">setof integer</code>.  It is essentially the reverse
+  operation of the aggregator: given an array of integers, expand it
+  into a set of rows.  This is a wrapper around <code class="function">unnest</code>,
+  which does the same thing for any array type.
+ </p></div><div class="sect2" id="INTAGG-SAMPLES"><div class="titlepage"><div><div><h3 class="title">F.18.2. Sample Uses <a href="#INTAGG-SAMPLES" class="id_link">#</a></h3></div></div></div><p>
+   Many database systems have the notion of a many to many table. Such a table
+   usually sits between two indexed tables, for example:
+
+</p><pre class="programlisting">
+CREATE TABLE left_table  (id INT PRIMARY KEY, ...);
+CREATE TABLE right_table (id INT PRIMARY KEY, ...);
+CREATE TABLE many_to_many(id_left  INT REFERENCES left_table,
+                          id_right INT REFERENCES right_table);
+</pre><p>
+
+  It is typically used like this:
+
+</p><pre class="programlisting">
+SELECT right_table.*
+FROM right_table JOIN many_to_many ON (right_table.id = many_to_many.id_right)
+WHERE many_to_many.id_left = <em class="replaceable"><code>item</code></em>;
+</pre><p>
+
+  This will return all the items in the right hand table for an entry
+  in the left hand table. This is a very common construct in SQL.
+ </p><p>
+  Now, this methodology can be cumbersome with a very large number of
+  entries in the <code class="structname">many_to_many</code> table.  Often,
+  a join like this would result in an index scan
+  and a fetch for each right hand entry in the table for a particular
+  left hand entry. If you have a very dynamic system, there is not much you
+  can do. However, if you have some data which is fairly static, you can
+  create a summary table with the aggregator.
+
+</p><pre class="programlisting">
+CREATE TABLE summary AS
+  SELECT id_left, int_array_aggregate(id_right) AS rights
+  FROM many_to_many
+  GROUP BY id_left;
+</pre><p>
+
+  This will create a table with one row per left item, and an array
+  of right items. Now this is pretty useless without some way of using
+  the array; that's why there is an array enumerator.  You can do
+
+</p><pre class="programlisting">
+SELECT id_left, int_array_enum(rights) FROM summary WHERE id_left = <em class="replaceable"><code>item</code></em>;
+</pre><p>
+
+  The above query using <code class="function">int_array_enum</code> produces the same results
+  as
+
+</p><pre class="programlisting">
+SELECT id_left, id_right FROM many_to_many WHERE id_left = <em class="replaceable"><code>item</code></em>;
+</pre><p>
+
+  The difference is that the query against the summary table has to get
+  only one row from the table, whereas the direct query against
+  <code class="structname">many_to_many</code> must index scan and fetch a row for each entry.
+ </p><p>
+  On one system, an <code class="command">EXPLAIN</code> showed a query with a cost of 8488 was
+  reduced to a cost of 329.  The original query was a join involving the
+  <code class="structname">many_to_many</code> table, which was replaced by:
+
+</p><pre class="programlisting">
+SELECT id_right, count(id_right) FROM
+  ( SELECT id_left, int_array_enum(rights) AS id_right
+    FROM summary
+    JOIN (SELECT id FROM left_table
+          WHERE id = <em class="replaceable"><code>item</code></em>) AS lefts
+    ON (summary.id_left = lefts.id)
+  ) AS list
+  GROUP BY id_right
+  ORDER BY count DESC;
+</pre><p>
+ </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="hstore.html" title="F.17. hstore — hstore key/value datatype">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules and Extensions">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="intarray.html" title="F.19. intarray — manipulate arrays of integers">Next</a></td></tr><tr><td width="40%" align="left" valign="top">F.17. hstore — hstore key/value datatype </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> F.19. intarray — manipulate arrays of integers</td></tr></table></div></body></html>

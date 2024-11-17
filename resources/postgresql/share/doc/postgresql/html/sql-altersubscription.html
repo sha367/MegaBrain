@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ALTER SUBSCRIPTION</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-alterstatistics.html" title="ALTER STATISTICS" /><link rel="next" href="sql-altersystem.html" title="ALTER SYSTEM" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">ALTER SUBSCRIPTION</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-alterstatistics.html" title="ALTER STATISTICS">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-altersystem.html" title="ALTER SYSTEM">Next</a></td></tr></table><hr /></div><div class="refentry" id="SQL-ALTERSUBSCRIPTION"><div class="titlepage"></div><a id="id-1.9.3.33.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">ALTER SUBSCRIPTION</span></h2><p>ALTER SUBSCRIPTION — change the definition of a subscription</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+ALTER SUBSCRIPTION <em class="replaceable"><code>name</code></em> CONNECTION '<em class="replaceable"><code>conninfo</code></em>'
+ALTER SUBSCRIPTION <em class="replaceable"><code>name</code></em> SET PUBLICATION <em class="replaceable"><code>publication_name</code></em> [, ...] [ WITH ( <em class="replaceable"><code>publication_option</code></em> [= <em class="replaceable"><code>value</code></em>] [, ... ] ) ]
+ALTER SUBSCRIPTION <em class="replaceable"><code>name</code></em> ADD PUBLICATION <em class="replaceable"><code>publication_name</code></em> [, ...] [ WITH ( <em class="replaceable"><code>publication_option</code></em> [= <em class="replaceable"><code>value</code></em>] [, ... ] ) ]
+ALTER SUBSCRIPTION <em class="replaceable"><code>name</code></em> DROP PUBLICATION <em class="replaceable"><code>publication_name</code></em> [, ...] [ WITH ( <em class="replaceable"><code>publication_option</code></em> [= <em class="replaceable"><code>value</code></em>] [, ... ] ) ]
+ALTER SUBSCRIPTION <em class="replaceable"><code>name</code></em> REFRESH PUBLICATION [ WITH ( <em class="replaceable"><code>refresh_option</code></em> [= <em class="replaceable"><code>value</code></em>] [, ... ] ) ]
+ALTER SUBSCRIPTION <em class="replaceable"><code>name</code></em> ENABLE
+ALTER SUBSCRIPTION <em class="replaceable"><code>name</code></em> DISABLE
+ALTER SUBSCRIPTION <em class="replaceable"><code>name</code></em> SET ( <em class="replaceable"><code>subscription_parameter</code></em> [= <em class="replaceable"><code>value</code></em>] [, ... ] )
+ALTER SUBSCRIPTION <em class="replaceable"><code>name</code></em> SKIP ( <em class="replaceable"><code>skip_option</code></em> = <em class="replaceable"><code>value</code></em> )
+ALTER SUBSCRIPTION <em class="replaceable"><code>name</code></em> OWNER TO { <em class="replaceable"><code>new_owner</code></em> | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
+ALTER SUBSCRIPTION <em class="replaceable"><code>name</code></em> RENAME TO <em class="replaceable"><code>new_name</code></em>
+</pre></div><div class="refsect1" id="id-1.9.3.33.5"><h2>Description</h2><p>
+   <code class="command">ALTER SUBSCRIPTION</code> can change most of the subscription
+   properties that can be specified
+   in <a class="xref" href="sql-createsubscription.html" title="CREATE SUBSCRIPTION"><span class="refentrytitle">CREATE SUBSCRIPTION</span></a>.
+  </p><p>
+   You must own the subscription to use <code class="command">ALTER SUBSCRIPTION</code>.
+   To rename a subscription or alter the owner, you must have
+   <code class="literal">CREATE</code> permission on the database. In addition,
+   to alter the owner, you must be able to <code class="literal">SET ROLE</code> to the
+   new owning role. If the subscription has
+   <code class="literal">password_required=false</code>, only superusers can modify it.
+  </p><p>
+   When refreshing a publication we remove the relations that are no longer
+   part of the publication and we also remove the table synchronization slots
+   if there are any. It is necessary to remove these slots so that the resources
+   allocated for the subscription on the remote host are released. If due to
+   network breakdown or some other error, <span class="productname">PostgreSQL</span>
+   is unable to remove the slots, an error will be reported. To proceed in this
+   situation, the user either needs to retry the operation or disassociate the
+   slot from the subscription and drop the subscription as explained in
+   <a class="xref" href="sql-dropsubscription.html" title="DROP SUBSCRIPTION"><span class="refentrytitle">DROP SUBSCRIPTION</span></a>.
+  </p><p>
+   Commands <code class="command">ALTER SUBSCRIPTION ... REFRESH PUBLICATION</code>,
+   <code class="command">ALTER SUBSCRIPTION ... {SET|ADD|DROP} PUBLICATION ...</code>
+   with <code class="literal">refresh</code> option as <code class="literal">true</code> and
+   <code class="command">ALTER SUBSCRIPTION ... SET (failover = true|false)</code>
+   cannot be executed inside a transaction block.
+  </p><p>
+   Commands <code class="command">ALTER SUBSCRIPTION ... REFRESH PUBLICATION</code> and
+   <code class="command">ALTER SUBSCRIPTION ... {SET|ADD|DROP} PUBLICATION ...</code>
+   with <code class="literal">refresh</code> option as <code class="literal">true</code> also cannot
+   be executed when the subscription has
+   <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-TWO-PHASE"><code class="literal">two_phase</code></a>
+   commit enabled, unless
+   <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-COPY-DATA"><code class="literal">copy_data</code></a>
+   is <code class="literal">false</code>. See column <code class="structfield">subtwophasestate</code>
+   of <a class="link" href="catalog-pg-subscription.html" title="51.54. pg_subscription"><code class="structname">pg_subscription</code></a>
+   to know the actual two-phase state.
+  </p></div><div class="refsect1" id="id-1.9.3.33.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt id="SQL-ALTERSUBSCRIPTION-PARAMS-NAME"><span class="term"><em class="replaceable"><code>name</code></em></span> <a href="#SQL-ALTERSUBSCRIPTION-PARAMS-NAME" class="id_link">#</a></dt><dd><p>
+      The name of a subscription whose properties are to be altered.
+     </p></dd><dt id="SQL-ALTERSUBSCRIPTION-PARAMS-CONNECTION"><span class="term"><code class="literal">CONNECTION '<em class="replaceable"><code>conninfo</code></em>'</code></span> <a href="#SQL-ALTERSUBSCRIPTION-PARAMS-CONNECTION" class="id_link">#</a></dt><dd><p>
+      This clause replaces the connection string originally set by
+      <a class="xref" href="sql-createsubscription.html" title="CREATE SUBSCRIPTION"><span class="refentrytitle">CREATE SUBSCRIPTION</span></a>.  See there for more
+      information.
+     </p></dd><dt id="SQL-ALTERSUBSCRIPTION-PARAMS-SETADDDROP-PUBLICATION"><span class="term"><code class="literal">SET PUBLICATION <em class="replaceable"><code>publication_name</code></em></code><br /></span><span class="term"><code class="literal">ADD PUBLICATION <em class="replaceable"><code>publication_name</code></em></code><br /></span><span class="term"><code class="literal">DROP PUBLICATION <em class="replaceable"><code>publication_name</code></em></code></span> <a href="#SQL-ALTERSUBSCRIPTION-PARAMS-SETADDDROP-PUBLICATION" class="id_link">#</a></dt><dd><p>
+      These forms change the list of subscribed publications.
+      <code class="literal">SET</code>
+      replaces the entire list of publications with a new list,
+      <code class="literal">ADD</code> adds additional publications to the list of
+      publications, and <code class="literal">DROP</code> removes the publications from
+      the list of publications.  We allow non-existent publications to be
+      specified in <code class="literal">ADD</code> and <code class="literal">SET</code> variants
+      so that users can add those later.  See <a class="xref" href="sql-createsubscription.html" title="CREATE SUBSCRIPTION"><span class="refentrytitle">CREATE SUBSCRIPTION</span></a>
+      for more information.  By default, this command will also act like
+      <code class="literal">REFRESH PUBLICATION</code>.
+     </p><p>
+      <em class="replaceable"><code>publication_option</code></em> specifies additional
+      options for this operation.  The supported options are:
+
+      </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">refresh</code> (<code class="type">boolean</code>)</span></dt><dd><p>
+          When false, the command will not try to refresh table information.
+          <code class="literal">REFRESH PUBLICATION</code> should then be executed separately.
+          The default is <code class="literal">true</code>.
+         </p></dd></dl></div><p>
+
+      Additionally, the options described under
+      <code class="literal">REFRESH PUBLICATION</code> may be specified, to control the
+      implicit refresh operation.
+     </p></dd><dt id="SQL-ALTERSUBSCRIPTION-PARAMS-REFRESH-PUBLICATION"><span class="term"><code class="literal">REFRESH PUBLICATION</code></span> <a href="#SQL-ALTERSUBSCRIPTION-PARAMS-REFRESH-PUBLICATION" class="id_link">#</a></dt><dd><p>
+      Fetch missing table information from publisher.  This will start
+      replication of tables that were added to the subscribed-to publications
+      since <a class="link" href="sql-createsubscription.html" title="CREATE SUBSCRIPTION">
+      <code class="command">CREATE SUBSCRIPTION</code></a> or
+      the last invocation of <code class="command">REFRESH PUBLICATION</code>.
+     </p><p>
+      <em class="replaceable"><code>refresh_option</code></em> specifies additional options for the
+      refresh operation.  The supported options are:
+
+      </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">copy_data</code> (<code class="type">boolean</code>)</span></dt><dd><p>
+          Specifies whether to copy pre-existing data in the publications
+          that are being subscribed to when the replication starts.
+          The default is <code class="literal">true</code>.
+         </p><p>
+          Previously subscribed tables are not copied, even if a table's row
+          filter <code class="literal">WHERE</code> clause has since been modified.
+         </p><p>
+          See <a class="xref" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-NOTES" title="Notes">Notes</a> for details of
+          how <code class="literal">copy_data = true</code> can interact with the
+          <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-ORIGIN"><code class="literal">origin</code></a>
+          parameter.
+         </p><p>
+          See the
+          <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-BINARY"><code class="literal">binary</code></a>
+          parameter of <code class="command">CREATE SUBSCRIPTION</code> for details about
+          copying pre-existing data in binary format.
+         </p></dd></dl></div></dd><dt id="SQL-ALTERSUBSCRIPTION-PARAMS-ENABLE"><span class="term"><code class="literal">ENABLE</code></span> <a href="#SQL-ALTERSUBSCRIPTION-PARAMS-ENABLE" class="id_link">#</a></dt><dd><p>
+      Enables a previously disabled subscription, starting the logical
+      replication worker at the end of the transaction.
+     </p></dd><dt id="SQL-ALTERSUBSCRIPTION-PARAMS-DISABLE"><span class="term"><code class="literal">DISABLE</code></span> <a href="#SQL-ALTERSUBSCRIPTION-PARAMS-DISABLE" class="id_link">#</a></dt><dd><p>
+      Disables a running subscription, stopping the logical replication
+      worker at the end of the transaction.
+     </p></dd><dt id="SQL-ALTERSUBSCRIPTION-PARAMS-SET"><span class="term"><code class="literal">SET ( <em class="replaceable"><code>subscription_parameter</code></em> [= <em class="replaceable"><code>value</code></em>] [, ... ] )</code></span> <a href="#SQL-ALTERSUBSCRIPTION-PARAMS-SET" class="id_link">#</a></dt><dd><p>
+      This clause alters parameters originally set by
+      <a class="xref" href="sql-createsubscription.html" title="CREATE SUBSCRIPTION"><span class="refentrytitle">CREATE SUBSCRIPTION</span></a>.  See there for more
+      information.  The parameters that can be altered are
+      <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-SLOT-NAME"><code class="literal">slot_name</code></a>,
+      <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-SYNCHRONOUS-COMMIT"><code class="literal">synchronous_commit</code></a>,
+      <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-BINARY"><code class="literal">binary</code></a>,
+      <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-STREAMING"><code class="literal">streaming</code></a>,
+      <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-DISABLE-ON-ERROR"><code class="literal">disable_on_error</code></a>,
+      <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-PASSWORD-REQUIRED"><code class="literal">password_required</code></a>,
+      <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-RUN-AS-OWNER"><code class="literal">run_as_owner</code></a>,
+      <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-ORIGIN"><code class="literal">origin</code></a>, and
+      <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-FAILOVER"><code class="literal">failover</code></a>.
+      Only a superuser can set <code class="literal">password_required = false</code>.
+     </p><p>
+      When altering the
+      <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-SLOT-NAME"><code class="literal">slot_name</code></a>,
+      the <code class="literal">failover</code> and <code class="literal">two_phase</code> property
+      values of the named slot may differ from the counterpart
+      <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-FAILOVER"><code class="literal">failover</code></a>
+      and <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-TWO-PHASE"><code class="literal">two_phase</code></a>
+      parameters specified in the subscription. When creating the slot, ensure
+      the slot properties <code class="literal">failover</code> and <code class="literal">two_phase</code>
+      match their counterpart parameters of the subscription.
+      Otherwise, the slot on the publisher may behave differently from what these
+      subscription options say: for example, the slot on the publisher could either be
+      synced to the standbys even when the subscription's
+      <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-FAILOVER"><code class="literal">failover</code></a>
+      option is disabled or could be disabled for sync
+      even when the subscription's
+      <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-FAILOVER"><code class="literal">failover</code></a>
+      option is enabled.
+     </p></dd><dt id="SQL-ALTERSUBSCRIPTION-PARAMS-SKIP"><span class="term"><code class="literal">SKIP ( <em class="replaceable"><code>skip_option</code></em> = <em class="replaceable"><code>value</code></em> )</code></span> <a href="#SQL-ALTERSUBSCRIPTION-PARAMS-SKIP" class="id_link">#</a></dt><dd><p>
+      Skips applying all changes of the remote transaction.  If incoming data
+      violates any constraints, logical replication will stop until it is
+      resolved.  By using the <code class="command">ALTER SUBSCRIPTION ... SKIP</code> command,
+      the logical replication worker skips all data modification changes within
+      the transaction.  This option has no effect on the transactions that are
+      already prepared by enabling
+      <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-TWO-PHASE"><code class="literal">two_phase</code></a>
+      on the subscriber.
+      After the logical replication worker successfully skips the transaction or
+      finishes a transaction, the LSN (stored in
+      <code class="structname">pg_subscription</code>.<code class="structfield">subskiplsn</code>)
+      is cleared.  See <a class="xref" href="logical-replication-conflicts.html" title="29.6. Conflicts">Section 29.6</a> for
+      the details of logical replication conflicts.
+     </p><p>
+      <em class="replaceable"><code>skip_option</code></em> specifies options for this operation.
+      The supported option is:
+
+      </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">lsn</code> (<code class="type">pg_lsn</code>)</span></dt><dd><p>
+          Specifies the finish LSN of the remote transaction whose changes
+          are to be skipped by the logical replication worker.  The finish LSN
+          is the LSN at which the transaction is either committed or prepared.
+          Skipping individual subtransactions is not supported.  Setting
+          <code class="literal">NONE</code> resets the LSN.
+         </p></dd></dl></div></dd><dt id="SQL-ALTERSUBSCRIPTION-PARAMS-NEW-OWNER"><span class="term"><em class="replaceable"><code>new_owner</code></em></span> <a href="#SQL-ALTERSUBSCRIPTION-PARAMS-NEW-OWNER" class="id_link">#</a></dt><dd><p>
+      The user name of the new owner of the subscription.
+     </p></dd><dt id="SQL-ALTERSUBSCRIPTION-PARAMS-NEW-NAME"><span class="term"><em class="replaceable"><code>new_name</code></em></span> <a href="#SQL-ALTERSUBSCRIPTION-PARAMS-NEW-NAME" class="id_link">#</a></dt><dd><p>
+      The new name for the subscription.
+     </p></dd></dl></div><p>
+   When specifying a parameter of type <code class="type">boolean</code>, the
+   <code class="literal">=</code> <em class="replaceable"><code>value</code></em>
+   part can be omitted, which is equivalent to
+   specifying <code class="literal">TRUE</code>.
+  </p></div><div class="refsect1" id="id-1.9.3.33.7"><h2>Examples</h2><p>
+   Change the publication subscribed by a subscription to
+   <code class="literal">insert_only</code>:
+</p><pre class="programlisting">
+ALTER SUBSCRIPTION mysub SET PUBLICATION insert_only;
+</pre><p>
+  </p><p>
+   Disable (stop) the subscription:
+</p><pre class="programlisting">
+ALTER SUBSCRIPTION mysub DISABLE;
+</pre></div><div class="refsect1" id="id-1.9.3.33.8"><h2>Compatibility</h2><p>
+   <code class="command">ALTER SUBSCRIPTION</code> is a <span class="productname">PostgreSQL</span>
+   extension.
+  </p></div><div class="refsect1" id="id-1.9.3.33.9"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-createsubscription.html" title="CREATE SUBSCRIPTION"><span class="refentrytitle">CREATE SUBSCRIPTION</span></a>, <a class="xref" href="sql-dropsubscription.html" title="DROP SUBSCRIPTION"><span class="refentrytitle">DROP SUBSCRIPTION</span></a>, <a class="xref" href="sql-createpublication.html" title="CREATE PUBLICATION"><span class="refentrytitle">CREATE PUBLICATION</span></a>, <a class="xref" href="sql-alterpublication.html" title="ALTER PUBLICATION"><span class="refentrytitle">ALTER PUBLICATION</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-alterstatistics.html" title="ALTER STATISTICS">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-altersystem.html" title="ALTER SYSTEM">Next</a></td></tr><tr><td width="40%" align="left" valign="top">ALTER STATISTICS </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> ALTER SYSTEM</td></tr></table></div></body></html>

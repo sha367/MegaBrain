@@ -1,0 +1,3 @@
+-- Just tag extension postgis_topology version as "ANY"
+-- Installed by postgis_topology 3.5.0
+-- Built on 2024-11-14 00:31:13

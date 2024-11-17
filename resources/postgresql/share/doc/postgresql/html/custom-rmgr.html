@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>63.2. Custom WAL Resource Managers</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="generic-wal.html" title="63.1. Generic WAL Records" /><link rel="next" href="indextypes.html" title="Chapter 64. Built-in Index Access Methods" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">63.2. Custom WAL Resource Managers</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="generic-wal.html" title="63.1. Generic WAL Records">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="wal-for-extensions.html" title="Chapter 63. Write Ahead Logging for Extensions">Up</a></td><th width="60%" align="center">Chapter 63. Write Ahead Logging for Extensions</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="indextypes.html" title="Chapter 64. Built-in Index Access Methods">Next</a></td></tr></table><hr /></div><div class="sect1" id="CUSTOM-RMGR"><div class="titlepage"><div><div><h2 class="title" style="clear: both">63.2. Custom WAL Resource Managers <a href="#CUSTOM-RMGR" class="id_link">#</a></h2></div></div></div><p>
+  This section explains the interface between the core
+  <span class="productname">PostgreSQL</span> system and custom WAL resource
+  managers, which enable extensions to integrate directly with the <a class="link" href="wal.html" title="Chapter 28. Reliability and the Write-Ahead Log"><acronym class="acronym">WAL</acronym></a>.
+ </p><p>
+  An extension, especially a <a class="link" href="tableam.html" title="Chapter 61. Table Access Method Interface Definition">Table Access
+  Method</a> or <a class="link" href="indexam.html" title="Chapter 62. Index Access Method Interface Definition">Index Access Method</a>, may
+  need to use WAL for recovery, replication, and/or <a class="link" href="logicaldecoding.html" title="Chapter 47. Logical Decoding">Logical Decoding</a>.
+ </p><p>
+  To create a new custom WAL resource manager, first define an
+  <code class="structname">RmgrData</code> structure with implementations for the
+  resource manager methods. Refer to
+  <code class="filename">src/backend/access/transam/README</code> and
+  <code class="filename">src/include/access/xlog_internal.h</code> in the
+  <span class="productname">PostgreSQL</span> source.
+</p><pre class="programlisting">
+/*
+ * Method table for resource managers.
+ *
+ * This struct must be kept in sync with the PG_RMGR definition in
+ * rmgr.c.
+ *
+ * rm_identify must return a name for the record based on xl_info (without
+ * reference to the rmid). For example, XLOG_BTREE_VACUUM would be named
+ * "VACUUM". rm_desc can then be called to obtain additional detail for the
+ * record, if available (e.g. the last block).
+ *
+ * rm_mask takes as input a page modified by the resource manager and masks
+ * out bits that shouldn't be flagged by wal_consistency_checking.
+ *
+ * RmgrTable[] is indexed by RmgrId values (see rmgrlist.h). If rm_name is
+ * NULL, the corresponding RmgrTable entry is considered invalid.
+ */
+typedef struct RmgrData
+{
+    const char *rm_name;
+    void        (*rm_redo) (XLogReaderState *record);
+    void        (*rm_desc) (StringInfo buf, XLogReaderState *record);
+    const char *(*rm_identify) (uint8 info);
+    void        (*rm_startup) (void);
+    void        (*rm_cleanup) (void);
+    void        (*rm_mask) (char *pagedata, BlockNumber blkno);
+    void        (*rm_decode) (struct LogicalDecodingContext *ctx,
+                              struct XLogRecordBuffer *buf);
+} RmgrData;
+</pre><p>
+ </p><p>
+   The <code class="filename">src/test/modules/test_custom_rmgrs</code> module
+   contains a working example, which demonstrates usage of custom WAL
+   resource managers.
+  </p><p>
+  Then, register your new resource
+  manager.
+
+</p><pre class="programlisting">
+/*
+ * Register a new custom WAL resource manager.
+ *
+ * Resource manager IDs must be globally unique across all extensions. Refer
+ * to https://wiki.postgresql.org/wiki/CustomWALResourceManagers to reserve a
+ * unique RmgrId for your extension, to avoid conflicts with other extension
+ * developers. During development, use RM_EXPERIMENTAL_ID to avoid needlessly
+ * reserving a new ID.
+ */
+extern void RegisterCustomRmgr(RmgrId rmid, const RmgrData *rmgr);
+</pre><p>
+  <code class="function">RegisterCustomRmgr</code> must be called from the
+  extension module's <a class="link" href="xfunc-c.html#XFUNC-C-DYNLOAD" title="36.10.1. Dynamic Loading">_PG_init</a> function.
+  While developing a new extension, use <code class="literal">RM_EXPERIMENTAL_ID</code>
+  for <em class="parameter"><code>rmid</code></em>. When you are ready to release the extension
+  to users, reserve a new resource manager ID at the <a class="ulink" href="https://wiki.postgresql.org/wiki/CustomWALResourceManagers" target="_top">Custom WAL
+  Resource Manager</a> page.
+ </p><p>
+  Place the extension module implementing the custom resource manager in <a class="xref" href="runtime-config-client.html#GUC-SHARED-PRELOAD-LIBRARIES">shared_preload_libraries</a> so that it will be loaded early
+  during <span class="productname">PostgreSQL</span> startup.
+ </p><div class="note"><h3 class="title">Note</h3><p>
+    The extension must remain in <code class="varname">shared_preload_libraries</code>
+    as long as any custom WAL records may exist in the system. Otherwise
+    <span class="productname">PostgreSQL</span> will not be able to apply or decode
+    the custom WAL records, which may prevent the server from starting.
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="generic-wal.html" title="63.1. Generic WAL Records">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="wal-for-extensions.html" title="Chapter 63. Write Ahead Logging for Extensions">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="indextypes.html" title="Chapter 64. Built-in Index Access Methods">Next</a></td></tr><tr><td width="40%" align="left" valign="top">63.1. Generic WAL Records </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> Chapter 64. Built-in Index Access Methods</td></tr></table></div></body></html>

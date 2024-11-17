@@ -1,0 +1,127 @@
+'\" t
+.\"     Title: RELEASE SAVEPOINT
+.\"    Author: The PostgreSQL Global Development Group
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 17.1 Documentation
+.\"    Source: PostgreSQL 17.1
+.\"  Language: English
+.\"
+.TH "RELEASE SAVEPOINT" "7" "2024" "PostgreSQL 17.1" "PostgreSQL 17.1 Documentation"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+RELEASE_SAVEPOINT \- release a previously defined savepoint
+.SH "SYNOPSIS"
+.sp
+.nf
+RELEASE [ SAVEPOINT ] \fIsavepoint_name\fR
+.fi
+.SH "DESCRIPTION"
+.PP
+\fBRELEASE SAVEPOINT\fR
+releases the named savepoint and all active savepoints that were created after the named savepoint, and frees their resources\&. All changes made since the creation of the savepoint that didn\*(Aqt already get rolled back are merged into the transaction or savepoint that was active when the named savepoint was created\&. Changes made after
+\fBRELEASE SAVEPOINT\fR
+will also be part of this active transaction or savepoint\&.
+.SH "PARAMETERS"
+.PP
+\fIsavepoint_name\fR
+.RS 4
+The name of the savepoint to release\&.
+.RE
+.SH "NOTES"
+.PP
+Specifying a savepoint name that was not previously defined is an error\&.
+.PP
+It is not possible to release a savepoint when the transaction is in an aborted state; to do that, use
+ROLLBACK TO SAVEPOINT (\fBROLLBACK_TO_SAVEPOINT\fR(7))\&.
+.PP
+If multiple savepoints have the same name, only the most recently defined unreleased one is released\&. Repeated commands will release progressively older savepoints\&.
+.SH "EXAMPLES"
+.PP
+To establish and later release a savepoint:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+BEGIN;
+    INSERT INTO table1 VALUES (3);
+    SAVEPOINT my_savepoint;
+    INSERT INTO table1 VALUES (4);
+    RELEASE SAVEPOINT my_savepoint;
+COMMIT;
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+The above transaction will insert both 3 and 4\&.
+.PP
+A more complex example with multiple nested subtransactions:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+BEGIN;
+    INSERT INTO table1 VALUES (1);
+    SAVEPOINT sp1;
+    INSERT INTO table1 VALUES (2);
+    SAVEPOINT sp2;
+    INSERT INTO table1 VALUES (3);
+    RELEASE SAVEPOINT sp2;
+    INSERT INTO table1 VALUES (4))); \-\- generates an error
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+In this example, the application requests the release of the savepoint
+sp2, which inserted 3\&. This changes the insert\*(Aqs transaction context to
+sp1\&. When the statement attempting to insert value 4 generates an error, the insertion of 2 and 4 are lost because they are in the same, now\-rolled back savepoint, and value 3 is in the same transaction context\&. The application can now only choose one of these two commands, since all other commands will be ignored:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+ROLLBACK;
+ROLLBACK TO SAVEPOINT sp1;
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Choosing
+\fBROLLBACK\fR
+will abort everything, including value 1, whereas
+\fBROLLBACK TO SAVEPOINT sp1\fR
+will retain value 1 and allow the transaction to continue\&.
+.SH "COMPATIBILITY"
+.PP
+This command conforms to the
+SQL
+standard\&. The standard specifies that the key word
+SAVEPOINT
+is mandatory, but
+PostgreSQL
+allows it to be omitted\&.
+.SH "SEE ALSO"
+\fBBEGIN\fR(7), \fBCOMMIT\fR(7), \fBROLLBACK\fR(7), ROLLBACK TO SAVEPOINT (\fBROLLBACK_TO_SAVEPOINT\fR(7)), \fBSAVEPOINT\fR(7)

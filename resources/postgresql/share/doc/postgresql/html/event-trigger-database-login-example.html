@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>38.6. A Database Login Event Trigger Example</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="event-trigger-table-rewrite-example.html" title="38.5. A Table Rewrite Event Trigger Example" /><link rel="next" href="rules.html" title="Chapter 39. The Rule System" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">38.6. A Database Login Event Trigger Example</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="event-trigger-table-rewrite-example.html" title="38.5. A Table Rewrite Event Trigger Example">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="event-triggers.html" title="Chapter 38. Event Triggers">Up</a></td><th width="60%" align="center">Chapter 38. Event Triggers</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="rules.html" title="Chapter 39. The Rule System">Next</a></td></tr></table><hr /></div><div class="sect1" id="EVENT-TRIGGER-DATABASE-LOGIN-EXAMPLE"><div class="titlepage"><div><div><h2 class="title" style="clear: both">38.6. A Database Login Event Trigger Example <a href="#EVENT-TRIGGER-DATABASE-LOGIN-EXAMPLE" class="id_link">#</a></h2></div></div></div><p>
+      The event trigger on the <code class="literal">login</code> event can be
+      useful for logging user logins, for verifying the connection and
+      assigning roles according to current circumstances, or for session
+      data initialization. It is very important that any event trigger using
+      the <code class="literal">login</code> event checks whether or not the database is
+      in recovery before performing any writes. Writing to a standby server
+      will make it inaccessible.
+    </p><p>
+      The following example demonstrates these options.
+</p><pre class="programlisting">
+-- create test tables and roles
+CREATE TABLE user_login_log (
+  "user" text,
+  "session_start" timestamp with time zone
+);
+CREATE ROLE day_worker;
+CREATE ROLE night_worker;
+
+-- the example trigger function
+CREATE OR REPLACE FUNCTION init_session()
+  RETURNS event_trigger SECURITY DEFINER
+  LANGUAGE plpgsql AS
+$$
+DECLARE
+  hour integer = EXTRACT('hour' FROM current_time at time zone 'utc');
+  rec boolean;
+BEGIN
+-- 1. Forbid logging in between 2AM and 4AM.
+IF hour BETWEEN 2 AND 4 THEN
+  RAISE EXCEPTION 'Login forbidden';
+END IF;
+
+-- The checks below cannot be performed on standby servers so
+-- ensure the database is not in recovery before we perform any
+-- operations.
+SELECT pg_is_in_recovery() INTO rec;
+IF rec THEN
+  RETURN;
+END IF;
+
+-- 2. Assign some roles. At daytime, grant the day_worker role, else the
+-- night_worker role.
+IF hour BETWEEN 8 AND 20 THEN
+  EXECUTE 'REVOKE night_worker FROM ' || quote_ident(session_user);
+  EXECUTE 'GRANT day_worker TO ' || quote_ident(session_user);
+ELSE
+  EXECUTE 'REVOKE day_worker FROM ' || quote_ident(session_user);
+  EXECUTE 'GRANT night_worker TO ' || quote_ident(session_user);
+END IF;
+
+-- 3. Initialize user session data
+CREATE TEMP TABLE session_storage (x float, y integer);
+ALTER TABLE session_storage OWNER TO session_user;
+
+-- 4. Log the connection time
+INSERT INTO public.user_login_log VALUES (session_user, current_timestamp);
+
+END;
+$$;
+
+-- trigger definition
+CREATE EVENT TRIGGER init_session
+  ON login
+  EXECUTE FUNCTION init_session();
+ALTER EVENT TRIGGER init_session ENABLE ALWAYS;
+</pre><p>
+    </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="event-trigger-table-rewrite-example.html" title="38.5. A Table Rewrite Event Trigger Example">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="event-triggers.html" title="Chapter 38. Event Triggers">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="rules.html" title="Chapter 39. The Rule System">Next</a></td></tr><tr><td width="40%" align="left" valign="top">38.5. A Table Rewrite Event Trigger Example </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> Chapter 39. The Rule System</td></tr></table></div></body></html>

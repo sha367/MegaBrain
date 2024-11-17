@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>29.6. Conflicts</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="logical-replication-col-lists.html" title="29.5. Column Lists" /><link rel="next" href="logical-replication-restrictions.html" title="29.7. Restrictions" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">29.6. Conflicts</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="logical-replication-col-lists.html" title="29.5. Column Lists">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="logical-replication.html" title="Chapter 29. Logical Replication">Up</a></td><th width="60%" align="center">Chapter 29. Logical Replication</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="logical-replication-restrictions.html" title="29.7. Restrictions">Next</a></td></tr></table><hr /></div><div class="sect1" id="LOGICAL-REPLICATION-CONFLICTS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">29.6. Conflicts <a href="#LOGICAL-REPLICATION-CONFLICTS" class="id_link">#</a></h2></div></div></div><p>
+   Logical replication behaves similarly to normal DML operations in that
+   the data will be updated even if it was changed locally on the subscriber
+   node.  If incoming data violates any constraints the replication will
+   stop.  This is referred to as a <em class="firstterm">conflict</em>.  When
+   replicating <code class="command">UPDATE</code> or <code class="command">DELETE</code>
+   operations, missing data will not produce a conflict and such operations
+   will simply be skipped.
+  </p><p>
+   Logical replication operations are performed with the privileges of the role
+   which owns the subscription.  Permissions failures on target tables will
+   cause replication conflicts, as will enabled
+   <a class="link" href="ddl-rowsecurity.html" title="5.9. Row Security Policies">row-level security</a> on target tables
+   that the subscription owner is subject to, without regard to whether any
+   policy would ordinarily reject the <code class="command">INSERT</code>,
+   <code class="command">UPDATE</code>, <code class="command">DELETE</code> or
+   <code class="command">TRUNCATE</code> which is being replicated.  This restriction on
+   row-level security may be lifted in a future version of
+   <span class="productname">PostgreSQL</span>.
+  </p><p>
+   A conflict will produce an error and will stop the replication; it must be
+   resolved manually by the user.  Details about the conflict can be found in
+   the subscriber's server log.
+  </p><p>
+   The resolution can be done either by changing data or permissions on the subscriber so
+   that it does not conflict with the incoming change or by skipping the
+   transaction that conflicts with the existing data.  When a conflict produces
+   an error, the replication won't proceed, and the logical replication worker will
+   emit the following kind of message to the subscriber's server log:
+</p><pre class="screen">
+ERROR:  duplicate key value violates unique constraint "test_pkey"
+DETAIL:  Key (c)=(1) already exists.
+CONTEXT:  processing remote data for replication origin "pg_16395" during "INSERT" for replication target relation "public.test" in transaction 725 finished at 0/14C0378
+</pre><p>
+   The LSN of the transaction that contains the change violating the constraint and
+   the replication origin name can be found from the server log (LSN 0/14C0378 and
+   replication origin <code class="literal">pg_16395</code> in the above case).  The
+   transaction that produced the conflict can be skipped by using
+   <a class="link" href="sql-altersubscription.html#SQL-ALTERSUBSCRIPTION-PARAMS-SKIP"><code class="command">ALTER SUBSCRIPTION ... SKIP</code></a>
+   with the finish LSN
+   (i.e., LSN 0/14C0378).  The finish LSN could be an LSN at which the transaction
+   is committed or prepared on the publisher.  Alternatively, the transaction can
+   also be skipped by calling the <a class="link" href="functions-admin.html#PG-REPLICATION-ORIGIN-ADVANCE">
+   <code class="function">pg_replication_origin_advance()</code></a> function.
+   Before using this function, the subscription needs to be disabled temporarily
+   either by <a class="link" href="sql-altersubscription.html#SQL-ALTERSUBSCRIPTION-PARAMS-DISABLE">
+   <code class="command">ALTER SUBSCRIPTION ... DISABLE</code></a> or, the
+   subscription can be used with the
+   <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-DISABLE-ON-ERROR"><code class="literal">disable_on_error</code></a>
+   option. Then, you can use <code class="function">pg_replication_origin_advance()</code>
+   function with the <em class="parameter"><code>node_name</code></em> (i.e., <code class="literal">pg_16395</code>)
+   and the next LSN of the finish LSN (i.e., 0/14C0379).  The current position of
+   origins can be seen in the <a class="link" href="view-pg-replication-origin-status.html" title="52.18. pg_replication_origin_status">
+   <code class="structname">pg_replication_origin_status</code></a> system view.
+   Please note that skipping the whole transaction includes skipping changes that
+   might not violate any constraint.  This can easily make the subscriber
+   inconsistent.
+  </p><p>
+   When the
+   <a class="link" href="sql-createsubscription.html#SQL-CREATESUBSCRIPTION-PARAMS-WITH-STREAMING"><code class="literal">streaming</code></a>
+   mode is <code class="literal">parallel</code>, the finish LSN of failed transactions
+   may not be logged. In that case, it may be necessary to change the streaming
+   mode to <code class="literal">on</code> or <code class="literal">off</code> and cause the same
+   conflicts again so the finish LSN of the failed transaction will be written
+   to the server log. For the usage of finish LSN, please refer to <a class="link" href="sql-altersubscription.html" title="ALTER SUBSCRIPTION"><code class="command">ALTER SUBSCRIPTION ...
+   SKIP</code></a>.
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="logical-replication-col-lists.html" title="29.5. Column Lists">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="logical-replication.html" title="Chapter 29. Logical Replication">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="logical-replication-restrictions.html" title="29.7. Restrictions">Next</a></td></tr><tr><td width="40%" align="left" valign="top">29.5. Column Lists </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 29.7. Restrictions</td></tr></table></div></body></html>

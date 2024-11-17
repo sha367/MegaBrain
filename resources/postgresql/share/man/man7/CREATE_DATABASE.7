@@ -1,0 +1,434 @@
+'\" t
+.\"     Title: CREATE DATABASE
+.\"    Author: The PostgreSQL Global Development Group
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 17.1 Documentation
+.\"    Source: PostgreSQL 17.1
+.\"  Language: English
+.\"
+.TH "CREATE DATABASE" "7" "2024" "PostgreSQL 17.1" "PostgreSQL 17.1 Documentation"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+CREATE_DATABASE \- create a new database
+.SH "SYNOPSIS"
+.sp
+.nf
+CREATE DATABASE \fIname\fR
+    [ WITH ] [ OWNER [=] \fIuser_name\fR ]
+           [ TEMPLATE [=] \fItemplate\fR ]
+           [ ENCODING [=] \fIencoding\fR ]
+           [ STRATEGY [=] \fIstrategy\fR ]
+           [ LOCALE [=] \fIlocale\fR ]
+           [ LC_COLLATE [=] \fIlc_collate\fR ]
+           [ LC_CTYPE [=] \fIlc_ctype\fR ]
+           [ BUILTIN_LOCALE [=] \fIbuiltin_locale\fR ]
+           [ ICU_LOCALE [=] \fIicu_locale\fR ]
+           [ ICU_RULES [=] \fIicu_rules\fR ]
+           [ LOCALE_PROVIDER [=] \fIlocale_provider\fR ]
+           [ COLLATION_VERSION = \fIcollation_version\fR ]
+           [ TABLESPACE [=] \fItablespace_name\fR ]
+           [ ALLOW_CONNECTIONS [=] \fIallowconn\fR ]
+           [ CONNECTION LIMIT [=] \fIconnlimit\fR ]
+           [ IS_TEMPLATE [=] \fIistemplate\fR ]
+           [ OID [=] \fIoid\fR ]
+.fi
+.SH "DESCRIPTION"
+.PP
+\fBCREATE DATABASE\fR
+creates a new
+PostgreSQL
+database\&.
+.PP
+To create a database, you must be a superuser or have the special
+CREATEDB
+privilege\&. See
+CREATE ROLE (\fBCREATE_ROLE\fR(7))\&.
+.PP
+By default, the new database will be created by cloning the standard system database
+template1\&. A different template can be specified by writing
+TEMPLATE \fIname\fR\&. In particular, by writing
+TEMPLATE template0, you can create a pristine database (one where no user\-defined objects exist and where the system objects have not been altered) containing only the standard objects predefined by your version of
+PostgreSQL\&. This is useful if you wish to avoid copying any installation\-local objects that might have been added to
+template1\&.
+.SH "PARAMETERS"
+.PP
+\fIname\fR
+.RS 4
+The name of a database to create\&.
+.RE
+.PP
+\fIuser_name\fR
+.RS 4
+The role name of the user who will own the new database, or
+DEFAULT
+to use the default (namely, the user executing the command)\&. To create a database owned by another role, you must be able to
+SET ROLE
+to that role\&.
+.RE
+.PP
+\fItemplate\fR
+.RS 4
+The name of the template from which to create the new database, or
+DEFAULT
+to use the default template (template1)\&.
+.RE
+.PP
+\fIencoding\fR
+.RS 4
+Character set encoding to use in the new database\&. Specify a string constant (e\&.g\&.,
+\*(AqSQL_ASCII\*(Aq), or an integer encoding number, or
+DEFAULT
+to use the default encoding (namely, the encoding of the template database)\&. The character sets supported by the
+PostgreSQL
+server are described in
+Section\ \&23.3.1\&. See below for additional restrictions\&.
+.RE
+.PP
+\fIstrategy\fR
+.RS 4
+Strategy to be used in creating the new database\&. If the
+WAL_LOG
+strategy is used, the database will be copied block by block and each block will be separately written to the write\-ahead log\&. This is the most efficient strategy in cases where the template database is small, and therefore it is the default\&. The older
+FILE_COPY
+strategy is also available\&. This strategy writes a small record to the write\-ahead log for each tablespace used by the target database\&. Each such record represents copying an entire directory to a new location at the filesystem level\&. While this does reduce the write\-ahead log volume substantially, especially if the template database is large, it also forces the system to perform a checkpoint both before and after the creation of the new database\&. In some situations, this may have a noticeable negative impact on overall system performance\&.
+.RE
+.PP
+\fIlocale\fR
+.RS 4
+Sets the default collation order and character classification in the new database\&. Collation affects the sort order applied to strings, e\&.g\&., in queries with
+ORDER BY, as well as the order used in indexes on text columns\&. Character classification affects the categorization of characters, e\&.g\&., lower, upper, and digit\&. Also sets the associated aspects of the operating system environment,
+LC_COLLATE
+and
+LC_CTYPE\&. The default is the same setting as the template database\&. See
+Section\ \&23.2.2.3.1
+and
+Section\ \&23.2.2.3.2
+for details\&.
+.sp
+Can be overridden by setting
+\fIlc_collate\fR,
+\fIlc_ctype\fR,
+\fIbuiltin_locale\fR, or
+\fIicu_locale\fR
+individually\&.
+.sp
+If
+\fIlocale_provider\fR
+is
+builtin, then
+\fIlocale\fR
+or
+\fIbuiltin_locale\fR
+must be specified and set to either
+C
+or
+C\&.UTF\-8\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBTip\fR
+.ps -1
+.br
+The other locale settings
+lc_messages,
+lc_monetary,
+lc_numeric, and
+lc_time
+are not fixed per database and are not set by this command\&. If you want to make them the default for a specific database, you can use
+ALTER DATABASE \&.\&.\&. SET\&.
+.sp .5v
+.RE
+.RE
+.PP
+\fIlc_collate\fR
+.RS 4
+Sets
+LC_COLLATE
+in the database server\*(Aqs operating system environment\&. The default is the setting of
+\fIlocale\fR
+if specified, otherwise the same setting as the template database\&. See below for additional restrictions\&.
+.sp
+If
+\fIlocale_provider\fR
+is
+libc, also sets the default collation order to use in the new database, overriding the setting
+\fIlocale\fR\&.
+.RE
+.PP
+\fIlc_ctype\fR
+.RS 4
+Sets
+LC_CTYPE
+in the database server\*(Aqs operating system environment\&. The default is the setting of
+\fIlocale\fR
+if specified, otherwise the same setting as the template database\&. See below for additional restrictions\&.
+.sp
+If
+\fIlocale_provider\fR
+is
+libc, also sets the default character classification to use in the new database, overriding the setting
+\fIlocale\fR\&.
+.RE
+.PP
+\fIbuiltin_locale\fR
+.RS 4
+Specifies the builtin provider locale for the database default collation order and character classification, overriding the setting
+\fIlocale\fR\&. The
+locale provider
+must be
+builtin\&. The default is the setting of
+\fIlocale\fR
+if specified; otherwise the same setting as the template database\&.
+.sp
+The locales available for the
+builtin
+provider are
+C
+and
+C\&.UTF\-8\&.
+.RE
+.PP
+\fIicu_locale\fR
+.RS 4
+Specifies the ICU locale (see
+Section\ \&23.2.2.3.2) for the database default collation order and character classification, overriding the setting
+\fIlocale\fR\&. The
+locale provider
+must be ICU\&. The default is the setting of
+\fIlocale\fR
+if specified; otherwise the same setting as the template database\&.
+.RE
+.PP
+\fIicu_rules\fR
+.RS 4
+Specifies additional collation rules to customize the behavior of the default collation of this database\&. This is supported for ICU only\&. See
+Section\ \&23.2.3.4
+for details\&.
+.RE
+.PP
+\fIlocale_provider\fR
+.RS 4
+Specifies the provider to use for the default collation in this database\&. Possible values are
+builtin,
+icu
+(if the server was built with ICU support) or
+libc\&. By default, the provider is the same as that of the
+\fItemplate\fR\&. See
+Section\ \&23.1.4
+for details\&.
+.RE
+.PP
+\fIcollation_version\fR
+.RS 4
+Specifies the collation version string to store with the database\&. Normally, this should be omitted, which will cause the version to be computed from the actual version of the database collation as provided by the operating system\&. This option is intended to be used by
+\fBpg_upgrade\fR
+for copying the version from an existing installation\&.
+.sp
+See also
+ALTER DATABASE (\fBALTER_DATABASE\fR(7))
+for how to handle database collation version mismatches\&.
+.RE
+.PP
+\fItablespace_name\fR
+.RS 4
+The name of the tablespace that will be associated with the new database, or
+DEFAULT
+to use the template database\*(Aqs tablespace\&. This tablespace will be the default tablespace used for objects created in this database\&. See
+CREATE TABLESPACE (\fBCREATE_TABLESPACE\fR(7))
+for more information\&.
+.RE
+.PP
+\fIallowconn\fR
+.RS 4
+If false then no one can connect to this database\&. The default is true, allowing connections (except as restricted by other mechanisms, such as
+GRANT/REVOKE CONNECT)\&.
+.RE
+.PP
+\fIconnlimit\fR
+.RS 4
+How many concurrent connections can be made to this database\&. \-1 (the default) means no limit\&.
+.RE
+.PP
+\fIistemplate\fR
+.RS 4
+If true, then this database can be cloned by any user with
+CREATEDB
+privileges; if false (the default), then only superusers or the owner of the database can clone it\&.
+.RE
+.PP
+\fIoid\fR
+.RS 4
+The object identifier to be used for the new database\&. If this parameter is not specified,
+PostgreSQL
+will choose a suitable OID automatically\&. This parameter is primarily intended for internal use by
+pg_upgrade, and only
+pg_upgrade
+can specify a value less than 16384\&.
+.RE
+.PP
+Optional parameters can be written in any order, not only the order illustrated above\&.
+.SH "NOTES"
+.PP
+\fBCREATE DATABASE\fR
+cannot be executed inside a transaction block\&.
+.PP
+Errors along the line of
+\(lqcould not initialize database directory\(rq
+are most likely related to insufficient permissions on the data directory, a full disk, or other file system problems\&.
+.PP
+Use
+\fBDROP DATABASE\fR
+to remove a database\&.
+.PP
+The program
+\fBcreatedb\fR(1)
+is a wrapper program around this command, provided for convenience\&.
+.PP
+Database\-level configuration parameters (set via
+\fBALTER DATABASE\fR) and database\-level permissions (set via
+\fBGRANT\fR) are not copied from the template database\&.
+.PP
+Although it is possible to copy a database other than
+template1
+by specifying its name as the template, this is not (yet) intended as a general\-purpose
+\(lq\fBCOPY DATABASE\fR\(rq
+facility\&. The principal limitation is that no other sessions can be connected to the template database while it is being copied\&.
+\fBCREATE DATABASE\fR
+will fail if any other connection exists when it starts; otherwise, new connections to the template database are locked out until
+\fBCREATE DATABASE\fR
+completes\&. See
+Section\ \&22.3
+for more information\&.
+.PP
+The character set encoding specified for the new database must be compatible with the chosen locale settings (LC_COLLATE
+and
+LC_CTYPE)\&. If the locale is
+C
+(or equivalently
+POSIX), then all encodings are allowed, but for other locale settings there is only one encoding that will work properly\&. (On Windows, however, UTF\-8 encoding can be used with any locale\&.)
+\fBCREATE DATABASE\fR
+will allow superusers to specify
+SQL_ASCII
+encoding regardless of the locale settings, but this choice is deprecated and may result in misbehavior of character\-string functions if data that is not encoding\-compatible with the locale is stored in the database\&.
+.PP
+The encoding and locale settings must match those of the template database, except when
+template0
+is used as template\&. This is because other databases might contain data that does not match the specified encoding, or might contain indexes whose sort ordering is affected by
+LC_COLLATE
+and
+LC_CTYPE\&. Copying such data would result in a database that is corrupt according to the new settings\&.
+template0, however, is known to not contain any data or indexes that would be affected\&.
+.PP
+There is currently no option to use a database locale with nondeterministic comparisons (see
+\fBCREATE COLLATION\fR
+for an explanation)\&. If this is needed, then per\-column collations would need to be used\&.
+.PP
+The
+CONNECTION LIMIT
+option is only enforced approximately; if two new sessions start at about the same time when just one connection
+\(lqslot\(rq
+remains for the database, it is possible that both will fail\&. Also, the limit is not enforced against superusers or background worker processes\&.
+.SH "EXAMPLES"
+.PP
+To create a new database:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE DATABASE lusiadas;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To create a database
+sales
+owned by user
+salesapp
+with a default tablespace of
+salesspace:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE DATABASE sales OWNER salesapp TABLESPACE salesspace;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To create a database
+music
+with a different locale:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE DATABASE music
+    LOCALE \*(Aqsv_SE\&.utf8\*(Aq
+    TEMPLATE template0;
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+In this example, the
+TEMPLATE template0
+clause is required if the specified locale is different from the one in
+template1\&. (If it is not, then specifying the locale explicitly is redundant\&.)
+.PP
+To create a database
+music2
+with a different locale and a different character set encoding:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE DATABASE music2
+    LOCALE \*(Aqsv_SE\&.iso885915\*(Aq
+    ENCODING LATIN9
+    TEMPLATE template0;
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+The specified locale and encoding settings must match, or an error will be reported\&.
+.PP
+Note that locale names are specific to the operating system, so that the above commands might not work in the same way everywhere\&.
+.SH "COMPATIBILITY"
+.PP
+There is no
+\fBCREATE DATABASE\fR
+statement in the SQL standard\&. Databases are equivalent to catalogs, whose creation is implementation\-defined\&.
+.SH "SEE ALSO"
+ALTER DATABASE (\fBALTER_DATABASE\fR(7)), DROP DATABASE (\fBDROP_DATABASE\fR(7))

@@ -1,0 +1,694 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>PostGIS Topology Cheatsheet</title>
+<style type="text/css">
+table { page-break-inside:avoid; page-break-after:auto }
+tr    { page-break-inside:avoid; page-break-after:avoid }
+thead { display:table-header-group }
+tfoot { display:table-footer-group }
+body {
+	font-family: Arial, sans-serif;
+	font-size: 8.5pt;
+}
+@media print { a , a:hover, a:focus, a:active{text-decoration: none;color:black} }
+@media screen { a , a:hover, a:focus, a:active{text-decoration: underline} }
+.comment {font-size:x-small;color:green;font-family:"courier new"}
+.notes {font-size:x-small;color:red}
+#example_heading {
+	border-bottom: 1px solid #000;
+	margin: 10px 15px 10px 85px;
+	color: #00d
+}
+
+#content_functions {
+	float: left;
+	width:100%;
+}
+
+#content_examples {
+	float: left;
+	width: 100%;
+}
+
+.section {
+	border: 1px solid #000; float:left;
+	margin: 4px;
+	width: 100%;
+}
+.section th {
+	border: 1px solid #000;
+	color: #fff;
+	background-color: #b63300;
+	font-size: 9.5pt;
+
+}
+.section td {
+	font-family: Arial, sans-serif;
+	font-size: 8.5pt;
+	vertical-align: top;
+	border: 0;
+}
+
+.func {font-weight: 600}
+.func {font-weight: 600}
+.func_args {font-size: 7.5pt;font-family:courier;}
+.func_args ol {margin: 2px}
+.func_args ol li {margin: 5px}
+
+.evenrow {
+	background-color: #eee;
+}
+
+.oddrow {
+	background-color: #fff;
+}
+
+h1 {
+	margin: 0px;
+	padding: 0px;
+	font-size: 14pt;
+}
+			</style>
+</head>
+<body>
+<h1 style="text-align:center">PostGIS 3.5 Topology Cheatsheet</h1>
+<span class="notes">
+            New in this release
+        <sup>1</sup>
+            Enhanced in this release
+        <sup>2</sup>  
+
+				Requires GEOS (3.9,3.10,3.11,3.12) or higher
+        <sup>g3.9</sup>  
+</span><div id="content_functions"><div id="content_functions_left">
+<table class="section">
+<tr><th colspan="2">Topology Types</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/getfaceedges_returntype.html">getfaceedges_returntype</a></span>
+
+		  
+		
+A composite type that consists of a sequence
+number and an edge number.
+			</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/topogeometry.html">TopoGeometry</a></span>
+
+		  
+		A composite type representing a topologically defined geometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/validatetopology_returntype.html">validatetopology_returntype</a></span>
+
+		  
+		A composite type that consists of an error message and id1 and id2 to denote location of error.  This is the return type for ValidateTopology.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Topology Domains</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/topoelement.html">TopoElement</a></span>
+
+		  
+		An array of 2 integers generally used to identify a TopoGeometry component.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/topoelementarray.html">TopoElementArray</a></span>
+
+		  
+		An array of TopoElement objects.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Topology and TopoGeometry Management</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/AddTopoGeometryColumn.html">AddTopoGeometryColumn</a></span>
+
+		  
+		Adds a topogeometry column to an existing table, registers this new column as a layer in topology.layer and returns the new layer_id.<span class="func_args"><ol>
+<li>topology_name, schema_name, table_name, column_name, feature_type</li>
+<li>topology_name, schema_name, table_name, column_name, feature_type, child_layer</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/RenameTopoGeometryColumn.html">RenameTopoGeometryColumn</a></span>
+			(layer_table, feature_column, new_name)
+		
+
+		  
+		Renames a topogeometry column</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/DropTopology.html">DropTopology</a></span>
+			(topology_schema_name)
+		
+
+		  
+		Use with caution: Drops a topology schema and deletes its reference from  topology.topology table and references to tables in that schema from the geometry_columns table.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/RenameTopology.html">RenameTopology</a></span>
+			(old_name, new_name)
+		
+
+		  
+		Renames a topology</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/DropTopoGeometryColumn.html">DropTopoGeometryColumn</a></span>
+			(schema_name, table_name, column_name)
+		
+
+		  
+		Drops the topogeometry column from the table named table_name in schema schema_name and unregisters the columns from topology.layer table.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/Populate_Topology_Layer.html">Populate_Topology_Layer</a></span>
+			()
+		
+
+		  
+		Adds missing entries to topology.layer table by reading metadata from topo tables.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/TopologySummary.html">TopologySummary</a></span>
+			(topology_schema_name)
+		
+
+		  
+		Takes a topology name and provides summary totals of types of objects in topology.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ValidateTopology.html">ValidateTopology</a></span>
+			(toponame, bbox)
+		
+
+		  
+		Returns a set of validatetopology_returntype objects detailing issues with topology.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ValidateTopologyRelation.html">ValidateTopologyRelation</a></span>
+			(toponame)
+		
+
+		  
+		Returns info about invalid topology relation records</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/FindTopology.html">FindTopology</a></span>
+
+		  
+		Returns a topology record by different means.<span class="func_args"><ol>
+<li>topogeom</li>
+<li>layerTable, layerColumn</li>
+<li>layerSchema, layerTable, layerColumn</li>
+<li>topoName</li>
+<li>id</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/FindLayer.html">FindLayer</a></span>
+
+		  
+		Returns a topology.layer record by different means.<span class="func_args"><ol>
+<li>tg</li>
+<li>layer_table, feature_column</li>
+<li>schema_name, table_name, feature_column</li>
+<li>topology_id, layer_id</li>
+</ol></span>
+</td></tr>
+</table>
+<br><table class="section"><tr><th colspan="2">Topology Statistics Management</th></tr></table>
+<br><table class="section">
+<tr><th colspan="2">Topology Constructors</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CreateTopology.html">CreateTopology</a></span>
+
+		  
+		Creates a new topology schema and registers it in the topology.topology table.<span class="func_args"><ol>
+<li>topology_schema_name</li>
+<li>topology_schema_name, srid</li>
+<li>topology_schema_name, srid, prec</li>
+<li>topology_schema_name, srid, prec, hasz</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CopyTopology.html">CopyTopology</a></span>
+			(existing_topology_name, new_name)
+		
+
+		  
+		Makes a copy of a topology (nodes, edges, faces, layers and TopoGeometries) into a new schema</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_InitTopoGeo.html">ST_InitTopoGeo</a></span>
+			 <sup>mm</sup>
+			(topology_schema_name)
+		
+
+		  
+		Creates a new topology schema and registers it in the topology.topology table.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_CreateTopoGeo.html">ST_CreateTopoGeo</a></span>
+			 <sup>mm</sup>
+			(atopology, acollection)
+		
+
+		  
+		
+Adds a collection of geometries to a given empty topology and returns a message detailing success.
+				</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/TopoGeo_AddPoint.html">TopoGeo_AddPoint</a></span>
+			(atopology, apoint, tolerance)
+		
+
+		  
+		
+Adds a point to an existing topology using a tolerance and possibly splitting an existing edge.
+				</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/TopoGeo_AddLineString.html">TopoGeo_AddLineString</a></span>
+			(atopology, aline, tolerance)
+		
+
+		  
+		
+Adds a linestring to an existing topology using a tolerance and possibly splitting existing edges/faces.
+				</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/TopoGeo_AddPolygon.html">TopoGeo_AddPolygon</a></span>
+			(atopology, apoly, tolerance)
+		
+
+		  
+		Adds a polygon to an existing topology using a tolerance and possibly splitting existing edges/faces. Returns face identifiers.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/TopoGeo_LoadGeometry.html">TopoGeo_LoadGeometry</a></span>
+			 <sup>1</sup>
+			(atopology, ageom, tolerance)
+		
+
+		  
+		Load a geometry into an existing topology, snapping and splitting as needed.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Topology Editors</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AddIsoNode.html">ST_AddIsoNode</a></span>
+			 <sup>mm</sup>
+			(atopology, aface, apoint)
+		
+
+		  
+		Adds an isolated node to a face in a topology and returns the nodeid of the new node. If face is null, the node is still created.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AddIsoEdge.html">ST_AddIsoEdge</a></span>
+			 <sup>mm</sup>
+			(atopology, anode, anothernode, alinestring)
+		
+
+		  
+		Adds an isolated edge defined by geometry alinestring to a topology connecting two existing isolated nodes anode and anothernode and returns the edge id of the new edge.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AddEdgeNewFaces.html">ST_AddEdgeNewFaces</a></span>
+			 <sup>mm</sup>
+			(atopology, anode, anothernode, acurve)
+		
+
+		  
+		Add a new edge and, if in doing so it splits a face, delete the original face and replace it with two new faces.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_AddEdgeModFace.html">ST_AddEdgeModFace</a></span>
+			 <sup>mm</sup>
+			(atopology, anode, anothernode, acurve)
+		
+
+		  
+		Add a new edge and, if in doing so it splits a face, modify the original face and add a new face.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_RemEdgeNewFace.html">ST_RemEdgeNewFace</a></span>
+			 <sup>mm</sup>
+			(atopology, anedge)
+		
+
+		  
+		
+Removes an edge and, if the removed edge separated two faces,
+delete the original faces and replace them with a new face.
+        </td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_RemEdgeModFace.html">ST_RemEdgeModFace</a></span>
+			 <sup>mm</sup>
+			(atopology, anedge)
+		
+
+		  
+		
+Removes an edge, and if the edge separates two faces
+deletes one face and modifies the other face to cover the space of both.
+        </td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ChangeEdgeGeom.html">ST_ChangeEdgeGeom</a></span>
+			 <sup>mm</sup>
+			(atopology, anedge, acurve)
+		
+
+		  
+		
+Changes the shape of an edge without affecting the topology structure.
+				</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ModEdgeSplit.html">ST_ModEdgeSplit</a></span>
+			 <sup>mm</sup>
+			(atopology, anedge, apoint)
+		
+
+		  
+		Split an edge by creating a new node along an existing edge, modifying the original edge and adding a new edge.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_ModEdgeHeal.html">ST_ModEdgeHeal</a></span>
+			 <sup>mm</sup>
+			(atopology, anedge, anotheredge)
+		
+
+		  
+		
+Heals two edges by deleting the node connecting them, modifying the first edge
+and deleting the second edge. Returns the id of the deleted node.
+				</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_NewEdgeHeal.html">ST_NewEdgeHeal</a></span>
+			 <sup>mm</sup>
+			(atopology, anedge, anotheredge)
+		
+
+		  
+		
+Heals two edges by deleting the node connecting them, deleting both edges,
+and replacing them with an edge whose direction is the same as the first
+edge provided.
+				</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_MoveIsoNode.html">ST_MoveIsoNode</a></span>
+			 <sup>mm</sup>
+			(atopology, anode, apoint)
+		
+
+		  
+		Moves an isolated node in a topology from one point to another.  If new apoint geometry exists as a node an error is thrown. Returns description of move.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_NewEdgesSplit.html">ST_NewEdgesSplit</a></span>
+			 <sup>mm</sup>
+			(atopology, anedge, apoint)
+		
+
+		  
+		Split an edge by creating a new node along an existing edge, deleting the original edge and replacing it with two new edges.  Returns the id of the new node created that joins the new edges.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_RemoveIsoNode.html">ST_RemoveIsoNode</a></span>
+			 <sup>mm</sup>
+			(atopology, anode)
+		
+
+		  
+		Removes an isolated node and returns description of action. If the node is not isolated (is start or end of an edge), then an exception is thrown.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_RemoveIsoEdge.html">ST_RemoveIsoEdge</a></span>
+			 <sup>mm</sup>
+			(atopology, anedge)
+		
+
+		  
+		Removes an isolated edge and returns description of action. If the edge is not isolated, then an exception is thrown.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Topology Accessors</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/GetEdgeByPoint.html">GetEdgeByPoint</a></span>
+			(atopology, apoint, tol1)
+		
+
+		  
+		Finds the edge-id of an edge that intersects a given point.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/GetFaceByPoint.html">GetFaceByPoint</a></span>
+			(atopology, apoint, tol1)
+		
+
+		  
+		Finds face intersecting a given point.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/GetFaceContainingPoint.html">GetFaceContainingPoint</a></span>
+			(atopology, apoint)
+		
+
+		  
+		Finds the face containing a point.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/GetNodeByPoint.html">GetNodeByPoint</a></span>
+			(atopology, apoint, tol1)
+		
+
+		  
+		Finds the node-id of a node at a point location.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/GetTopologyID.html">GetTopologyID</a></span>
+			(toponame)
+		
+
+		  
+		Returns the id of a topology in the topology.topology table given the name of the topology.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/GetTopologySRID.html">GetTopologySRID</a></span>
+			(toponame)
+		
+
+		  
+		Returns the SRID of a topology in the topology.topology table given the name of the topology.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/GetTopologyName.html">GetTopologyName</a></span>
+			(topology_id)
+		
+
+		  
+		Returns the name of a topology (schema) given the id of the topology.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GetFaceEdges.html">ST_GetFaceEdges</a></span>
+			 <sup>mm</sup>
+			(atopology, aface)
+		
+
+		  
+		Returns a set of ordered edges that bound aface.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/ST_GetFaceGeometry.html">ST_GetFaceGeometry</a></span>
+			 <sup>mm</sup>
+			(atopology, aface)
+		
+
+		  
+		Returns the polygon in the given topology with the specified face id.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/GetRingEdges.html">GetRingEdges</a></span>
+			(atopology, aring, max_edges=null)
+		
+
+		  
+		
+Returns the ordered set of signed edge identifiers met by walking on an
+a given edge side.
+				</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/GetNodeEdges.html">GetNodeEdges</a></span>
+			(atopology, anode)
+		
+
+		  
+		
+Returns an ordered set of edges incident to the given node.
+				</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Topology Processing</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/TopologyPolygonize.html">Polygonize</a></span>
+			(toponame)
+		
+
+		  
+		Finds and registers all faces defined by topology edges.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/AddNode.html">AddNode</a></span>
+			(toponame, apoint, allowEdgeSplitting=false, computeContainingFace=false)
+		
+
+		  
+		Adds a point node to the node table in the specified topology schema and returns the nodeid of new node. If point already exists as node, the existing nodeid is returned.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/AddEdge.html">AddEdge</a></span>
+			(toponame, aline)
+		
+
+		  
+		Adds a linestring edge to the edge table and associated start and end points to the point nodes table of the specified topology schema using the specified linestring geometry and returns the edgeid of the new (or existing) edge.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/AddFace.html">AddFace</a></span>
+			(toponame, apolygon, force_new=false)
+		
+
+		  
+		Registers a face primitive to a topology and gets its identifier.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/TP_ST_Simplify.html">ST_Simplify</a></span>
+			(tg, tolerance)
+		
+
+		  
+		Returns a "simplified" geometry version of the given TopoGeometry using
+				the Douglas-Peucker algorithm.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/TP_RemoveUnusedPrimitives.html">RemoveUnusedPrimitives</a></span>
+			(topology_name, bbox)
+		
+
+		  
+		Removes topology primitives which not needed to define existing TopoGeometry objects.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">TopoGeometry Constructors</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/CreateTopoGeom.html">CreateTopoGeom</a></span>
+
+		  
+		Creates a new topo geometry object from topo element array - tg_type: 1:[multi]point, 2:[multi]line, 3:[multi]poly, 4:collection<span class="func_args"><ol>
+<li>toponame, tg_type, layer_id, tg_objs</li>
+<li>toponame, tg_type, layer_id</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/toTopoGeom.html">toTopoGeom</a></span>
+
+		  
+		Converts a simple Geometry into a topo geometry.<span class="func_args"><ol>
+<li>geom, toponame, layer_id, tolerance</li>
+<li>geom, topogeom, tolerance</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/TopoElementArray_Agg.html">TopoElementArray_Agg</a></span>
+			(tefield)
+		
+
+		  
+		Returns a topoelementarray for a set of element_id, type arrays (topoelements).</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/TopoElement.html">TopoElement</a></span>
+			(topo)
+		
+
+		  
+		Converts a topogeometry to a topoelement.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">TopoGeometry Editors</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/clearTopoGeom.html">clearTopoGeom</a></span>
+			(topogeom)
+		
+
+		  
+		Clears the content of a topo geometry.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/TopoGeom_addElement.html">TopoGeom_addElement</a></span>
+			(tg, el)
+		
+
+		  
+		Adds an element to the definition of a TopoGeometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/TopoGeom_remElement.html">TopoGeom_remElement</a></span>
+			(tg, el)
+		
+
+		  
+		Removes an element from the definition of a TopoGeometry.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/TopoGeom_addTopoGeom.html">TopoGeom_addTopoGeom</a></span>
+			(tgt, src)
+		
+
+		  
+		Adds element of a TopoGeometry to the definition of another TopoGeometry.</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/toTopoGeom_editor_proxy.html">toTopoGeom</a></span>
+
+		  
+		Adds a geometry shape to an existing topo geometry.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">TopoGeometry Accessors</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/GetTopoGeomElementArray.html">GetTopoGeomElementArray</a></span>
+
+		  
+		Returns a topoelementarray (an array of topoelements) containing the topological elements and type of the given TopoGeometry (primitive elements).<span class="func_args"><ol>
+<li>toponame, layer_id, tg_id</li>
+<li>tg</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/GetTopoGeomElements.html">GetTopoGeomElements</a></span>
+
+		  
+		Returns a set of topoelement objects containing the topological element_id,element_type of the given TopoGeometry (primitive elements).<span class="func_args"><ol>
+<li>toponame, layer_id, tg_id</li>
+<li>tg</li>
+</ol></span>
+</td></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/TG_ST_SRID.html">ST_SRID</a></span>
+			 <sup>mm</sup>
+			(tg)
+		
+
+		  
+		Returns the spatial reference identifier for a topogeometry.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">TopoGeometry Outputs</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/AsGML.html">AsGML</a></span>
+
+		  
+		Returns the GML representation of a topogeometry.<span class="func_args"><ol>
+<li>tg</li>
+<li>tg, nsprefix_in</li>
+<li>tg, visitedTable</li>
+<li>tg, visitedTable, nsprefix</li>
+<li>tg, nsprefix_in, precision, options</li>
+<li>tg, nsprefix_in, precision, options, visitedTable</li>
+<li>tg, nsprefix_in, precision, options, visitedTable, idprefix</li>
+<li>tg, nsprefix_in, precision, options, visitedTable, idprefix, gmlversion</li>
+</ol></span>
+</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/AsTopoJSON.html">AsTopoJSON</a></span>
+			(tg, edgeMapTable)
+		
+
+		  
+		Returns the TopoJSON representation of a topogeometry.</td></tr>
+</table>
+<br><table class="section">
+<tr><th colspan="2">Topology Spatial Relationships</th></tr>
+<tr class="oddrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/TG_Equals.html">Equals</a></span>
+			 <sup>3d</sup>
+			(tg1, tg2)
+		
+
+		  
+		Returns true if two topogeometries are composed of the same topology primitives.</td></tr>
+<tr class="evenrow"><td colspan="2">
+<span class="func"><a target="_blank" href="https://postgis.net/docs/manual-3.5/en/TG_Intersects.html">Intersects</a></span>
+			 <sup>3d</sup>
+			(tg1, tg2)
+		
+
+		  
+		Returns true if any pair of primitives from the two topogeometries intersect.</td></tr>
+</table>
+<br><table class="section"><tr><th colspan="2">Importing and exporting Topologies</th></tr></table>
+<br>
+</div></div>
+</body>
+</html>

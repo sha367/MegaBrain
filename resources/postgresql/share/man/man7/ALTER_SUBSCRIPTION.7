@@ -1,0 +1,296 @@
+'\" t
+.\"     Title: ALTER SUBSCRIPTION
+.\"    Author: The PostgreSQL Global Development Group
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 17.1 Documentation
+.\"    Source: PostgreSQL 17.1
+.\"  Language: English
+.\"
+.TH "ALTER SUBSCRIPTION" "7" "2024" "PostgreSQL 17.1" "PostgreSQL 17.1 Documentation"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+ALTER_SUBSCRIPTION \- change the definition of a subscription
+.SH "SYNOPSIS"
+.sp
+.nf
+ALTER SUBSCRIPTION \fIname\fR CONNECTION \*(Aq\fIconninfo\fR\*(Aq
+ALTER SUBSCRIPTION \fIname\fR SET PUBLICATION \fIpublication_name\fR [, \&.\&.\&.] [ WITH ( \fIpublication_option\fR [= \fIvalue\fR] [, \&.\&.\&. ] ) ]
+ALTER SUBSCRIPTION \fIname\fR ADD PUBLICATION \fIpublication_name\fR [, \&.\&.\&.] [ WITH ( \fIpublication_option\fR [= \fIvalue\fR] [, \&.\&.\&. ] ) ]
+ALTER SUBSCRIPTION \fIname\fR DROP PUBLICATION \fIpublication_name\fR [, \&.\&.\&.] [ WITH ( \fIpublication_option\fR [= \fIvalue\fR] [, \&.\&.\&. ] ) ]
+ALTER SUBSCRIPTION \fIname\fR REFRESH PUBLICATION [ WITH ( \fIrefresh_option\fR [= \fIvalue\fR] [, \&.\&.\&. ] ) ]
+ALTER SUBSCRIPTION \fIname\fR ENABLE
+ALTER SUBSCRIPTION \fIname\fR DISABLE
+ALTER SUBSCRIPTION \fIname\fR SET ( \fIsubscription_parameter\fR [= \fIvalue\fR] [, \&.\&.\&. ] )
+ALTER SUBSCRIPTION \fIname\fR SKIP ( \fIskip_option\fR = \fIvalue\fR )
+ALTER SUBSCRIPTION \fIname\fR OWNER TO { \fInew_owner\fR | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
+ALTER SUBSCRIPTION \fIname\fR RENAME TO \fInew_name\fR
+.fi
+.SH "DESCRIPTION"
+.PP
+\fBALTER SUBSCRIPTION\fR
+can change most of the subscription properties that can be specified in
+CREATE SUBSCRIPTION (\fBCREATE_SUBSCRIPTION\fR(7))\&.
+.PP
+You must own the subscription to use
+\fBALTER SUBSCRIPTION\fR\&. To rename a subscription or alter the owner, you must have
+CREATE
+permission on the database\&. In addition, to alter the owner, you must be able to
+SET ROLE
+to the new owning role\&. If the subscription has
+password_required=false, only superusers can modify it\&.
+.PP
+When refreshing a publication we remove the relations that are no longer part of the publication and we also remove the table synchronization slots if there are any\&. It is necessary to remove these slots so that the resources allocated for the subscription on the remote host are released\&. If due to network breakdown or some other error,
+PostgreSQL
+is unable to remove the slots, an error will be reported\&. To proceed in this situation, the user either needs to retry the operation or disassociate the slot from the subscription and drop the subscription as explained in
+DROP SUBSCRIPTION (\fBDROP_SUBSCRIPTION\fR(7))\&.
+.PP
+Commands
+\fBALTER SUBSCRIPTION \&.\&.\&. REFRESH PUBLICATION\fR,
+\fBALTER SUBSCRIPTION \&.\&.\&. {SET|ADD|DROP} PUBLICATION \&.\&.\&.\fR
+with
+refresh
+option as
+true
+and
+\fBALTER SUBSCRIPTION \&.\&.\&. SET (failover = true|false)\fR
+cannot be executed inside a transaction block\&.
+.PP
+Commands
+\fBALTER SUBSCRIPTION \&.\&.\&. REFRESH PUBLICATION\fR
+and
+\fBALTER SUBSCRIPTION \&.\&.\&. {SET|ADD|DROP} PUBLICATION \&.\&.\&.\fR
+with
+refresh
+option as
+true
+also cannot be executed when the subscription has
+two_phase
+commit enabled, unless
+copy_data
+is
+false\&. See column
+subtwophasestate
+of
+pg_subscription
+to know the actual two\-phase state\&.
+.SH "PARAMETERS"
+.PP
+\fIname\fR
+.RS 4
+The name of a subscription whose properties are to be altered\&.
+.RE
+.PP
+CONNECTION \*(Aq\fIconninfo\fR\*(Aq
+.RS 4
+This clause replaces the connection string originally set by
+CREATE SUBSCRIPTION (\fBCREATE_SUBSCRIPTION\fR(7))\&. See there for more information\&.
+.RE
+.PP
+SET PUBLICATION \fIpublication_name\fR
+.br
+ADD PUBLICATION \fIpublication_name\fR
+.br
+DROP PUBLICATION \fIpublication_name\fR
+.RS 4
+These forms change the list of subscribed publications\&.
+SET
+replaces the entire list of publications with a new list,
+ADD
+adds additional publications to the list of publications, and
+DROP
+removes the publications from the list of publications\&. We allow non\-existent publications to be specified in
+ADD
+and
+SET
+variants so that users can add those later\&. See
+CREATE SUBSCRIPTION (\fBCREATE_SUBSCRIPTION\fR(7))
+for more information\&. By default, this command will also act like
+REFRESH PUBLICATION\&.
+.sp
+\fIpublication_option\fR
+specifies additional options for this operation\&. The supported options are:
+.PP
+refresh (boolean)
+.RS 4
+When false, the command will not try to refresh table information\&.
+REFRESH PUBLICATION
+should then be executed separately\&. The default is
+true\&.
+.RE
+.sp
+Additionally, the options described under
+REFRESH PUBLICATION
+may be specified, to control the implicit refresh operation\&.
+.RE
+.PP
+REFRESH PUBLICATION
+.RS 4
+Fetch missing table information from publisher\&. This will start replication of tables that were added to the subscribed\-to publications since
+\fBCREATE SUBSCRIPTION\fR
+or the last invocation of
+\fBREFRESH PUBLICATION\fR\&.
+.sp
+\fIrefresh_option\fR
+specifies additional options for the refresh operation\&. The supported options are:
+.PP
+copy_data (boolean)
+.RS 4
+Specifies whether to copy pre\-existing data in the publications that are being subscribed to when the replication starts\&. The default is
+true\&.
+.sp
+Previously subscribed tables are not copied, even if a table\*(Aqs row filter
+WHERE
+clause has since been modified\&.
+.sp
+See
+Notes
+for details of how
+copy_data = true
+can interact with the
+origin
+parameter\&.
+.sp
+See the
+binary
+parameter of
+\fBCREATE SUBSCRIPTION\fR
+for details about copying pre\-existing data in binary format\&.
+.RE
+.RE
+.PP
+ENABLE
+.RS 4
+Enables a previously disabled subscription, starting the logical replication worker at the end of the transaction\&.
+.RE
+.PP
+DISABLE
+.RS 4
+Disables a running subscription, stopping the logical replication worker at the end of the transaction\&.
+.RE
+.PP
+SET ( \fIsubscription_parameter\fR [= \fIvalue\fR] [, \&.\&.\&. ] )
+.RS 4
+This clause alters parameters originally set by
+CREATE SUBSCRIPTION (\fBCREATE_SUBSCRIPTION\fR(7))\&. See there for more information\&. The parameters that can be altered are
+slot_name,
+synchronous_commit,
+binary,
+streaming,
+disable_on_error,
+password_required,
+run_as_owner,
+origin, and
+failover\&. Only a superuser can set
+password_required = false\&.
+.sp
+When altering the
+slot_name, the
+failover
+and
+two_phase
+property values of the named slot may differ from the counterpart
+failover
+and
+two_phase
+parameters specified in the subscription\&. When creating the slot, ensure the slot properties
+failover
+and
+two_phase
+match their counterpart parameters of the subscription\&. Otherwise, the slot on the publisher may behave differently from what these subscription options say: for example, the slot on the publisher could either be synced to the standbys even when the subscription\*(Aqs
+failover
+option is disabled or could be disabled for sync even when the subscription\*(Aqs
+failover
+option is enabled\&.
+.RE
+.PP
+SKIP ( \fIskip_option\fR = \fIvalue\fR )
+.RS 4
+Skips applying all changes of the remote transaction\&. If incoming data violates any constraints, logical replication will stop until it is resolved\&. By using the
+\fBALTER SUBSCRIPTION \&.\&.\&. SKIP\fR
+command, the logical replication worker skips all data modification changes within the transaction\&. This option has no effect on the transactions that are already prepared by enabling
+two_phase
+on the subscriber\&. After the logical replication worker successfully skips the transaction or finishes a transaction, the LSN (stored in
+pg_subscription\&.subskiplsn) is cleared\&. See
+Section\ \&29.6
+for the details of logical replication conflicts\&.
+.sp
+\fIskip_option\fR
+specifies options for this operation\&. The supported option is:
+.PP
+lsn (pg_lsn)
+.RS 4
+Specifies the finish LSN of the remote transaction whose changes are to be skipped by the logical replication worker\&. The finish LSN is the LSN at which the transaction is either committed or prepared\&. Skipping individual subtransactions is not supported\&. Setting
+NONE
+resets the LSN\&.
+.RE
+.RE
+.PP
+\fInew_owner\fR
+.RS 4
+The user name of the new owner of the subscription\&.
+.RE
+.PP
+\fInew_name\fR
+.RS 4
+The new name for the subscription\&.
+.RE
+.PP
+When specifying a parameter of type
+boolean, the
+=
+\fIvalue\fR
+part can be omitted, which is equivalent to specifying
+TRUE\&.
+.SH "EXAMPLES"
+.PP
+Change the publication subscribed by a subscription to
+insert_only:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+ALTER SUBSCRIPTION mysub SET PUBLICATION insert_only;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Disable (stop) the subscription:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+ALTER SUBSCRIPTION mysub DISABLE;
+.fi
+.if n \{\
+.RE
+.\}
+.SH "COMPATIBILITY"
+.PP
+\fBALTER SUBSCRIPTION\fR
+is a
+PostgreSQL
+extension\&.
+.SH "SEE ALSO"
+CREATE SUBSCRIPTION (\fBCREATE_SUBSCRIPTION\fR(7)), DROP SUBSCRIPTION (\fBDROP_SUBSCRIPTION\fR(7)), CREATE PUBLICATION (\fBCREATE_PUBLICATION\fR(7)), ALTER PUBLICATION (\fBALTER_PUBLICATION\fR(7))

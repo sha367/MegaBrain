@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>66.3. Subtransactions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="xact-locking.html" title="66.2. Transactions and Locking" /><link rel="next" href="two-phase.html" title="66.4. Two-Phase Transactions" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">66.3. Subtransactions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="xact-locking.html" title="66.2. Transactions and Locking">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="transactions.html" title="Chapter 66. Transaction Processing">Up</a></td><th width="60%" align="center">Chapter 66. Transaction Processing</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="two-phase.html" title="66.4. Two-Phase Transactions">Next</a></td></tr></table><hr /></div><div class="sect1" id="SUBXACTS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">66.3. Subtransactions <a href="#SUBXACTS" class="id_link">#</a></h2></div></div></div><p>
+   Subtransactions are started inside transactions, allowing large
+   transactions to be broken into smaller units.  Subtransactions can
+   commit or abort without affecting their parent transactions, allowing
+   parent transactions to continue. This allows errors to be handled
+   more easily, which is a common application development pattern.
+   The word subtransaction is often abbreviated as
+   <em class="firstterm">subxact</em>.
+  </p><p>
+   Subtransactions can be started explicitly using the
+   <code class="command">SAVEPOINT</code> command, but can also be started in
+   other ways, such as PL/pgSQL's <code class="literal">EXCEPTION</code> clause.
+   PL/Python and PL/Tcl also support explicit subtransactions.
+   Subtransactions can also be started from other subtransactions.
+   The top-level transaction and its child subtransactions form a
+   hierarchy or tree, which is why we refer to the main transaction as
+   the top-level transaction.
+  </p><p>
+   If a subtransaction is assigned a non-virtual transaction ID,
+   its transaction ID is referred to as a <span class="quote">“<span class="quote">subxid</span>”</span>.
+   Read-only subtransactions are not assigned subxids, but once they
+   attempt to write, they will be assigned one. This also causes all of
+   a subxid's parents, up to and including the top-level transaction,
+   to be assigned non-virtual transaction ids.  We ensure that a parent
+   xid is always lower than any of its child subxids.
+  </p><p>
+   The immediate parent xid of each subxid is recorded in the
+   <code class="filename">pg_subtrans</code> directory. No entry is made for
+   top-level xids since they do not have a parent, nor is an entry made
+   for read-only subtransactions.
+  </p><p>
+   When a subtransaction commits, all of its committed child
+   subtransactions with subxids will also be considered subcommitted
+   in that transaction.  When a subtransaction aborts, all of its child
+   subtransactions will also be considered aborted.
+  </p><p>
+   When a top-level transaction with an xid commits, all of its
+   subcommitted child subtransactions are also persistently recorded
+   as committed in the <code class="filename">pg_xact</code> subdirectory.  If the
+   top-level transaction aborts, all its subtransactions are also aborted,
+   even if they were subcommitted.
+  </p><p>
+   The more subtransactions each transaction keeps open (not
+   rolled back or released), the greater the transaction management
+   overhead. Up to 64 open subxids are cached in shared memory for
+   each backend; after that point, the storage I/O overhead increases
+   significantly due to additional lookups of subxid entries in
+   <code class="filename">pg_subtrans</code>.
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="xact-locking.html" title="66.2. Transactions and Locking">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="transactions.html" title="Chapter 66. Transaction Processing">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="two-phase.html" title="66.4. Two-Phase Transactions">Next</a></td></tr><tr><td width="40%" align="left" valign="top">66.2. Transactions and Locking </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 66.4. Two-Phase Transactions</td></tr></table></div></body></html>

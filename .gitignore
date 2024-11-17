@@ -28,4 +28,4 @@ dist-ssr
 *.sw?
 
 # DB for dev only
-database
+resources/data

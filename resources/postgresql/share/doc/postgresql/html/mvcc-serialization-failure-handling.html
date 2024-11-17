@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>13.5. Serialization Failure Handling</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="applevel-consistency.html" title="13.4. Data Consistency Checks at the Application Level" /><link rel="next" href="mvcc-caveats.html" title="13.6. Caveats" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">13.5. Serialization Failure Handling</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="applevel-consistency.html" title="13.4. Data Consistency Checks at the Application Level">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="mvcc.html" title="Chapter 13. Concurrency Control">Up</a></td><th width="60%" align="center">Chapter 13. Concurrency Control</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="mvcc-caveats.html" title="13.6. Caveats">Next</a></td></tr></table><hr /></div><div class="sect1" id="MVCC-SERIALIZATION-FAILURE-HANDLING"><div class="titlepage"><div><div><h2 class="title" style="clear: both">13.5. Serialization Failure Handling <a href="#MVCC-SERIALIZATION-FAILURE-HANDLING" class="id_link">#</a></h2></div></div></div><a id="id-1.5.12.8.2" class="indexterm"></a><a id="id-1.5.12.8.3" class="indexterm"></a><p>
+    Both Repeatable Read and Serializable isolation levels can produce
+    errors that are designed to prevent serialization anomalies.  As
+    previously stated, applications using these levels must be prepared to
+    retry transactions that fail due to serialization errors.  Such an
+    error's message text will vary according to the precise circumstances,
+    but it will always have the SQLSTATE code <code class="literal">40001</code>
+    (<code class="literal">serialization_failure</code>).
+   </p><p>
+    It may also be advisable to retry deadlock failures.
+    These have the SQLSTATE code <code class="literal">40P01</code>
+    (<code class="literal">deadlock_detected</code>).
+   </p><p>
+    In some cases it is also appropriate to retry unique-key failures,
+    which have SQLSTATE code <code class="literal">23505</code>
+    (<code class="literal">unique_violation</code>), and exclusion constraint
+    failures, which have SQLSTATE code <code class="literal">23P01</code>
+    (<code class="literal">exclusion_violation</code>).  For example, if the
+    application selects a new value for a primary key column after
+    inspecting the currently stored keys, it could get a unique-key
+    failure because another application instance selected the same new key
+    concurrently.  This is effectively a serialization failure, but the
+    server will not detect it as such because it cannot <span class="quote">“<span class="quote">see</span>”</span>
+    the connection between the inserted value and the previous reads.
+    There are also some corner cases in which the server will issue a
+    unique-key or exclusion constraint error even though in principle it
+    has enough information to determine that a serialization problem
+    is the underlying cause.  While it's recommendable to just
+    retry <code class="literal">serialization_failure</code> errors unconditionally,
+    more care is needed when retrying these other error codes, since they
+    might represent persistent error conditions rather than transient
+    failures.
+   </p><p>
+    It is important to retry the complete transaction, including all logic
+    that decides which SQL to issue and/or which values to use.
+    Therefore, <span class="productname">PostgreSQL</span> does not offer an
+    automatic retry facility, since it cannot do so with any guarantee of
+    correctness.
+   </p><p>
+    Transaction retry does not guarantee that the retried transaction will
+    complete; multiple retries may be needed.  In cases with very high
+    contention, it is possible that completion of a transaction may take
+    many attempts.  In cases involving a conflicting prepared transaction,
+    it may not be possible to make progress until the prepared transaction
+    commits or rolls back.
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="applevel-consistency.html" title="13.4. Data Consistency Checks at the Application Level">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="mvcc.html" title="Chapter 13. Concurrency Control">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="mvcc-caveats.html" title="13.6. Caveats">Next</a></td></tr><tr><td width="40%" align="left" valign="top">13.4. Data Consistency Checks at the Application Level </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 13.6. Caveats</td></tr></table></div></body></html>

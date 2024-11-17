@@ -1,0 +1,486 @@
+'\" t
+.\"     Title: pg_amcheck
+.\"    Author: The PostgreSQL Global Development Group
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 17.1 Documentation
+.\"    Source: PostgreSQL 17.1
+.\"  Language: English
+.\"
+.TH "PG_AMCHECK" "1" "2024" "PostgreSQL 17.1" "PostgreSQL 17.1 Documentation"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+pg_amcheck \- checks for corruption in one or more PostgreSQL databases
+.SH "SYNOPSIS"
+.HP \w'\fBpg_amcheck\fR\ 'u
+\fBpg_amcheck\fR [\fIoption\fR...] [\fIdbname\fR]
+.SH "DESCRIPTION"
+.PP
+pg_amcheck
+supports running
+amcheck\*(Aqs corruption checking functions against one or more databases, with options to select which schemas, tables and indexes to check, which kinds of checking to perform, and whether to perform the checks in parallel, and if so, the number of parallel connections to establish and use\&.
+.PP
+Only ordinary and toast table relations, materialized views, sequences, and btree indexes are currently supported\&. Other relation types are silently skipped\&.
+.PP
+If
+dbname
+is specified, it should be the name of a single database to check, and no other database selection options should be present\&. Otherwise, if any database selection options are present, all matching databases will be checked\&. If no such options are present, the default database will be checked\&. Database selection options include
+\fB\-\-all\fR,
+\fB\-\-database\fR
+and
+\fB\-\-exclude\-database\fR\&. They also include
+\fB\-\-relation\fR,
+\fB\-\-exclude\-relation\fR,
+\fB\-\-table\fR,
+\fB\-\-exclude\-table\fR,
+\fB\-\-index\fR, and
+\fB\-\-exclude\-index\fR, but only when such options are used with a three\-part pattern (e\&.g\&.
+\fBmydb*\&.myschema*\&.myrel*\fR)\&. Finally, they include
+\fB\-\-schema\fR
+and
+\fB\-\-exclude\-schema\fR
+when such options are used with a two\-part pattern (e\&.g\&.
+\fBmydb*\&.myschema*\fR)\&.
+.PP
+\fIdbname\fR
+can also be a
+connection string\&.
+.SH "OPTIONS"
+.PP
+The following command\-line options control what is checked:
+.PP
+\fB\-a\fR
+.br
+\fB\-\-all\fR
+.RS 4
+Check all databases, except for any excluded via
+\fB\-\-exclude\-database\fR\&.
+.RE
+.PP
+\fB\-d \fR\fB\fIpattern\fR\fR
+.br
+\fB\-\-database=\fR\fB\fIpattern\fR\fR
+.RS 4
+Check databases matching the specified
+\fIpattern\fR, except for any excluded by
+\fB\-\-exclude\-database\fR\&. This option can be specified more than once\&.
+.RE
+.PP
+\fB\-D \fR\fB\fIpattern\fR\fR
+.br
+\fB\-\-exclude\-database=\fR\fB\fIpattern\fR\fR
+.RS 4
+Exclude databases matching the given
+\fIpattern\fR\&. This option can be specified more than once\&.
+.RE
+.PP
+\fB\-i \fR\fB\fIpattern\fR\fR
+.br
+\fB\-\-index=\fR\fB\fIpattern\fR\fR
+.RS 4
+Check indexes matching the specified
+\fIpattern\fR, unless they are otherwise excluded\&. This option can be specified more than once\&.
+.sp
+This is similar to the
+\fB\-\-relation\fR
+option, except that it applies only to indexes, not to other relation types\&.
+.RE
+.PP
+\fB\-I \fR\fB\fIpattern\fR\fR
+.br
+\fB\-\-exclude\-index=\fR\fB\fIpattern\fR\fR
+.RS 4
+Exclude indexes matching the specified
+\fIpattern\fR\&. This option can be specified more than once\&.
+.sp
+This is similar to the
+\fB\-\-exclude\-relation\fR
+option, except that it applies only to indexes, not other relation types\&.
+.RE
+.PP
+\fB\-r \fR\fB\fIpattern\fR\fR
+.br
+\fB\-\-relation=\fR\fB\fIpattern\fR\fR
+.RS 4
+Check relations matching the specified
+\fIpattern\fR, unless they are otherwise excluded\&. This option can be specified more than once\&.
+.sp
+Patterns may be unqualified, e\&.g\&.
+myrel*, or they may be schema\-qualified, e\&.g\&.
+myschema*\&.myrel*
+or database\-qualified and schema\-qualified, e\&.g\&.
+mydb*\&.myschema*\&.myrel*\&. A database\-qualified pattern will add matching databases to the list of databases to be checked\&.
+.RE
+.PP
+\fB\-R \fR\fB\fIpattern\fR\fR
+.br
+\fB\-\-exclude\-relation=\fR\fB\fIpattern\fR\fR
+.RS 4
+Exclude relations matching the specified
+\fIpattern\fR\&. This option can be specified more than once\&.
+.sp
+As with
+\fB\-\-relation\fR, the
+\fIpattern\fR
+may be unqualified, schema\-qualified, or database\- and schema\-qualified\&.
+.RE
+.PP
+\fB\-s \fR\fB\fIpattern\fR\fR
+.br
+\fB\-\-schema=\fR\fB\fIpattern\fR\fR
+.RS 4
+Check tables and indexes in schemas matching the specified
+\fIpattern\fR, unless they are otherwise excluded\&. This option can be specified more than once\&.
+.sp
+To select only tables in schemas matching a particular pattern, consider using something like
+\-\-table=SCHEMAPAT\&.* \-\-no\-dependent\-indexes\&. To select only indexes, consider using something like
+\-\-index=SCHEMAPAT\&.*\&.
+.sp
+A schema pattern may be database\-qualified\&. For example, you may write
+\-\-schema=mydb*\&.myschema*
+to select schemas matching
+myschema*
+in databases matching
+mydb*\&.
+.RE
+.PP
+\fB\-S \fR\fB\fIpattern\fR\fR
+.br
+\fB\-\-exclude\-schema=\fR\fB\fIpattern\fR\fR
+.RS 4
+Exclude tables and indexes in schemas matching the specified
+\fIpattern\fR\&. This option can be specified more than once\&.
+.sp
+As with
+\fB\-\-schema\fR, the pattern may be database\-qualified\&.
+.RE
+.PP
+\fB\-t \fR\fB\fIpattern\fR\fR
+.br
+\fB\-\-table=\fR\fB\fIpattern\fR\fR
+.RS 4
+Check tables matching the specified
+\fIpattern\fR, unless they are otherwise excluded\&. This option can be specified more than once\&.
+.sp
+This is similar to the
+\fB\-\-relation\fR
+option, except that it applies only to tables, materialized views, and sequences, not to indexes\&.
+.RE
+.PP
+\fB\-T \fR\fB\fIpattern\fR\fR
+.br
+\fB\-\-exclude\-table=\fR\fB\fIpattern\fR\fR
+.RS 4
+Exclude tables matching the specified
+\fIpattern\fR\&. This option can be specified more than once\&.
+.sp
+This is similar to the
+\fB\-\-exclude\-relation\fR
+option, except that it applies only to tables, materialized views, and sequences, not to indexes\&.
+.RE
+.PP
+\fB\-\-no\-dependent\-indexes\fR
+.RS 4
+By default, if a table is checked, any btree indexes of that table will also be checked, even if they are not explicitly selected by an option such as
+\-\-index
+or
+\-\-relation\&. This option suppresses that behavior\&.
+.RE
+.PP
+\fB\-\-no\-dependent\-toast\fR
+.RS 4
+By default, if a table is checked, its toast table, if any, will also be checked, even if it is not explicitly selected by an option such as
+\-\-table
+or
+\-\-relation\&. This option suppresses that behavior\&.
+.RE
+.PP
+\fB\-\-no\-strict\-names\fR
+.RS 4
+By default, if an argument to
+\-\-database,
+\-\-table,
+\-\-index, or
+\-\-relation
+matches no objects, it is a fatal error\&. This option downgrades that error to a warning\&.
+.RE
+.PP
+The following command\-line options control checking of tables:
+.PP
+\fB\-\-exclude\-toast\-pointers\fR
+.RS 4
+By default, whenever a toast pointer is encountered in a table, a lookup is performed to ensure that it references apparently\-valid entries in the toast table\&. These checks can be quite slow, and this option can be used to skip them\&.
+.RE
+.PP
+\fB\-\-on\-error\-stop\fR
+.RS 4
+After reporting all corruptions on the first page of a table where corruption is found, stop processing that table relation and move on to the next table or index\&.
+.sp
+Note that index checking always stops after the first corrupt page\&. This option only has meaning relative to table relations\&.
+.RE
+.PP
+\fB\-\-skip=\fR\fB\fIoption\fR\fR
+.RS 4
+If
+all\-frozen
+is given, table corruption checks will skip over pages in all tables that are marked as all frozen\&.
+.sp
+If
+all\-visible
+is given, table corruption checks will skip over pages in all tables that are marked as all visible\&.
+.sp
+By default, no pages are skipped\&. This can be specified as
+none, but since this is the default, it need not be mentioned\&.
+.RE
+.PP
+\fB\-\-startblock=\fR\fB\fIblock\fR\fR
+.RS 4
+Start checking at the specified block number\&. An error will occur if the table relation being checked has fewer than this number of blocks\&. This option does not apply to indexes, and is probably only useful when checking a single table relation\&. See
+\-\-endblock
+for further caveats\&.
+.RE
+.PP
+\fB\-\-endblock=\fR\fB\fIblock\fR\fR
+.RS 4
+End checking at the specified block number\&. An error will occur if the table relation being checked has fewer than this number of blocks\&. This option does not apply to indexes, and is probably only useful when checking a single table relation\&. If both a regular table and a toast table are checked, this option will apply to both, but higher\-numbered toast blocks may still be accessed while validating toast pointers, unless that is suppressed using
+\fB\-\-exclude\-toast\-pointers\fR\&.
+.RE
+.PP
+The following command\-line options control checking of B\-tree indexes:
+.PP
+\fB\-\-checkunique\fR
+.RS 4
+For each index with unique constraint checked, verify that no more than one among duplicate entries is visible in the index using
+amcheck\*(Aqs
+\fBcheckunique\fR
+option\&.
+.RE
+.PP
+\fB\-\-heapallindexed\fR
+.RS 4
+For each index checked, verify the presence of all heap tuples as index tuples in the index using
+amcheck\*(Aqs
+\fBheapallindexed\fR
+option\&.
+.RE
+.PP
+\fB\-\-parent\-check\fR
+.RS 4
+For each btree index checked, use
+amcheck\*(Aqs
+\fBbt_index_parent_check\fR
+function, which performs additional checks of parent/child relationships during index checking\&.
+.sp
+The default is to use
+amcheck\*(Aqs
+\fBbt_index_check\fR
+function, but note that use of the
+\fB\-\-rootdescend\fR
+option implicitly selects
+\fBbt_index_parent_check\fR\&.
+.RE
+.PP
+\fB\-\-rootdescend\fR
+.RS 4
+For each index checked, re\-find tuples on the leaf level by performing a new search from the root page for each tuple using
+amcheck\*(Aqs
+\fBrootdescend\fR
+option\&.
+.sp
+Use of this option implicitly also selects the
+\fB\-\-parent\-check\fR
+option\&.
+.sp
+This form of verification was originally written to help in the development of btree index features\&. It may be of limited use or even of no use in helping detect the kinds of corruption that occur in practice\&. It may also cause corruption checking to take considerably longer and consume considerably more resources on the server\&.
+.RE
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBWarning\fR
+.ps -1
+.br
+.PP
+The extra checks performed against B\-tree indexes when the
+\fB\-\-parent\-check\fR
+option or the
+\fB\-\-rootdescend\fR
+option is specified require relatively strong relation\-level locks\&. These checks are the only checks that will block concurrent data modification from
+\fBINSERT\fR,
+\fBUPDATE\fR, and
+\fBDELETE\fR
+commands\&.
+.sp .5v
+.RE
+.PP
+The following command\-line options control the connection to the server:
+.PP
+\fB\-h \fR\fB\fIhostname\fR\fR
+.br
+\fB\-\-host=\fR\fB\fIhostname\fR\fR
+.RS 4
+Specifies the host name of the machine on which the server is running\&. If the value begins with a slash, it is used as the directory for the Unix domain socket\&.
+.RE
+.PP
+\fB\-p \fR\fB\fIport\fR\fR
+.br
+\fB\-\-port=\fR\fB\fIport\fR\fR
+.RS 4
+Specifies the TCP port or local Unix domain socket file extension on which the server is listening for connections\&.
+.RE
+.PP
+\fB\-U\fR
+.br
+\fB\-\-username=\fR\fB\fIusername\fR\fR
+.RS 4
+User name to connect as\&.
+.RE
+.PP
+\fB\-w\fR
+.br
+\fB\-\-no\-password\fR
+.RS 4
+Never issue a password prompt\&. If the server requires password authentication and a password is not available by other means such as a
+\&.pgpass
+file, the connection attempt will fail\&. This option can be useful in batch jobs and scripts where no user is present to enter a password\&.
+.RE
+.PP
+\fB\-W\fR
+.br
+\fB\-\-password\fR
+.RS 4
+Force
+pg_amcheck
+to prompt for a password before connecting to a database\&.
+.sp
+This option is never essential, since
+pg_amcheck
+will automatically prompt for a password if the server demands password authentication\&. However,
+pg_amcheck
+will waste a connection attempt finding out that the server wants a password\&. In some cases it is worth typing
+\fB\-W\fR
+to avoid the extra connection attempt\&.
+.RE
+.PP
+\fB\-\-maintenance\-db=\fR\fB\fIdbname\fR\fR
+.RS 4
+Specifies a database or
+connection string
+to be used to discover the list of databases to be checked\&. If neither
+\fB\-\-all\fR
+nor any option including a database pattern is used, no such connection is required and this option does nothing\&. Otherwise, any connection string parameters other than the database name which are included in the value for this option will also be used when connecting to the databases being checked\&. If this option is omitted, the default is
+postgres
+or, if that fails,
+template1\&.
+.RE
+.PP
+Other options are also available:
+.PP
+\fB\-e\fR
+.br
+\fB\-\-echo\fR
+.RS 4
+Echo to stdout all SQL sent to the server\&.
+.RE
+.PP
+\fB\-j \fR\fB\fInum\fR\fR
+.br
+\fB\-\-jobs=\fR\fB\fInum\fR\fR
+.RS 4
+Use
+\fInum\fR
+concurrent connections to the server, or one per object to be checked, whichever is less\&.
+.sp
+The default is to use a single connection\&.
+.RE
+.PP
+\fB\-P\fR
+.br
+\fB\-\-progress\fR
+.RS 4
+Show progress information\&. Progress information includes the number of relations for which checking has been completed, and the total size of those relations\&. It also includes the total number of relations that will eventually be checked, and the estimated size of those relations\&.
+.RE
+.PP
+\fB\-v\fR
+.br
+\fB\-\-verbose\fR
+.RS 4
+Print more messages\&. In particular, this will print a message for each relation being checked, and will increase the level of detail shown for server errors\&.
+.RE
+.PP
+\fB\-V\fR
+.br
+\fB\-\-version\fR
+.RS 4
+Print the
+pg_amcheck
+version and exit\&.
+.RE
+.PP
+\fB\-\-install\-missing\fR
+.br
+\fB\-\-install\-missing=\fR\fB\fIschema\fR\fR
+.RS 4
+Install any missing extensions that are required to check the database(s)\&. If not yet installed, each extension\*(Aqs objects will be installed into the given
+\fIschema\fR, or if not specified into schema
+pg_catalog\&.
+.sp
+At present, the only required extension is
+amcheck\&.
+.RE
+.PP
+\fB\-?\fR
+.br
+\fB\-\-help\fR
+.RS 4
+Show help about
+pg_amcheck
+command line arguments, and exit\&.
+.RE
+.SH "ENVIRONMENT"
+.PP
+\fBpg_amcheck\fR, like most other
+PostgreSQL
+utilities, also uses the environment variables supported by
+libpq
+(see
+Section\ \&32.15)\&.
+.PP
+The environment variable
+\fBPG_COLOR\fR
+specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
+.SH "NOTES"
+.PP
+pg_amcheck
+is designed to work with
+PostgreSQL
+14\&.0 and later\&.
+.SH "SEE ALSO"
+amcheck

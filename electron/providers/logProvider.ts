@@ -8,15 +8,15 @@ export class LOG {
   }
 
   static info(message: string) {
-    // console.log(message);
+    console.log(message);
     LOG.getWin?.()?.webContents.send('main-process-message', message);
   }
   static error(message: string) {
-    // console.error(message);
+    console.error(message);
     LOG.getWin?.()?.webContents.send('main-process-error', message);
   }
   static warn(message: string) {
-    // console.warn(message);
+    console.warn(message);
     LOG.getWin?.()?.webContents.send('main-process-warn', message);
   }
 };

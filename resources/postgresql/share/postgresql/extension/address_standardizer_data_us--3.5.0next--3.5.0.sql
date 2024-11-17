@@ -1,0 +1,8438 @@
+CREATE TABLE IF NOT EXISTS us_lex (
+	id serial,
+    seq integer,
+    word text,
+    stdword text,
+    token integer, is_custom boolean NOT NULL DEFAULT true, CONSTRAINT pk_us_lex PRIMARY KEY(id)
+);
+
+-- this will be needed for upgrading to prevent purging of custom entries
+DELETE FROM us_lex WHERE is_custom = false;
+
+-- needed so entries we add will default to not custom
+ALTER TABLE us_lex ALTER COLUMN is_custom SET DEFAULT false;
+
+INSERT INTO us_lex (seq, word, stdword, token)
+WITH t(seq,word,stdword,token) AS ( VALUES (1, '#', '#', 16),
+(2, '#', '#', 7),
+(1, '&', 'AND', 13),
+(2, '&', 'AND', 1),
+(3, '&', 'AND', 7),
+(1, '-', '-', 9),
+(1, '1 / 2', '1/2', 25),
+(1, '1 / 2 MILE', '1/2 MI', 1),
+(1, '1 / 3', '1/3', 25),
+(1, '1 / 4', '1/4', 25),
+(1, '1 MI', 'ONE MILE', 1),
+(1, '1 MILE', 'ONE MILE', 1),
+(1, '1/2', '1/2', 25),
+(1, '1/2 MILE', '1/2 MI', 1),
+(1, '1/3', '1/3', 25),
+(1, '1/4', '1/4', 25),
+(1, '10 MI', 'TEN MILE', 1),
+(1, '10 MILE', 'TEN MILE', 1),
+(1, '10MI', 'TEN MILE', 1),
+(1, '100 MILE', 'ONE HUNDRED MILE', 1),
+(1, '11 MI', 'ELEVEN MILE', 1),
+(1, '11 MILE', 'ELEVEN MILE', 1),
+(1, '11MI', 'ELEVEN MILE', 1),
+(1, '12 MI', 'TWELVE MILE', 1),
+(1, '12 MILE', 'TWELVE MILE', 1),
+(1, '12MI', 'TWELVE MILE', 1),
+(1, '13 MI', 'THIRTEEN MILE', 1),
+(1, '13 MILE', 'THIRTEEN MILE', 1),
+(1, '13MI', 'THIRTEEN MILE', 1),
+(1, '14 MI', 'FOURTEEN MILE', 1),
+(1, '14 MILE', 'FOURTEEN MILE', 1),
+(1, '14MI', 'FOURTEEN MILE', 1),
+(1, '15 MI', 'FIFTEEN MI', 1),
+(1, '15 MILE', 'FIFTEEN MI', 1),
+(1, '15MI', 'FIFTEEN MI', 1),
+(1, '16 MI', 'SIXTEEN MILE', 1),
+(1, '16 MILE', 'SIXTEEN MILE', 1),
+(1, '16MI', 'SIXTEEN MILE', 1),
+(1, '17 MI', 'SEVENTEEN MILE', 1),
+(1, '17 MILE', 'SEVENTEEN MILE', 1),
+(1, '17MI', 'SEVENTEEN MILE', 1),
+(1, '18 MI', 'EIGHTEEEN MILE', 1),
+(1, '18 MILE', 'EIGHTEEEN MILE', 1),
+(1, '18MI', 'EIGHTEEEN MILE', 1),
+(1, '19 MI', 'NINETEEN MILE', 1),
+(1, '19 MILE', 'NINETEEN MILE', 1),
+(1, '19MI', 'NINETEEN MILE', 1),
+(1, '1ER', 'PREMIERE', 1),
+(1, '1ER', '1', 15),
+(1, '1MI', 'ONE MILE', 1),
+(1, '1RE', 'PREMIERE', 1),
+(1, '1RE', '1', 15),
+(1, '1ST', '1', 1),
+(2, '1ST', '1', 15),
+(1, '2 MI', 'TWO MILE', 1),
+(1, '2 MILE', 'TWO MILE', 1),
+(1, '20 MI', 'TWENTY MILE', 1),
+(1, '20 MILE', 'TWENTY MILE', 1),
+(1, '20MI', 'TWENTY MILE', 1),
+(1, '21ST', '21', 1),
+(2, '21ST', '21', 15),
+(1, '22ND', '22', 1),
+(2, '22ND', '22', 15),
+(1, '23 MI', 'TWENTY THREE MILE', 1),
+(1, '23 MILE', 'TWENTY THREE MILE', 1),
+(1, '23MI', 'TWENTY THREE MILE', 1),
+(1, '23RD', '23', 1),
+(2, '23RD', '23', 15),
+(1, '2MI', 'TWO MILE', 1),
+(1, '3 / 4', '3/4', 25),
+(1, '3 / 8', '3/8', 25),
+(1, '3 MI', 'THREE MILE', 1),
+(1, '3 MILE', 'THREE MILE', 1),
+(1, '3/4', '3/4', 25),
+(1, '3/8', '3/8', 25),
+(1, '31ST', '31', 1),
+(2, '31ST', '31', 15),
+(1, '33RD', '33', 1),
+(2, '33RD', '33', 15),
+(1, '3MI', 'THREE MILE', 1),
+(1, '3RD', '3', 1),
+(2, '3RD', '3', 15),
+(1, '4 CORNERS', 'FOUR CORNERS', 1),
+(1, '4 FG', 'FOUR FLAGS', 1),
+(1, '4 FLAGS', 'FOUR FLAGS', 1),
+(1, '4 MI', 'FOUR MILE', 1),
+(1, '4 MILE', 'FOUR MILE', 1),
+(1, '4 SEASONS', 'FOUR SEASONS', 1),
+(1, '4 SN', 'FOUR SEASONS', 1),
+(1, '41ST', '41', 1),
+(2, '41ST', '41', 15),
+(1, '43RD', '43', 1),
+(2, '43RD', '43', 15),
+(1, '4MI', 'FOUR MILE', 1),
+(1, '4WD', 'FOUR WHEEL DRIVE TRAIL', 2),
+(1, '4WD TRAIL', 'FOUR WHEEL DRIVE TRAIL', 2),
+(1, '4WD TRL', 'FOUR WHEEL DRIVE TRAIL', 2),
+(1, '5 CEDARS', 'FIVE CEDARS', 1),
+(1, '5 CORNERS', 'FIVE CORNERS', 1),
+(1, '5 MI', 'FIVE MILE', 1),
+(1, '5 MILE', 'FIVE MILE', 1),
+(1, '5 POINTS', 'FIVE POINTS', 1),
+(1, '5 PT', 'FIVE POINTS', 1),
+(1, '5 TO', 'FIVE TOWN', 1),
+(1, '51ST', '51', 1),
+(2, '51ST', '51', 15),
+(1, '53RD', '53', 1),
+(2, '53RD', '53', 15),
+(1, '5MI', 'FIVE MILE', 1),
+(1, '6 FG', 'SIX FLAGS', 1),
+(1, '6 FLAGS', 'SIX FLAGS', 1),
+(1, '6 MI', 'SIX MILE', 1),
+(1, '6 MILE', 'SIX MILE', 1),
+(1, '61ST', '61', 1),
+(2, '61ST', '61', 15),
+(1, '63RD', '63', 1),
+(2, '63RD', '63', 15),
+(1, '6MI', 'SIX MILE', 1),
+(1, '7 CORNERS', 'SEVEN CORNERS', 1),
+(2, '7 CORNERS', 'SEVEN CORNERS', 24),
+(1, '7 MI', 'SEVEN MILE', 1),
+(1, '7 MILE', 'SEVEN MILE', 1),
+(1, '71ST', '71', 1),
+(2, '71ST', '71', 15),
+(1, '73RD', '73', 1),
+(2, '73RD', '73', 15),
+(1, '7MI', 'SEVEN MILE', 1),
+(1, '8 MI', 'EIGHT MILE', 1),
+(1, '8 MILE', 'EIGHT MILE', 1),
+(1, '81ST', '81', 1),
+(2, '81ST', '81', 15),
+(1, '83RD', '83', 1),
+(2, '83RD', '83', 15),
+(1, '8MI', 'EIGHT MILE', 1),
+(1, '9 MI', 'NINE MILE', 1),
+(1, '9 MILE', 'NINE MILE', 1),
+(1, '91ST', '91', 1),
+(2, '91ST', '91', 15),
+(1, '93RD', '93', 1),
+(2, '93RD', '93', 15),
+(1, '9MI', 'NINE MILE', 1),
+(1, 'A', 'ALTERNATE', 3),
+(2, 'A', 'A', 18),
+(3, 'A', 'A', 7),
+(1, 'A F B', 'AIR FORCE BASE', 1),
+(2, 'A F B', 'AIR FORCE BASE', 24),
+(1, 'A F S', 'AIR FORCE BASE', 1),
+(2, 'A F S', 'AIR FORCE BASE', 24),
+(1, 'A LA DERECHA', 'A LA DERECHA', 16),
+(4, 'AB', 'ABBEY', 2),
+(1, 'ABBEY', 'ABBEY', 1),
+(2, 'ABBEY', 'ABBEY', 2),
+(1, 'AC', 'ACRES', 2),
+(1, 'ACAD', 'ACADEMY', 1),
+(1, 'ACADE', 'ACADEMIA', 1),
+(1, 'ACADEMIA', 'ACADEMIA', 1),
+(1, 'ACADEMY', 'ACADEMY', 1),
+(1, 'ACCESS', 'ACCESS', 2),
+(1, 'ACR', 'ACRES', 1),
+(2, 'ACR', 'ACRES', 2),
+(3, 'ACR', 'ACRES', 24),
+(1, 'ACRES', 'ACRES', 1),
+(2, 'ACRES', 'ACRES', 2),
+(3, 'ACRES', 'ACRES', 24),
+(1, 'ACRS', 'ACRES', 1),
+(2, 'ACRS', 'ACRES', 2),
+(3, 'ACRS', 'ACRES', 24),
+(1, 'ACUE', 'ACUEDUCTO', 1),
+(1, 'ACUED', 'ACUEDUCTO', 1),
+(1, 'ACUEDUCTO', 'ACUEDUCTO', 1),
+(1, 'AEROPUERTO', 'AEROPUERTO', 1),
+(2, 'AEROPUERTO', 'AEROPUERTO', 24),
+(1, 'AFB', 'AIR FORCE BASE', 1),
+(2, 'AFB', 'AIR FORCE BASE', 24),
+(1, 'AFLD', 'AIRPORT', 24),
+(1, 'AFS', 'AIR FORCE BASE', 1),
+(2, 'AFS', 'AIR FORCE BASE', 24),
+(1, 'AIR FORCE BASE', 'AIR FORCE BASE', 1),
+(2, 'AIR FORCE BASE', 'AIR FORCE BASE', 24),
+(1, 'AIR FORCE STATION', 'AIR FORCE BASE', 1),
+(2, 'AIR FORCE STATION', 'AIR FORCE BASE', 24),
+(1, 'AIRFIELD', 'AIRPORT', 1),
+(2, 'AIRFIELD', 'AIRPORT', 24),
+(1, 'AIRPARK', 'AIRPORT', 1),
+(2, 'AIRPARK', 'AIRPORT', 24),
+(1, 'AIRPORT', 'AIRPORT', 1),
+(2, 'AIRPORT', 'AIRPORT', 24),
+(1, 'AIRSTRIP', 'AIRPORT', 1),
+(2, 'AIRSTRIP', 'AIRPORT', 24),
+(1, 'AIRSTRP', 'AIRPORT', 1),
+(2, 'AIRSTRP', 'AIRPORT', 24),
+(1, 'AL', 'ALLEY', 2),
+(2, 'AL', 'ALLEY', 11),
+(4, 'AL', 'ALLEY', 6),
+(1, 'ALC', 'ALCOVE', 2),
+(1, 'ALD', 'A LA DERECHA', 16),
+(1, 'ALLEE', 'ALLEE', 2),
+(1, 'ALLEY', 'ALLEY', 2),
+(2, 'ALLEY', 'ALLEY', 1),
+(1, 'ALLY', 'ALLEY', 2),
+(1, 'ALT', 'ALTERNATE', 3),
+(1, 'ALTERNATE', 'ALTERNATE', 3),
+(1, 'ALTO', 'ALTO', 1),
+(2, 'ALTO', 'ALTOS', 16),
+(1, 'ALTOS', 'ALTOS', 16),
+(2, 'ALTOS', 'ALTOS', 1),
+(1, 'ALY', 'ALLEY', 2),
+(1, 'AND', 'AND', 13),
+(2, 'AND', 'AND', 1),
+(1, 'ANEX', 'ANNEX', 1),
+(2, 'ANEX', 'ANNEX', 24),
+(1, 'ANNEX', 'ANNEX', 1),
+(2, 'ANNEX', 'ANNEX', 24),
+(1, 'ANNX', 'ANNEX', 1),
+(2, 'ANNX', 'ANNEX', 24),
+(1, 'ANX', 'ANNEX', 1),
+(2, 'ANX', 'ANNEX', 24),
+(1, 'AP', 'APARTMENT', 16),
+(1, 'APART', 'APARTMENT', 16),
+(1, 'APARTEMENT', 'APARTEMENT', 16),
+(1, 'APARTMENT', 'APARTMENT', 16),
+(1, 'APARTMENTS', 'APARTMENTS', 24),
+(1, 'APARTADO', 'BOX', 14),
+(1, 'APO', 'APO', 14),
+(1, 'APP', 'APARTEMENT', 16),
+(1, 'APPART', 'APARTEMENT', 16),
+(1, 'APPT', 'APARTEMENT', 16),
+(1, 'APRK', 'AIRPORT', 24),
+(1, 'APS', 'APARTMENTS', 24),
+(1, 'APT', 'APARTMENT', 16),
+(1, 'APT NO', 'APARTMENT', 16),
+(1, 'APTMT', 'APARTMENT', 16),
+(1, 'APTS', 'APARTMENTS', 24),
+(1, 'AR', 'ARRIERE', 17),
+(1, 'ARC', 'ARCADE', 2),
+(2, 'ARC', 'ARCADE', 24),
+(1, 'ARCADE', 'ARCADE', 2),
+(2, 'ARCADE', 'ARCADE', 24),
+(1, 'ARPT', 'AIRPORT', 1),
+(2, 'ARPT', 'AIRPORT', 24),
+(1, 'ARPTO', 'AIRPORT', 1),
+(2, 'ARPTO', 'AIRPORT', 24),
+(1, 'ARRIERE', 'ARRIERE', 17),
+(1, 'ARROYO', 'ARROYO', 2),
+(1, 'ARRYO', 'ARROYO', 2),
+(1, 'AT', 'AT', 7),
+(1, 'ATPS', 'AUTOPISTA', 2),
+(1, 'ATPTA', 'AUTOPISTA', 2),
+(1, 'ATTN', 'ATTENTION', 1),
+(1, 'AU', 'AUTOROUTE', 2),
+(2, 'AU', 'AU', 7),
+(1, 'AUT', 'AUTOROUTE', 2),
+(1, 'AUTO', 'AUTOPISTA', 2),
+(2, 'AUTO', 'AUTO', 1),
+(1, 'AUTOPISTA', 'AUTOPISTA', 2),
+(1, 'AUTOROUTE', 'AUTOROUTE', 2),
+(1, 'AV', 'AVENUE', 2),
+(2, 'AV', 'AVANT', 17),
+(1, 'AVA', 'AVENIDA', 2),
+(1, 'AVANT', 'AVANT', 17),
+(2, 'AVANT', 'AVANT', 1),
+(1, 'AVE', 'AVENUE', 2),
+(1, 'AVEN', 'AVENUE', 2),
+(1, 'AVENIDA', 'AVENIDA', 2),
+(1, 'AVENU', 'AVENUE', 2),
+(1, 'AVENUE', 'AVENUE', 2),
+(1, 'AVENUES', 'AVENUES', 1),
+(1, 'AVES', 'AVENUES', 1),
+(1, 'AVN', 'AVENUE', 2),
+(1, 'AVNUE', 'AVENUE', 2),
+(1, 'AVS', 'AVENUES', 1),
+(1, 'BA', 'BAY', 2),
+(1, 'BAJO', 'BAJOS', 16),
+(1, 'BAJOS', 'BAJOS', 16),
+(1, 'BANK', 'BANK', 1),
+(1, 'BARRIO', 'BOROUGH', 1),
+(1, 'BASEMENT', 'BASEMENT', 17),
+(1, 'BASIN', 'BASIN', 1),
+(1, 'BASN', 'BASIN', 1),
+(1, 'BAY', 'BAY', 16),
+(2, 'BAY', 'BAY', 1),
+(3, 'BAY', 'BAY', 2),
+(1, 'BAY STATE', 'BAY STATE', 1),
+(1, 'BAYOU', 'BAYOU', 1),
+(1, 'BAZAAR', 'BAZAAR', 24),
+(1, 'BAZR', 'BAZAAR', 24),
+(1, 'BCH', 'BEACH', 1),
+(2, 'BCH', 'BEACH', 2),
+(1, 'BD', 'BOULEVARD', 2),
+(1, 'BDG', 'BUILDING', 24),
+(2, 'BDG', 'BUILDING', 19),
+(1, 'BDNG', 'BUILDING', 24),
+(2, 'BDNG', 'BUILDING', 19),
+(1, 'BDWY', 'BROADWAY', 1),
+(1, 'BE', 'BEND', 2),
+(1, 'BEACH', 'BEACH', 1),
+(2, 'BEACH', 'BEACH', 2),
+(1, 'BEND', 'BEND', 1),
+(2, 'BEND', 'BEND', 2),
+(1, 'BETWEEN', 'BETWEEN', 1),
+(1, 'BG', 'BURG', 1),
+(1, 'BH', 'BEACH', 2),
+(1, 'BL', 'BOULEVARD', 2),
+(1, 'BLD', 'BUILDING', 24),
+(2, 'BLD', 'BUILDING', 19),
+(1, 'BLDG', 'BUILDING', 24),
+(2, 'BLDG', 'BUILDING', 19),
+(1, 'BLDING', 'BUILDING', 24),
+(2, 'BLDING', 'BUILDING', 19),
+(1, 'BLDNG', 'BUILDING', 24),
+(2, 'BLDNG', 'BUILDING', 19),
+(1, 'BLF', 'BLUFF', 1),
+(2, 'BLF', 'BLUFF', 2),
+(1, 'BLG', 'BUILDING', 24),
+(2, 'BLG', 'BUILDING', 19),
+(1, 'BLUF', 'BLUFF', 1),
+(1, 'BLUFF', 'BLUFF', 1),
+(2, 'BLUFF', 'BLUFF', 2),
+(1, 'BLV', 'BOULEVARD', 2),
+(1, 'BLVD', 'BOULEVARD', 2),
+(1, 'BLVR', 'BULEVAR', 2),
+(1, 'BND', 'BEND', 1),
+(2, 'BND', 'BEND', 2),
+(1, 'BNK', 'BANK', 1),
+(1, 'BO', 'BOROUGH', 1),
+(2, 'BO', 'BOURG', 2),
+(1, 'BOITE', 'BOITE', 14),
+(1, 'BOITE POSTALE', 'BOITE POSTALE', 14),
+(1, 'BORO', 'BOROUGH', 1),
+(1, 'BOROUGH', 'BOROUGH', 1),
+(1, 'BOT', 'BOTTOM', 17),
+(2, 'BOT', 'BOTTOM', 1),
+(1, 'BOTTM', 'BOTTOM', 17),
+(2, 'BOTTM', 'BOTTOM', 1),
+(1, 'BOTTOM', 'BOTTOM', 17),
+(2, 'BOTTOM', 'BOTTOM', 1),
+(1, 'BOUL', 'BOULEVARD', 2),
+(1, 'BOULEVARD', 'BOULEVARD', 2),
+(1, 'BOULV', 'BOULEVARD', 2),
+(1, 'BOURG', 'BOURG', 2),
+(1, 'BOX', 'BOX', 14),
+(2, 'BOX', 'BOX', 1),
+(1, 'BOX NO', 'BOX', 14),
+(1, 'BP', 'BYPASS', 2),
+(2, 'BP', 'BYPASS', 3),
+(3, 'BP', 'BOITE POSTALE', 14),
+(1, 'BR', 'BRANCH', 1),
+(1, 'BRANCH', 'BRANCH', 1),
+(1, 'BRDG', 'BRIDGE', 1),
+(1, 'BRDGE', 'BRIDGE', 1),
+(1, 'BRDWY', 'BROADWAY', 1),
+(1, 'BRG', 'BRIDGE', 1),
+(1, 'BRG', 'BRIDGE', 2),
+(1, 'BRIDGE', 'BRIDGE', 1),
+(1, 'BRIDGES', 'BRIDGE', 1),
+(1, 'BRK', 'BROOK', 1),
+(1, 'BROADWAY', 'BROADWAY', 1),
+(1, 'BROOK', 'BROOK', 1),
+(1, 'BRWY', 'BROADWAY', 1),
+(1, 'BSMNT', 'BASEMENT', 17),
+(1, 'BSMT', 'BASEMENT', 17),
+(1, 'BSPK', 'BUSINESS PARK', 24),
+(1, 'BSRT', 'BUSINESS ROUTE', 6),
+(1, 'BSRTE', 'BUSINESS ROUTE', 6),
+(1, 'BST', 'BASEMENT', 17),
+(1, 'BTM', 'BOTTOM', 1),
+(1, 'BTWN', 'BETWEEN', 1),
+(1, 'BUENA VISTA', 'BUENA VISTA', 1),
+(1, 'BUILD', 'BUILDING', 24),
+(2, 'BUILD', 'BUILDING', 19),
+(1, 'BUILDING', 'BUILDING', 24),
+(2, 'BUILDING', 'BUILDING', 19),
+(1, 'BUILDING NUMBER', '#', 19),
+(1, 'BUILDNG', 'BUILDING', 24),
+(2, 'BUILDNG', 'BUILDING', 19),
+(1, 'BULDNG', 'BUILDING', 24),
+(2, 'BULDNG', 'BUILDING', 19),
+(1, 'BULEVAR', 'BULEVAR', 2),
+(1, 'BUR', 'BUREAU', 17),
+(1, 'BUREAU', 'BUREAU', 16),
+(2, 'BUREAU', 'BUREAU', 1),
+(3, 'BUREAU', 'BUREAU', 17),
+(1, 'BURG', 'BURG', 1),
+(1, 'BUS', 'BUSINESS', 3),
+(1, 'BUS CENTER', 'BUSINESS PARK', 24),
+(1, 'BUS CENTR', 'BUSINESS PARK', 24),
+(1, 'BUS CTR', 'BUSINESS PARK', 24),
+(1, 'BUS PARK', 'BUSINESS PARK', 24),
+(1, 'BUS PK', 'BUSINESS PARK', 24),
+(1, 'BUSCENTER', 'BUSINESS PARK', 24),
+(1, 'BUSCENTR', 'BUSINESS PARK', 24),
+(1, 'BUSCTR', 'BUSINESS PARK', 24),
+(1, 'BUSINESS', 'BUSINESS', 3),
+(2, 'BUSINESS', 'BUSINESS', 1),
+(1, 'BUSINESS CENTER', 'BUSINESS PARK', 24),
+(1, 'BUSINESS CENTR', 'BUSINESS PARK', 24),
+(1, 'BUSINESS CTR', 'BUSINESS PARK', 24),
+(1, 'BUSINESS PARK', 'BUSINESS PARK', 24),
+(1, 'BUSINESS PK', 'BUSINESS PARK', 24),
+(1, 'BUSPARK', 'BUSINESS PARK', 24),
+(1, 'BUSPK', 'BUSINESS PARK', 24),
+(1, 'BUSROUTE', 'BUSINESS ROUTE', 6),
+(1, 'BUSRT', 'BUSINESS ROUTE', 6),
+(1, 'BUSRTE', 'BUSINESS ROUTE', 6),
+(1, 'BV', 'BOULEVARD', 2),
+(1, 'BX', 'BOX', 14),
+(1, 'BY', 'BYWAY', 2),
+(2, 'BY', 'BY', 1),
+(1, 'BY PASS', 'BYPASS', 3),
+(2, 'BY PASS', 'BYPASS', 2),
+(1, 'BY WAY', 'BYWAY', 2),
+(1, 'BYP', 'BYPASS', 3),
+(2, 'BYP', 'BYPASS', 2),
+(1, 'BYPA', 'BYPASS', 3),
+(2, 'BYPA', 'BYPASS', 2),
+(1, 'BYPAS', 'BYPASS', 3),
+(2, 'BYPAS', 'BYPASS', 2),
+(1, 'BYPASS', 'BYPASS', 3),
+(2, 'BYPASS', 'BYPASS', 2),
+(1, 'BYPS', 'BYPASS', 3),
+(2, 'BYPS', 'BYPASS', 2),
+(1, 'BYU', 'BAYOU', 1),
+(1, 'BYWAY', 'BYWAY', 2),
+(1, 'C', 'C', 18),
+(1, 'C / O', 'CARE OF', 9),
+(1, 'C D O', 'COMMERCIAL DEALERSHIP', 24),
+(1, 'C F B', 'CANADIAN FORCES BASE', 24),
+(1, 'C M C', 'COMMUNITY MAIL CENTRE', 24),
+(1, 'C R', 'COUNTY ROAD', 6),
+(2, 'C R', 'COUNTY ROAD', 2),
+(1, 'C/O', 'CARE OF', 9),
+(1, 'CALLE', 'CALLE', 2),
+(1, 'CALLEJ', 'CALLEJON', 2),
+(1, 'CALLEJA', 'CALLEJA', 2),
+(1, 'CALLEJO', 'CALLEJON', 2),
+(1, 'CALLEJON', 'CALLEJON', 2),
+(1, 'CALLER', 'POST OFFICE BOX', 14),
+(1, 'CAM', 'CAMINO', 2),
+(1, 'CAMINITO', 'CAMINITO', 2),
+(1, 'CAMINO', 'CAMINO', 2),
+(1, 'CAMP', 'CAMP', 1),
+(1, 'CAMPER PARK', 'TRAILER PARK', 24),
+(1, 'CAMPER PK', 'TRAILER PARK', 24),
+(1, 'CAMPUS', 'CAMPUS', 1),
+(1, 'CAMPUS', 'CAMPUS', 2),
+(1, 'CANADIAN FORCES BASE', 'CANADIAN FORCES BASE', 24),
+(1, 'CANYON', 'CANYON', 1),
+(1, 'CANYN', 'CANYON', 1),
+(1, 'CAPE', 'CAPE', 1),
+(2, 'CAPE', 'CAPE', 2),
+(1, 'CARE OF', 'CARE OF', 9),
+(1, 'CARR', 'CARRETERA', 2),
+(1, 'CARRE', 'CARRE', 1),
+(2, 'CARRE', 'CARRE', 2),
+(1, 'CARREF', 'CARREFOUR', 2),
+(1, 'CARREFOUR', 'CARREFOUR', 2),
+(1, 'CARRETERA', 'CARRETERA', 2),
+(1, 'CARRT', 'CARRETERA', 2),
+(1, 'CAUSEWAY', 'CAUSEWAY', 2),
+(1, 'CC', 'CIRCUIT', 2),
+(1, 'CDN', 'CANADIAN', 1),
+(1, 'CDO', 'COMMERCIAL DEALERSHIP', 24),
+(1, 'CDS', 'CUL DE SAC', 2),
+(1, 'CE', 'CENTRE', 2),
+(1, 'CEN', 'CENTER', 24),
+(2, 'CEN', 'CENTER', 2),
+(1, 'CENT', 'CENTER', 24),
+(2, 'CENT', 'CENTER', 2),
+(1, 'CENTE', 'CENTER', 24),
+(2, 'CENTE', 'CENTER', 2),
+(1, 'CENTER', 'CENTER', 24),
+(2, 'CENTER', 'CENTER', 2),
+(3, 'CENTER', 'CENTER', 1),
+(1, 'CENTERS', 'CENTER', 24),
+(1, 'CENTR', 'CENTER', 24),
+(2, 'CENTR', 'CENTER', 2),
+(1, 'CENTRAL', 'CENTRAL', 1),
+(1, 'CENTRE', 'CENTER', 24),
+(2, 'CENTRE', 'CENTER', 2),
+(3, 'CENTRE', 'CENTER', 1),
+(1, 'CENTRES', 'CENTER', 24),
+(1, 'CENTRO', 'CENTER', 24),
+(2, 'CENTRO', 'CENTER', 2),
+(1, 'CERCLE', 'CERCLE', 2),
+(2, 'CERCLE', 'CERCLE', 1),
+(1, 'CFB', 'CANADIAN FORCES BASE', 24),
+(1, 'CG', 'CROSSING', 2),
+(1, 'CH', 'CHEMIN', 2),
+(2, 'CH', 'CHURCH', 24),
+(1, 'CHASE', 'CHASE', 2),
+(2, 'CHASE', 'CHASE', 1),
+(1, 'CHEMIN', 'CHEMIN', 2),
+(1, 'CHURCH', 'CHURCH', 1),
+(2, 'CHURCH', 'CHURCH', 24),
+(1, 'CIR', 'CIRCLE', 2),
+(1, 'CIRC', 'CIRCULO', 2),
+(1, 'CIRCL', 'CIRCLE', 2),
+(1, 'CIRCLE', 'CIRCLE', 2),
+(2, 'CIRCLE', 'CIRCLE', 1),
+(1, 'CIRCT', 'CIRCUIT', 2),
+(2, 'CIRCT', 'CIRCUIT', 1),
+(1, 'CIRCUIT', 'CIRCUIT', 2),
+(2, 'CIRCUIT', 'CIRCUIT', 1),
+(1, 'CIRCULO', 'CIRCULO', 2),
+(1, 'CJA', 'CALLEJA', 2),
+(1, 'CJON', 'CALLEJON', 2),
+(1, 'CK', 'CREEK', 1),
+(1, 'CL', 'CIRCLE', 2),
+(2, 'CL', 'CIRCLE', 1),
+(1, 'CLB', 'CLUB', 2),
+(2, 'CLB', 'CLUB', 24),
+(3, 'CLB', 'CLUB', 1),
+(1, 'CLF', 'CLIFF', 1),
+(1, 'CLFS', 'CLIFFS', 1),
+(1, 'CLG', 'COLLEGE', 24),
+(1, 'CLIFF', 'CLIFF', 1),
+(1, 'CLIFFS', 'CLIFFS', 1),
+(1, 'CLLE', 'CALLE', 2),
+(1, 'CLLJ', 'CALLEJON', 2),
+(1, 'CLOS', 'CLOSE', 2),
+(2, 'CLOS', 'CLOSE', 1),
+(1, 'CLOSE', 'CLOSE', 2),
+(2, 'CLOSE', 'CLOSE', 1),
+(1, 'CLTN', 'COLLECTION', 24),
+(1, 'CLUB', 'CLUB', 2),
+(2, 'CLUB', 'CLUB', 24),
+(3, 'CLUB', 'CLUB', 1),
+(1, 'CMC', 'COMMUNITY MAIL CENTRE', 24),
+(1, 'CMNS', 'COMMONS', 2),
+(2, 'CMNS', 'COMMONS', 24),
+(1, 'CMP', 'CAMP', 1),
+(1, 'CN', 'CONCESSION', 2),
+(2, 'CN', 'CONCESSION', 1),
+(1, 'CNCN', 'CONNECTION', 24),
+(1, 'CNR', 'CORNER', 24),
+(2, 'CNR', 'CORNER', 2),
+(1, 'CNT', 'CENTER', 24),
+(2, 'CNT', 'CENTER', 2),
+(1, 'CNTER', 'CENTER', 24),
+(2, 'CNTER', 'CENTER', 2),
+(1, 'CNTR', 'CENTER', 24),
+(2, 'CNTR', 'CENTER', 2),
+(1, 'CNTRE', 'CENTER', 24),
+(2, 'CNTRE', 'CENTER', 2),
+(1, 'CNTRL', 'CENTRAL', 1),
+(1, 'CNTY HIGHWAY', 'COUNTY HIGHWAY', 6),
+(1, 'CNTY HIWAY', 'COUNTY HIGHWAY', 6),
+(1, 'CNTY HWY', 'COUNTY HIGHWAY', 6),
+(1, 'CNTY RD', 'COUNTY ROAD', 6),
+(2, 'CNTY RD', 'COUNTY ROAD', 2),
+(1, 'CNTY ROAD', 'COUNTY ROAD', 6),
+(2, 'CNTY ROAD', 'COUNTY ROAD', 2),
+(1, 'CNTY ROUTE', 'COUNTY ROUTE', 6),
+(1, 'CNTY RT', 'COUNTY ROUTE', 6),
+(1, 'CNTY RTE', 'COUNTY ROUTE', 6),
+(1, 'CNYN', 'CANYON', 1),
+(4, 'CO', 'COTE', 2),
+(1, 'CO HIGHWAY', 'COUNTY HIGHWAY', 6),
+(1, 'CO HIWAY', 'COUNTY HIGHWAY', 6),
+(1, 'CO HWY', 'COUNTY HIGHWAY', 6),
+(1, 'CO RD', 'COUNTY ROAD', 6),
+(2, 'CO RD', 'COUNTY ROAD', 2),
+(1, 'CO ROAD', 'COUNTY ROAD', 6),
+(2, 'CO ROAD', 'COUNTY ROAD', 2),
+(1, 'CO ROUTE', 'COUNTY ROUTE', 6),
+(1, 'CO RT', 'COUNTY ROUTE', 6),
+(1, 'CO RTE', 'COUNTY ROUTE', 6),
+(1, 'COHWY', 'COUNTY HIGHWAY', 6),
+(1, 'COL', 'COLONEL', 1),
+(1, 'COLL', 'COLLEGE', 24),
+(2, 'COLL', 'COLLEGE', 1),
+(1, 'COLLECTION', 'COLLECTION', 24),
+(1, 'COLLEGE', 'COLLEGE', 24),
+(2, 'COLLEGE', 'COLLEGE', 19),
+(3, 'COLLEGE', 'COLLEGE', 1),
+(1, 'COLONEL', 'COLONEL', 1),
+(1, 'COLONIA', 'COLONIA', 2),
+(2, 'COLONIA', 'COLONIA', 1),
+(1, 'COMMERCIAL DEALERSHIP OU', 'COMMERCIAL DEALERSHIP', 24),
+(1, 'COMMON', 'COMMON', 2),
+(2, 'COMMON', 'COMMONS', 24),
+(1, 'COMMONS', 'COMMONS', 2),
+(2, 'COMMONS', 'COMMONS', 24),
+(1, 'COMMUNITY MAIL CENTRE', 'COMMUNITY MAIL CENTRE', 24),
+(1, 'COMN', 'COMMON', 2),
+(2, 'COMN', 'COMMONS', 24),
+(1, 'COMP', 'COMPLEX', 24),
+(1, 'COMPLEX', 'COMPLEX', 24),
+(1, 'CONC', 'CONCESSION', 2),
+(2, 'CONC', 'CONCESSION', 1),
+(1, 'CONCESSION', 'CONCESSION', 2),
+(2, 'CONCESSION', 'CONCESSION', 1),
+(1, 'COND', 'CONDOMINIUMS', 24),
+(1, 'CONDO', 'CONDOMINIUMS', 24),
+(1, 'CONDOMINIO', 'CONDOMINIUMS', 24),
+(1, 'CONDOMINIUM', 'CONDOMINIUMS', 24),
+(1, 'CONDOMINIUMS', 'CONDOMINIUMS', 24),
+(1, 'CONDOS', 'CONDOMINIUMS', 24),
+(3, 'CONN', 'CONNECTOR', 2),
+(4, 'CONN', 'CONNECTOR', 3),
+(1, 'CONNECTION', 'CONNECTION', 24),
+(1, 'CONNECTOR', 'CONNECTOR', 2),
+(2, 'CONNECTOR', 'CONNECTOR', 3),
+(3, 'CONNECTOR', 'CONNECTOR', 1),
+(1, 'CONTRACT', 'HIGHWAY CONTRACT ROUTE', 8),
+(2, 'CONTRACT', 'CONTRACT', 1),
+(1, 'COOP', 'COOPERATIVE', 24),
+(2, 'COOP', 'COOPERATIVE', 1),
+(1, 'COOPERATIVE', 'COOPERATIVE', 24),
+(2, 'COOPERATIVE', 'COOPERATIVE', 1),
+(1, 'COR', 'CORNERS', 24),
+(2, 'COR', 'CORNER', 1),
+(1, 'CORD', 'COUNTY ROUTE', 6),
+(2, 'CORD', 'COUNTY ROAD', 2),
+(1, 'CORNER', 'CORNER', 24),
+(2, 'CORNER', 'CORNER', 1),
+(3, 'CORNER', 'CORNER', 2),
+(1, 'CORNERS', 'CORNERS', 2),
+(2, 'CORNERS', 'CORNERS', 24),
+(3, 'CORNERS', 'CORNERS', 1),
+(1, 'CORS', 'CORNERS', 2),
+(2, 'CORS', 'CORNERS', 24),
+(3, 'CORS', 'CORNERS', 1),
+(1, 'CORSO', 'CORSO', 2),
+(2, 'CORSO', 'CORSO', 1),
+(1, 'CORT', 'COUNTY ROUTE', 6),
+(1, 'CORTE', 'COUNTY ROUTE', 6),
+(2, 'CORTE', 'COURT', 2),
+(1, 'COTE', 'COTE', 2),
+(2, 'COTE', 'COTE', 1),
+(1, 'COTTAGE', 'COTTAGE', 24),
+(2, 'COTTAGE', 'COTTAGE', 19),
+(3, 'COTTAGE', 'COTTAGE', 1),
+(1, 'COUNTY', 'COUNTY', 1),
+(2, 'COUNTY', 'COUNY ROAD', 6),
+(1, 'COUNTY HIGHWAY', 'COUNTY HIGHWAY', 6),
+(1, 'COUNTY HIWAY', 'COUNTY HIGHWAY', 6),
+(1, 'COUNTY HWY', 'COUNTY HIGHWAY', 6),
+(1, 'COUNTY RD', 'COUNTY ROAD', 6),
+(2, 'COUNTY RD', 'COUNTY ROAD', 2),
+(1, 'COUNTY ROAD', 'COUNTY ROAD', 6),
+(2, 'COUNTY ROAD', 'COUNTY ROAD', 2),
+(1, 'COUNTY ROUTE', 'COUNTY ROUTE', 6),
+(1, 'COUNTY RT', 'COUNTY ROUTE', 6),
+(1, 'COUNTY RTE', 'COUNTY ROUTE', 6),
+(1, 'COUNTY TRUNK', 'COUNTY ROAD', 6),
+(1, 'COUR', 'COUR', 2),
+(1, 'COURSE', 'COURSE', 1),
+(1, 'COURT', 'COURT', 2),
+(2, 'COURT', 'COURT', 1),
+(1, 'COURT HOUSE', 'COURTHOUSE', 24),
+(1, 'COURT HSE', 'COURTHOUSE', 24),
+(1, 'COURT YARD', 'COURTYARD', 24),
+(1, 'COURTHOUSE', 'COURTHOUSE', 24),
+(2, 'COURTHOUSE', 'COURTHOUSE', 1),
+(1, 'COURTHSE', 'COURTHOUSE', 24),
+(1, 'COURTS', 'COURTS', 2),
+(2, 'COURTS', 'COURTS', 24),
+(3, 'COURTS', 'COURTS', 1),
+(1, 'COURTYARD', 'COURTYARD', 24),
+(1, 'COURTYARDS', 'COURTYARD', 24),
+(1, 'COV', 'COVE', 2),
+(1, 'COVE', 'COVE', 2),
+(1, 'CP', 'CAMP', 1),
+(1, 'CPE', 'CAPE', 1),
+(1, 'CPLX', 'COMPLEX', 24),
+(1, 'CPO', 'POST OFFICE BOX', 14),
+(1, 'CPO BOX', 'POST OFFICE BOX', 14),
+(1, 'CR', 'CRESCENT', 2),
+(2, 'CR', 'COUNTY ROAD', 6),
+(1, 'CRCL', 'CIRCLE', 2),
+(1, 'CRCLE', 'CIRCLE', 2),
+(1, 'CRDS', 'CROSSROADS', 24),
+(1, 'CREEK', 'CREEK', 1),
+(1, 'CRES', 'CRESCENT', 2),
+(1, 'CRESCENT', 'CRESCENT', 2),
+(2, 'CRESCENT', 'CRESCENT', 1),
+(1, 'CRESENT', 'CRESCENT', 2),
+(1, 'CRK', 'CREEK', 1),
+(2, 'CRK', 'CREEK', 2),
+(1, 'CRNR', 'CORNER', 24),
+(2, 'CRNR', 'CORNER', 2),
+(1, 'CRNRS', 'CORNERS', 2),
+(1, 'CROISSANT', 'CROISSANT', 2),
+(2, 'CROISSANT', 'CROISSANT', 1),
+(1, 'CROSS', 'CROSS', 2),
+(2, 'CROSS', 'CROSS', 24),
+(1, 'CROSS ROAD', 'CROSSROAD', 24),
+(1, 'CROSS ROADS', 'CROSSROADS', 24),
+(1, 'CROSSING', 'CROSSING', 2),
+(2, 'CROSSING', 'CROSSING', 24),
+(1, 'CROSSINGS', 'CROSSING', 24),
+(1, 'CROSSROAD', 'CROSSROAD', 2),
+(2, 'CROSSROAD', 'CROSSROAD', 1),
+(1, 'CROSSROADS', 'CROSSROADS', 24),
+(1, 'CRSCNT', 'CRESCENT', 2),
+(1, 'CRSE', 'COURSE', 1),
+(1, 'CRSENT', 'CRESCENT', 2),
+(1, 'CRSG', 'CROSSING', 2),
+(2, 'CRSG', 'CROSSING', 24),
+(1, 'CRSGS', 'CROSSING', 24),
+(1, 'CRSNT', 'CRESCENT', 2),
+(1, 'CRSSNG', 'CROSSING', 2),
+(2, 'CRSSNG', 'CROSSING', 24),
+(1, 'CRST', 'CRESCENT', 2),
+(1, 'CRT', 'COURT', 2),
+(1, 'CRT HSE', 'COURTHOUSE', 24),
+(1, 'CRTHSE', 'COURTHOUSE', 24),
+(1, 'CRU', 'CRUCE', 2),
+(1, 'CRUC', 'CRUCE', 2),
+(1, 'CRUCE', 'CRUCE', 2),
+(1, 'CRV', 'CURVE', 2),
+(1, 'CS', 'CLOSE', 2),
+(1, 'CSWY', 'CAUSEWAY', 2),
+(1, 'CT', 'COURT', 2),
+(2, 'CT', 'CONNECTICUT', 11),
+(1, 'CT HSE', 'COURTHOUSE', 24),
+(1, 'CT YARD', 'COURTYARD', 24),
+(1, 'CT YD', 'COURTYARD', 24),
+(1, 'CTER', 'CENTER', 24),
+(2, 'CTER', 'CENTER', 2),
+(1, 'CTHS', 'COURTHOUSE', 24),
+(1, 'CTHSE', 'COURTHOUSE', 24),
+(1, 'CTR', 'CENTER', 24),
+(2, 'CTR', 'CENTER', 2),
+(1, 'CTRO', 'CENTER', 24),
+(1, 'CTS', 'COURTS', 2),
+(2, 'CTS', 'COURTS', 24),
+(3, 'CTS', 'COURTS', 1),
+(1, 'CTY HIGHWAY', 'COUNTY HIGHWAY', 6),
+(1, 'CTY HIWAY', 'COUNTY HIGHWAY', 6),
+(1, 'CTY HWY', 'COUNTY HIGHWAY', 6),
+(1, 'CTY RD', 'COUNTY ROAD', 6),
+(2, 'CTY RD', 'COUNTY ROAD', 2),
+(1, 'CTY ROAD', 'COUNTY ROAD', 6),
+(2, 'CTY ROAD', 'COUNTY ROAD', 2),
+(1, 'CTY ROUTE', 'COUNTY ROUTE', 6),
+(1, 'CTY RT', 'COUNTY ROUTE', 6),
+(1, 'CTY RTE', 'COUNTY ROUTE', 6),
+(1, 'CTYD', 'COURTYARD', 24),
+(1, 'CU', 'COUR', 2),
+(1, 'CUL DE SAC', 'CUL DE SAC', 2),
+(1, 'CULDESAC', 'CUL DE SAC', 2),
+(1, 'CURRY RD', 'CURRY ROAD', 6),
+(1, 'CURRY ROAD', 'CURRY ROAD', 6),
+(1, 'CURV', 'CURVE', 1),
+(2, 'CURV', 'CURVE', 2),
+(1, 'CURVE', 'CURVE', 1),
+(2, 'CURVE', 'CURVE', 2),
+(1, 'CUSHING', 'HARVEY L CUSHING', 1),
+(1, 'CV', 'COVE', 2),
+(1, 'CX', 'CHASE', 2),
+(1, 'CYN', 'CANYON', 1),
+(1, 'CZ', 'CORNERS', 2),
+(1, 'D', 'D', 18),
+(2, 'D', 'D', 7),
+(1, 'D B A', 'DBA', 1),
+(1, 'D OR', 'D OR', 1),
+(1, 'DALE', 'DALE', 1),
+(2, 'DALE', 'DALE', 2),
+(1, 'DAM', 'DAM', 1),
+(1, 'DBA', 'DBA', 1),
+(2, 'DE', 'DE', 7),
+(4, 'DE', 'DE', 6),
+(1, 'DE LA', 'DE LA', 7),
+(1, 'DE LAS', 'DE LAS', 7),
+(1, 'DE LOS', 'DE LOS', 7),
+(2, 'DEL', 'DE', 7),
+(1, 'DELL', 'DELL', 1),
+(2, 'DELL', 'DELL', 2),
+(1, 'DEPARTMENT', 'DEPARTMENT', 16),
+(2, 'DEPARTMENT', 'DEPARTMENT', 1),
+(1, 'DEPT', 'DEPARTMENT', 16),
+(2, 'DEPT', 'DEPARTMENT', 1),
+(1, 'DERE', 'DERECHO', 16),
+(1, 'DERECHO', 'DERECHO', 16),
+(1, 'DES', 'DES', 7),
+(1, 'DEUX', '2', 1),
+(2, 'DEUX', '2', 0),
+(1, 'DEUXIEME', 'DEUXIEME', 1),
+(1, 'DI', 'DIVERSION', 2),
+(2, 'DI', 'DIVERSION', 1),
+(3, 'DI', 'DI', 7),
+(1, 'DIV', 'DIVIDE', 1),
+(1, 'DIVERS', 'DIVERSION', 2),
+(2, 'DIVERS', 'DIVERSION', 1),
+(1, 'DIVERSION', 'DIVERSION', 2),
+(2, 'DIVERSION', 'DIVERSION', 1),
+(1, 'DIVIDE', 'DIVIDE', 1),
+(1, 'DL', 'DALE', 1),
+(2, 'DL', 'DELL', 2),
+(1, 'DM', 'DAM', 1),
+(1, 'DNS', 'DOWNS', 2),
+(2, 'DNS', 'DOWNS', 1),
+(1, 'DO', 'DOWNS', 2),
+(1, 'DORM', 'DORMITORY', 24),
+(2, 'DORMITORY', 'DORMITORY', 24),
+(1, 'DOWN', 'DOWN', 17),
+(2, 'DOWN', 'DOWN', 1),
+(1, 'DOWNS', 'DOWNS', 2),
+(2, 'DOWNS', 'DOWNS', 1),
+(1, 'DOWNSTAIRS', 'DOWNSTAIRS', 17),
+(1, 'DR', 'DRIVE', 2),
+(2, 'DR', 'DOCTOR', 1),
+(1, 'DRAW', 'DRAW', 1),
+(2, 'DRAW', 'DRAW', 2),
+(1, 'DRAWER', 'POST OFFICE BOX', 14),
+(1, 'DRI', 'DRIVE', 2),
+(1, 'DRIVE', 'DRIVE', 2),
+(1, 'DRIVEWAY', 'DRIVEWAY', 2),
+(1, 'DRV', 'DRIVE', 2),
+(1, 'DRWY', 'DRIVEWAY', 2),
+(1, 'DU', 'DU', 7),
+(1, 'DV', 'DIVIDE', 1),
+(1, 'E', 'EAST', 22),
+(2, 'E', 'E', 18),
+(1, 'EAST', 'EAST', 22),
+(1, 'EAST & WEST', 'EAST & WEST', 1),
+(1, 'EAST WEST', 'EAST WEST', 1),
+(1, 'EASTBOUND', 'EASTBOUND', 1),
+(2, 'EASTBOUND', 'EASTBOUND', 3),
+(1, 'ECH', 'ECHANGEUR', 2),
+(1, 'ECHO', 'ECHO', 2),
+(2, 'ECHO', 'ECHO', 1),
+(1, 'ECHANGEUR', 'ECHANGEUR', 2),
+(1, 'EDF', 'EDIFICIO', 24),
+(1, 'EDIF', 'EDIFICIO', 24),
+(1, 'EDIFICIO', 'EDIFICIO', 24),
+(1, 'EIGHT', '8', 1),
+(2, 'EIGHT', '8', 0),
+(1, 'EIGHT MILE', 'EIGHT MILE', 1),
+(1, 'EIGHTEEN', '18', 0),
+(2, 'EIGHTEEN', '18', 1),
+(1, 'EIGHTEEEN MILE', 'EIGHTEEEN MILE', 1),
+(1, 'EIGHTEENTH', '18', 1),
+(2, 'EIGHTEENTH', '18', 15),
+(1, 'EIGHTH', '8', 1),
+(2, 'EIGHTH', '8', 15),
+(1, 'EIGHTIETH', '80', 1),
+(2, 'EIGHTIETH', '80', 15),
+(1, 'EIGHTY', '80', 0),
+(2, 'EIGHTY', '80', 1),
+(1, 'EIGHTY EIGHT', '88', 0),
+(2, 'EIGHTY EIGHT', '88', 1),
+(1, 'EIGHTY EIGHTH', '88', 1),
+(2, 'EIGHTY EIGHTH', '88', 15),
+(1, 'EIGHTY FIFTH', '85', 1),
+(2, 'EIGHTY FIFTH', '85', 15),
+(1, 'EIGHTY FIRST', '81', 1),
+(2, 'EIGHTY FIRST', '81', 15),
+(1, 'EIGHTY FIVE', '85', 0),
+(2, 'EIGHTY FIVE', '85', 1),
+(1, 'EIGHTY FOUR', '84', 0),
+(2, 'EIGHTY FOUR', '84', 1),
+(1, 'EIGHTY FOURTH', '84', 1),
+(2, 'EIGHTY FOURTH', '84', 15),
+(1, 'EIGHTY NINE', '89', 0),
+(2, 'EIGHTY NINE', '89', 1),
+(1, 'EIGHTY NINTH', '89', 1),
+(2, 'EIGHTY NINTH', '89', 15),
+(1, 'EIGHTY ONE', '81', 0),
+(2, 'EIGHTY ONE', '81', 1),
+(1, 'EIGHTY SECOND', '82', 1),
+(2, 'EIGHTY SECOND', '82', 15),
+(1, 'EIGHTY SEVEN', '87', 0),
+(2, 'EIGHTY SEVEN', '87', 1),
+(1, 'EIGHTY SEVENTH', '87', 1),
+(2, 'EIGHTY SEVENTH', '87', 15),
+(1, 'EIGHTY SIX', '86', 0),
+(2, 'EIGHTY SIX', '86', 1),
+(1, 'EIGHTY SIXTH', '86', 1),
+(2, 'EIGHTY SIXTH', '86', 15),
+(1, 'EIGHTY THIRD', '83', 1),
+(2, 'EIGHTY THIRD', '83', 15),
+(1, 'EIGHTY THREE', '83', 0),
+(2, 'EIGHTY THREE', '83', 1),
+(1, 'EIGHTY TWO', '82', 0),
+(2, 'EIGHTY TWO', '82', 1),
+(1, 'EL', 'EL', 7),
+(1, 'EL CAMINO', 'CAMINO', 2),
+(1, 'ELEVEN', '11', 0),
+(2, 'ELEVEN', '11', 1),
+(1, 'ELEVEN MILE', 'ELEVEN MILE', 1),
+(1, 'ELEVENTH', '11', 1),
+(2, 'ELEVENTH', '11', 15),
+(1, 'EMS', 'EMS', 6),
+(1, 'EN', 'END', 2),
+(1, 'END', 'END', 1),
+(1, 'END', 'END', 2),
+(1, 'ENT', 'ENTRY', 17),
+(1, 'ENT', 'ENTRY', 2),
+(1, 'ENTRY', 'ENTRY', 17),
+(2, 'ENTRY', 'ENTRY', 1),
+(1, 'ENTREE', 'ENTREE', 17),
+(2, 'ENTREE', 'ENTREE', 1),
+(1, 'ES', 'ESPLANADE', 2),
+(1, 'ESP', 'ESPLANADE', 24),
+(1, 'ESPL', 'ESPLANADE', 24),
+(2, 'ESPL', 'ESPLANADE', 2),
+(3, 'ESPL', 'ESPLANADE', 1),
+(1, 'ESPLANADE', 'ESPLANADE', 24),
+(2, 'ESPLANADE', 'ESPLANADE', 1),
+(3, 'ESPLANADE', 'ESPLANADE', 2),
+(1, 'EST', 'ESTATES', 1),
+(2, 'EST', 'ESTATES', 24),
+(3, 'EST', 'ESTATES', 2),
+(4, 'EST', 'EST', 22),
+(1, 'ESTATE', 'ESTATES', 1),
+(2, 'ESTATE', 'ESTATES', 24),
+(3, 'ESTATE', 'ESTATES', 2),
+(1, 'ESTATES', 'ESTATES', 1),
+(2, 'ESTATES', 'ESTATES', 24),
+(3, 'ESTATES', 'ESTATES', 2),
+(1, 'ESTE', 'ESTE', 22),
+(2, 'ESTE', 'ESTE', 1),
+(1, 'ESTS', 'ESTATES', 1),
+(2, 'ESTS', 'ESTATES', 24),
+(3, 'ESTS', 'ESTATES', 2),
+(1, 'ET', 'ESTATES', 2),
+(2, 'ET', 'ETAGE', 17),
+(3, 'ET', 'ET', 7),
+(1, 'ETAGE', 'ETAGE', 1),
+(2, 'ETAGE', 'ETAGE', 17),
+(1, 'EX', 'EXTENDED', 3),
+(2, 'EX', 'EXTENSION', 2),
+(1, 'EXCH', 'EXCHANGE', 24),
+(2, 'EXCH', 'EXCHANGE', 2),
+(1, 'EXCHANGE', 'EXCHANGE', 24),
+(2, 'EXCHANGE', 'EXCHANGE', 2),
+(3, 'EXCHANGE', 'EXCHANGE', 1),
+(1, 'EXEC', 'EXECUTIVE', 1),
+(1, 'EXECUTIVE', 'EXECUTIVE', 1),
+(1, 'EXP', 'EXPRESSWAY', 2),
+(1, 'EXPR', 'EXPRESSWAY', 2),
+(1, 'EXPRESO', 'EXPRESO', 2),
+(1, 'EXPRESS', 'EXPRESSWAY', 2),
+(1, 'EXPRESSWAY', 'EXPRESSWAY', 2),
+(1, 'EXPW', 'EXPRESSWAY', 2),
+(1, 'EXPWAY', 'EXPRESSWAY', 2),
+(1, 'EXPWY', 'EXPRESSWAY', 2),
+(1, 'EXPY', 'EXPRESSWAY', 2),
+(1, 'EXT', 'EXTENSION', 3),
+(2, 'EXT', 'EXTENSION', 2),
+(1, 'EXTD', 'EXTENDED', 3),
+(1, 'EXTEN', 'EXTENSION', 3),
+(2, 'EXTEN', 'EXTENSION', 2),
+(1, 'EXTENDED', 'EXTENDED', 3),
+(1, 'EXTENSION', 'EXTENSION', 3),
+(2, 'EXTENSION', 'EXTENSION', 2),
+(1, 'EXTN', 'EXTENSION', 3),
+(2, 'EXTN', 'EXTENSION', 2),
+(1, 'EXTSN', 'EXTENSION', 3),
+(2, 'EXTSN', 'EXTENSION', 2),
+(1, 'EXWY', 'EXPRESSWAY', 2),
+(1, 'F M', 'FARM TO MARKET ROAD', 6),
+(1, 'F M RD', 'FARM TO MARKET ROAD', 6),
+(2, 'F M RD', 'FARM TO MARKET ROAD', 2),
+(1, 'F M ROAD', 'FARM TO MARKET ROAD', 6),
+(2, 'F M ROAD', 'FARM TO MARKET ROAD', 2),
+(1, 'FACTORY OUTLET', 'OUTLET', 24),
+(1, 'FALL', 'FALL', 1),
+(1, 'FALLS', 'FALLS', 1),
+(1, 'FARM', 'FARM', 1),
+(2, 'FARM', 'FARM', 2),
+(1, 'FARM MAINTENANCE RD', 'FARM MAINTENANCE ROAD', 6),
+(2, 'FARM MAINTENANCE RD', 'FARM MAINTENANCE ROAD', 2),
+(1, 'FARM MARKET ROAD', 'FARM TO MARKET ROAD', 6),
+(2, 'FARM MARKET ROAD', 'FARM TO MARKET ROAD', 2),
+(1, 'FARM TO MARKET ROAD', 'FARM TO MARKET ROAD', 6),
+(2, 'FARM TO MARKET ROAD', 'FARM TO MARKET ROAD', 2),
+(1, 'FERRY', 'FERRY', 1),
+(1, 'FERRY CROSSING', 'FERRY', 1),
+(1, 'FEST', 'FESTIVAL', 24),
+(1, 'FESTIVAL', 'FESTIVAL', 24),
+(1, 'FIELD', 'FIELD', 1),
+(2, 'FIELD', 'FIELD', 2),
+(1, 'FIELDS', 'FIELDS', 1),
+(1, 'FIFTEEN', '15', 0),
+(2, 'FIFTEEN', '15', 1),
+(1, 'FIFTEEN MILE', 'FIFTEEN MI', 1),
+(1, 'FIFTEENTH', '15', 1),
+(2, 'FIFTEENTH', '15', 15),
+(1, 'FIFTH', '5', 1),
+(2, 'FIFTH', '5', 15),
+(1, 'FIFTIETH', '50', 1),
+(2, 'FIFTIETH', '50', 15),
+(1, 'FIFTY', '50', 0),
+(2, 'FIFTY', '50', 1),
+(1, 'FIFTY EIGHT', '58', 0),
+(2, 'FIFTY EIGHT', '58', 1),
+(1, 'FIFTY EIGHTH', '58', 1),
+(2, 'FIFTY EIGHTH', '58', 15),
+(1, 'FIFTY FIFTH', '55', 1),
+(2, 'FIFTY FIFTH', '55', 15),
+(1, 'FIFTY FIRST', '51', 1),
+(2, 'FIFTY FIRST', '51', 15),
+(1, 'FIFTY FIVE', '55', 0),
+(2, 'FIFTY FIVE', '55', 1),
+(1, 'FIFTY FOUR', '54', 0),
+(2, 'FIFTY FOUR', '54', 1),
+(1, 'FIFTY FOURTH', '54', 1),
+(2, 'FIFTY FOURTH', '54', 15),
+(1, 'FIFTY NINE', '59', 0),
+(2, 'FIFTY NINE', '59', 1),
+(1, 'FIFTY NINTH', '59', 1),
+(2, 'FIFTY NINTH', '59', 15),
+(1, 'FIFTY ONE', '51', 0),
+(2, 'FIFTY ONE', '51', 1),
+(1, 'FIFTY SECOND', '52', 1),
+(2, 'FIFTY SECOND', '52', 15),
+(1, 'FIFTY SEVEN', '57', 0),
+(2, 'FIFTY SEVEN', '57', 1),
+(1, 'FIFTY SEVENTH', '57', 1),
+(2, 'FIFTY SEVENTH', '57', 15),
+(1, 'FIFTY SIX', '56', 0),
+(2, 'FIFTY SIX', '56', 1),
+(1, 'FIFTY SIXTH', '56', 1),
+(2, 'FIFTY SIXTH', '56', 15),
+(1, 'FIFTY THIRD', '53', 1),
+(2, 'FIFTY THIRD', '53', 15),
+(1, 'FIFTY THREE', '53', 0),
+(2, 'FIFTY THREE', '53', 1),
+(1, 'FIFTY TWO', '52', 0),
+(2, 'FIFTY TWO', '52', 1),
+(1, 'FIRST', '1', 1),
+(2, 'FIRST', '1', 15),
+(1, 'FITCHBURG STATE', 'FITCHBURG STATE', 1),
+(1, 'FIVE', '5', 0),
+(2, 'FIVE', '5', 1),
+(1, 'FIVE CEDARS', 'FIVE CEDARS', 1),
+(1, 'FIVE CORNERS', 'FIVE CORNERS', 1),
+(1, 'FIVE MILE', 'FIVE MILE', 1),
+(1, 'FIVE POINTS', 'FIVE POINTS', 1),
+(1, 'FIVE TOWN', 'FIVE TOWN', 1),
+(1, 'FL', 'FLOOR', 17),
+(1, 'FLAT', 'FLAT', 1),
+(1, 'FLD', 'FIELD', 1),
+(1, 'FLDS', 'FIELDS', 1),
+(1, 'FLLS', 'FALLS', 1),
+(1, 'FLOOR', 'FLOOR', 17),
+(2, 'FLOOR', 'FLOOR', 1),
+(1, 'FLR', 'FLOOR', 17),
+(1, 'FLS', 'FALLS', 1),
+(1, 'FLT', 'FLAT', 1),
+(1, 'FLTS', 'FLATS', 1),
+(1, 'FM', 'FARM TO MARKET ROAD', 6),
+(1, 'FM RD', 'FARM TO MARKET ROAD', 6),
+(2, 'FM RD', 'FARM TO MARKET ROAD', 2),
+(1, 'FM ROAD', 'FARM TO MARKET ROAD', 6),
+(2, 'FM ROAD', 'FARM TO MARKET ROAD', 2),
+(1, 'FMRD', 'FARM TO MARKET ROAD', 6),
+(2, 'FMRD', 'FARM TO MARKET ROAD', 2),
+(1, 'FORD', 'FORD', 1),
+(1, 'FOREST', 'FOREST', 1),
+(1, 'FORGE', 'FORGE', 1),
+(1, 'FORK', 'FORK', 1),
+(1, 'FORKS', 'FORKS', 1),
+(1, 'FORT', 'FORT', 1),
+(1, 'FORTIETH', '40', 1),
+(2, 'FORTIETH', '40', 15),
+(1, 'FORTS', 'FORT', 1),
+(1, 'FORTY', '40', 0),
+(2, 'FORTY', '40', 1),
+(1, 'FORTY EIGHT', '48', 0),
+(2, 'FORTY EIGHT', '48', 1),
+(1, 'FORTY EIGHTH', '48', 1),
+(2, 'FORTY EIGHTH', '48', 15),
+(1, 'FORTY FIFTH', '45', 1),
+(2, 'FORTY FIFTH', '45', 15),
+(1, 'FORTY FIRST', '41', 1),
+(2, 'FORTY FIRST', '41', 15),
+(1, 'FORTY FIVE', '45', 0),
+(2, 'FORTY FIVE', '45', 1),
+(1, 'FORTY FOUR', '44', 0),
+(2, 'FORTY FOUR', '44', 1),
+(1, 'FORTY FOURTH', '44', 1),
+(2, 'FORTY FOURTH', '44', 15),
+(1, 'FORTY NINE', '49', 0),
+(2, 'FORTY NINE', '49', 1),
+(1, 'FORTY NINTH', '49', 1),
+(2, 'FORTY NINTH', '49', 15),
+(1, 'FORTY ONE', '41', 0),
+(2, 'FORTY ONE', '41', 1),
+(1, 'FORTY SECOND', '42', 1),
+(2, 'FORTY SECOND', '42', 15),
+(1, 'FORTY SEVEN', '47', 0),
+(2, 'FORTY SEVEN', '47', 1),
+(1, 'FORTY SEVENTH', '47', 1),
+(2, 'FORTY SEVENTH', '47', 15),
+(1, 'FORTY SIX', '46', 0),
+(2, 'FORTY SIX', '46', 1),
+(1, 'FORTY SIXTH', '46', 1),
+(2, 'FORTY SIXTH', '46', 15),
+(1, 'FORTY THIRD', '43', 1),
+(2, 'FORTY THIRD', '43', 15),
+(1, 'FORTY THREE', '43', 0),
+(2, 'FORTY THREE', '43', 1),
+(1, 'FORTY TWO', '42', 0),
+(2, 'FORTY TWO', '42', 1),
+(1, 'FOUR', '4', 0),
+(2, 'FOUR', '4', 1),
+(1, 'FOUR CORNERS', 'FOUR CORNERS', 1),
+(1, 'FOUR FLAGS', 'FOUR FLAGS', 1),
+(1, 'FOUR MILE', 'FOUR MILE', 1),
+(1, 'FOURTEEN', '14', 0),
+(2, 'FOURTEEN', '14', 1),
+(1, 'FOURTEEN MILE', 'FOURTEEN MILE', 1),
+(1, 'FOURTEENTH', '14', 1),
+(2, 'FOURTEENTH', '14', 15),
+(1, 'FOURTH', '4', 1),
+(2, 'FOURTH', '4', 15),
+(1, 'FPO', 'FPO', 14),
+(1, 'FRD', 'FORD', 1),
+(1, 'FREEWAY', 'FREEWAY', 2),
+(1, 'FREEWY', 'FREEWAY', 2),
+(1, 'FRG', 'FORGE', 1),
+(1, 'FRK', 'FORK', 1),
+(1, 'FRKS', 'FORKS', 1),
+(1, 'FRNT', 'FRONT', 1),
+(2, 'FRNT', 'FRONT', 17),
+(1, 'FROM', 'FROM', 1),
+(1, 'FRONT', 'FRONT', 1),
+(2, 'FRONT', 'FRONT', 17),
+(3, 'FRONT', 'FRONT', 2),
+(1, 'FRONTAGE', 'FRONT', 1),
+(1, 'FRST', 'FOREST', 1),
+(2, 'FRST', 'FOREST', 2),
+(1, 'FRT', 'FORT', 1),
+(1, 'FRWAY', 'FREEWAY', 2),
+(1, 'FRWY', 'FREEWAY', 2),
+(1, 'FRY', 'FERRY', 1),
+(1, 'FS RD', 'FOREST SERVICE ROAD', 2),
+(1, 'FT', 'FORT', 1),
+(1, 'FWD', 'FOUR WHEEL DRIVE TRAIL', 2),
+(1, 'FWY', 'FREEWAY', 2),
+(1, 'FX', 'FOX', 1),
+(1, 'G DEL', 'GENERAL DELIVERY', 14),
+(1, 'G DELIVERY', 'GENERAL DELIVERY', 14),
+(4, 'GA', 'GARDENS', 2),
+(1, 'GALLERIA', 'GALLERIA', 1),
+(2, 'GALLERIA', 'GALLERIA', 24),
+(1, 'GALLERIE', 'GALLERIA', 1),
+(2, 'GALLERIE', 'GALLERIA', 24),
+(1, 'GALR', 'GALLERIA', 24),
+(1, 'GARDEN', 'GARDEN', 1),
+(1, 'GARDENS', 'GARDENS', 1),
+(2, 'GARDENS', 'GARDENS', 2),
+(3, 'GARDENS', 'GARDENS', 24),
+(1, 'GATE', 'GATE', 1),
+(2, 'GATE', 'GATE', 2),
+(1, 'GATEWAY', 'GATEWAY', 1),
+(2, 'GATEWAY', 'GATEWAY', 24),
+(1, 'GD', 'GENERAL DELIVERY', 14),
+(2, 'GD', 'GROUNDS', 2),
+(1, 'GDN', 'GARDEN', 1),
+(1, 'GDN', 'GARDEN', 24),
+(1, 'GDNS', 'GARDEN', 1),
+(2, 'GDNS', 'GARDENS', 2),
+(3, 'GDNS', 'GARDENS', 24),
+(1, 'GDS', 'GARDEN', 1),
+(2, 'GDS', 'GARDENS', 2),
+(1, 'GEN D', 'GENERAL DELIVERY', 14),
+(1, 'GEN DEL', 'GENERAL DELIVERY', 14),
+(1, 'GEN DELIVERY', 'GENERAL DELIVERY', 14),
+(1, 'GENDEL', 'GENERAL DELIVERY', 14),
+(1, 'GENERAL D', 'GENERAL DELIVERY', 14),
+(1, 'GENERAL DEL', 'GENERAL DELIVERY', 14),
+(1, 'GENERAL DELIVERY', 'GENERAL DELIVERY', 14),
+(1, 'GL', 'GLEN', 2),
+(1, 'GLADE', 'GLADE', 1),
+(2, 'GLADE', 'GLADE', 2),
+(1, 'GLEN', 'GLEN', 1),
+(2, 'GLEN', 'GLEN', 2),
+(1, 'GLN', 'GLEN', 1),
+(2, 'GLN', 'GLEN', 2),
+(1, 'GNDL', 'GENERAL DELIVERY', 14),
+(1, 'GOV', 'GOVERNOR', 1),
+(1, 'GOVERNOR', 'GOVERNOR', 1),
+(1, 'GPO', 'GPO', 14),
+(1, 'GR', 'GROUND', 1),
+(2, 'GR', 'GREEN', 2),
+(1, 'GREEN', 'GREEN', 1),
+(2, 'GREEN', 'GREEN', 2),
+(1, 'GREENE RD', 'GREENE ROAD', 6),
+(1, 'GREENE ROAD', 'GREENE ROAD', 6),
+(1, 'GRN', 'GREEN', 1),
+(2, 'GRN', 'GREEN', 2),
+(1, 'GRNDS', 'GROUNDS', 1),
+(2, 'GRNDS', 'GROUNDS', 2),
+(1, 'GROUND', 'GROUND', 1),
+(1, 'GROUNDS', 'GROUNDS', 1),
+(2, 'GROUNDS', 'GROUNDS', 2),
+(1, 'GROVE', 'GROVE', 1),
+(2, 'GROVE', 'GROVE', 2),
+(1, 'GRV', 'GROVE', 1),
+(2, 'GRV', 'GROVE', 2),
+(1, 'GT', 'GATE', 2),
+(1, 'GTWAY', 'GATEWAY', 1),
+(2, 'GTWAY', 'GATEWAY', 24),
+(1, 'GTWY', 'GATEWAY', 1),
+(2, 'GTWY', 'GATEWAY', 24),
+(1, 'GV', 'GROVE', 2),
+(1, 'H C', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'H C R', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'H CONT', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'H CONTRACT', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'HALF', 'HALF', 1),
+(1, 'HALL', 'HALL', 24),
+(2, 'HALL', 'HALL', 1),
+(1, 'HANGER', 'HANGER', 16),
+(2, 'HANGER', 'HANGER', 1),
+(1, 'HARBOR', 'HARBOR', 1),
+(1, 'HARBOUR', 'HARBOR', 1),
+(2, 'HARBOUR', 'HARBOR', 2),
+(3, 'HARBOUR', 'HARBOR', 24),
+(1, 'HARBR', 'HARBOR', 1),
+(2, 'HARBR', 'HARBOR', 2),
+(3, 'HARBR', 'HARBOR', 24),
+(1, 'HARVEY L CUSHING', 'HARVEY L CUSHING', 1),
+(1, 'HARVEY CUSHING', 'HARVEY L CUSHING', 1),
+(1, 'HAVEN', 'HAVEN', 1),
+(1, 'HBR', 'HARBOR', 1),
+(2, 'HBR', 'HARBOR', 2),
+(3, 'HBR', 'HARBOR', 24),
+(1, 'HC', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'HC RT', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'HC RTE', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'HCO', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'HCR', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'HCRT', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'HEIGHT', 'HEIGHTS', 1),
+(1, 'HEIGHTS', 'HEIGHTS', 1),
+(2, 'HEIGHTS', 'HEIGHTS', 2),
+(3, 'HEIGHTS', 'HEIGHTS', 24),
+(1, 'HGHLDS', 'HIGHLANDS', 1),
+(2, 'HGHLDS', 'HIGHLANDS', 2),
+(1, 'HGT', 'HEIGHTS', 1),
+(2, 'HGT', 'HEIGHTS', 2),
+(3, 'HGT', 'HEIGHTS', 24),
+(1, 'HGTS', 'HEIGHTS', 1),
+(2, 'HGTS', 'HEIGHTS', 2),
+(3, 'HGTS', 'HEIGHTS', 24),
+(1, 'HGWY', 'HIGHWAY', 6),
+(2, 'HGWY', 'HIGHWAY', 2),
+(1, 'HGWY CONTRACT', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'HGWY FM', 'FARM TO MARKET ROAD', 6),
+(1, 'HGY', 'HIGHWAY', 6),
+(2, 'HGY', 'HIGHWAY', 2),
+(1, 'HGY FM', 'FARM TO MARKET ROAD', 6),
+(1, 'HI', 'HIGHWAY', 6),
+(2, 'HI', 'HIGHWAY', 2),
+(1, 'HIGH CONT', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'HIGH CONTRACT', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'HIGHLANDS', 'HIGHLANDS', 1),
+(2, 'HIGHLANDS', 'HIGHLANDS', 2),
+(1, 'HIGHWAY', 'HIGHWAY', 6),
+(2, 'HIGHWAY', 'HIGHWAY', 2),
+(1, 'HIGHWAY CONT', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'HIGHWAY CONTRACT', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'HIGHWAY CONTRACT ROUTE', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'HIGHWAY FM', 'FARM TO MARKET ROAD', 6),
+(1, 'HIGHWY', 'HIGHWAY', 6),
+(2, 'HIGHWY', 'HIGHWAY', 2),
+(1, 'HIGHWY FM', 'FARM TO MARKET ROAD', 6),
+(1, 'HILL', 'HILL', 1),
+(2, 'HILL', 'HILL', 2),
+(1, 'HILLS', 'HILLS', 1),
+(1, 'HIWAY', 'HIGHWAY', 6),
+(2, 'HIWAY', 'HIGHWAY', 2),
+(1, 'HIWAY CONTRACT', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'HIWAY FM', 'FARM TO MARKET ROAD', 6),
+(1, 'HIWY', 'HIGHWAY', 6),
+(2, 'HIWY', 'HIGHWAY', 2),
+(1, 'HIWY FM', 'FARM TO MARKET ROAD', 6),
+(1, 'HL', 'HILL', 1),
+(2, 'HL', 'HILL', 2),
+(1, 'HLLW', 'HOLLOW', 1),
+(2, 'HLLW', 'HOLLOW', 2),
+(1, 'HLS', 'HILLS', 1),
+(1, 'HNGR', 'HANGER', 16),
+(2, 'HNGR', 'HANGER', 1),
+(1, 'HO', 'HOLLOW', 2),
+(2, 'H0', 'HOLLOW', 1),
+(1, 'HOL', 'HOLLOW', 1),
+(2, 'HOL', 'HOLLOW', 2),
+(1, 'HOLLOW', 'HOLLOW', 1),
+(2, 'H0LL0W', 'HOLLOW', 2),
+(1, 'HOLW', 'HOLLOW', 1),
+(2, 'HOLW', 'HOLLOW', 2),
+(1, 'HOME', 'HOME', 24),
+(2, 'HOME', 'HOME', 1),
+(1, 'HOMES', 'HOME', 24),
+(1, 'HOSP', 'HOSPITAL', 24),
+(1, 'HOSPITAL', 'HOSPITAL', 24),
+(1, 'HOTEL', 'HOTEL', 24),
+(2, 'HOTEL', 'HOTEL', 19),
+(1, 'HOUS', 'HOUSE', 24),
+(2, 'HOUS', 'HOUSE', 19),
+(1, 'HOUSE', 'HOUSE', 24),
+(2, 'HOUSE', 'HOUSE', 19),
+(3, 'HOUSE', 'HOUSE', 1),
+(1, 'HOUSING PROJ', 'PROJECTS', 24),
+(1, 'HOUSING PROJECTS', 'PROJECTS', 24),
+(1, 'HRBR', 'HARBOR', 1),
+(2, 'HRBR', 'HARBOR', 2),
+(3, 'HRBR', 'HARBOR', 24),
+(1, 'HRBOR', 'HARBOR', 1),
+(2, 'HRBOR', 'HARBOR', 2),
+(3, 'HRBOR', 'HARBOR', 24),
+(1, 'HSE', 'HOUSE', 24),
+(2, 'HSE', 'HOUSE', 19),
+(1, 'HSE PROJ', 'PROJECTS', 24),
+(1, 'HSE PROJECTS', 'PROJECTS', 24),
+(1, 'HT', 'HEIGHTS', 1),
+(2, 'HT', 'HEIGHTS', 2),
+(3, 'HT', 'HEIGHTS', 24),
+(1, 'HTL', 'HOTEL', 24),
+(2, 'HTL', 'HOTEL', 19),
+(1, 'HTS', 'HEIGHTS', 1),
+(2, 'HTS', 'HEIGHTS', 2),
+(3, 'HTS', 'HEIGHTS', 24),
+(1, 'HUI RD', 'HUI ROAD', 6),
+(1, 'HUI ROAD', 'HUI ROAD', 6),
+(1, 'HVN', 'HAVEN', 1),
+(1, 'HW', 'HIGHWAY', 6),
+(2, 'HW', 'HIGHWAY', 2),
+(1, 'HWAY', 'HIGHWAY', 6),
+(2, 'HWAY', 'HIGHWAY', 2),
+(1, 'HWC', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'HWY', 'HIGHWAY', 6),
+(2, 'HWY', 'HIGHWAY', 2),
+(1, 'HWY CONT', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'HWY CONTRACT', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'HWY FM', 'FARM TO MARKET ROAD', 6),
+(1, 'HWYS', 'HIGHWAYS', 1),
+(1, 'HY', 'HIGHWAY', 6),
+(2, 'HY', 'HIGHWAY', 2),
+(1, 'HY CONT', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'HY CONTRACT', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'HYWY', 'HIGHWAY', 6),
+(2, 'HYWY', 'HIGHWAY', 2),
+(1, 'I', 'INTERSTATE HIGHWAY', 6),
+(2, 'I', 'I', 18),
+(1, 'I H', 'INTERSTATE HIGHWAY', 6),
+(1, 'IC', 'INDUSTRIAL PARK', 24),
+(1, 'ICHG', 'INTERCHANGE', 1),
+(1, 'IH', 'INTERSTATE HIGHWAY', 6),
+(1, 'ILE', 'ILE', 1),
+(2, 'ILE', 'ILE', 2),
+(1, 'IM', 'IMPASSE', 2),
+(1, 'IMM', 'IMMEUBLE', 24),
+(2, 'IMM', 'IMMEUBLE', 19),
+(1, 'IMMEUBLE', 'IMMEUBLE', 24),
+(2, 'IMMEUBLE', 'IMMEUBLE', 19),
+(1, 'IMP', 'IMPASSE', 2),
+(1, 'IMPASSE', 'IMPASSE', 2),
+(1, 'IN CARE OF', 'CARE OF', 9),
+(1, 'INCTR', 'INDUSTRIAL PARK', 24),
+(1, 'IND PARK', 'INDUSTRIAL PARK', 24),
+(1, 'IND PK', 'INDUSTRIAL PARK', 24),
+(1, 'INDC', 'INDUSTRIAL PARK', 24),
+(1, 'INDL', 'INDUSTRIAL', 1),
+(1, 'INDL CTR', 'INDUSTRIAL PARK', 24),
+(1, 'INDL PARK', 'INDUSTRIAL PARK', 24),
+(1, 'INDL PK', 'INDUSTRIAL PARK', 24),
+(1, 'INDUSTRIAL', 'INDUSTRIAL', 1),
+(1, 'INDUSTRIAL CENTER', 'INDUSTRIAL PARK', 24),
+(1, 'INDUSTRIAL CTR', 'INDUSTRIAL PARK', 24),
+(1, 'INDUSTRIAL PARK', 'INDUSTRIAL PARK', 24),
+(1, 'INDUSTRIAL PK', 'INDUSTRIAL PARK', 24),
+(1, 'INLET', 'INLET', 1),
+(1, 'INLT', 'INLET', 1),
+(1, 'INN', 'INN', 24),
+(2, 'INN', 'INN', 1),
+(1, 'INPK', 'INDUSTRIAL PARK', 24),
+(1, 'INT L', 'INTERNATIONAL', 1),
+(1, 'INTE', 'INTERIOR', 17),
+(1, 'INTERCHANGE', 'INTERCHANGE', 1),
+(1, 'INTERIOR', 'INTERIOR', 1),
+(1, 'INTERIOR', 'INTERIOR', 17),
+(1, 'INTERNATIONAL', 'INTERNATIONAL', 1),
+(1, 'INTERSECTION', 'INTERSECTION', 1),
+(1, 'INTERSTATE', 'INTERSTATE HIGHWAY', 6),
+(2, 'INTERSTATE', 'INTERSTATE HIGHWAY', 1),
+(1, 'LOCAL', 'BOX', 14),
+(1, 'INTERSTATE HIGHWAY', 'INTERSTATE HIGHWAY', 6),
+(2, 'INTERSTATE HIGHWAY', 'INTERSTATE HIGHWAY', 1),
+(1, 'INTERSTATE HWY', 'INTERSTATE HIGHWAY', 6),
+(2, 'INTERSTATE HWY', 'INTERSTATE HIGHWAY', 1),
+(1, 'INSTITUTE', 'INSTITUTE', 1),
+(2, 'INSTITUTE', 'INSTITUTE', 19),
+(3, 'INSTITUTE', 'INSTITUTE', 24),
+(1, 'INTL', 'INTERNATIONAL', 1),
+(1, 'INTR', 'INTERSECTION', 1),
+(1, 'IP', 'INDUSTRIAL PARK', 24),
+(1, 'IPRK', 'INDUSTRIAL PARK', 24),
+(1, 'IS', 'INTERSTATE HIGHWAY', 6),
+(2, 'IS', 'ISLE', 1),
+(3, 'IS', 'ISLAND', 2),
+(1, 'ISLAND', 'ISLAND', 1),
+(2, 'ISLAND', 'ISLAND', 2),
+(1, 'ISLANDS', 'ISLANDS', 1),
+(1, 'ISLE', 'ISLE', 1),
+(1, 'ISLES', 'ISLES', 1),
+(1, 'IZQU', 'IZQUIERDO', 16),
+(1, 'IZQUIERDO', 'IZQUIERDO', 16),
+(1, 'J F K', 'JOHN F KENNEDY', 1),
+(1, 'J F KENNEDY', 'JOHN F KENNEDY', 1),
+(1, 'JA', 'JARDIN', 2),
+(1, 'JAF', 'JAF', 24),
+(1, 'JAF BOX', 'JAF BOX', 14),
+(1, 'JAF STATION', 'JAF STATION', 24),
+(1, 'JARDIN', 'JARDIN', 2),
+(2, 'JARDIN', 'JARDIN', 1),
+(1, 'JCT', 'JUNCTION', 2),
+(2, 'JCT', 'JUNCTION', 24),
+(3, 'JCT', 'JUNCTION', 1),
+(1, 'JCTION', 'JUNCTION', 2),
+(2, 'JCTION', 'JUNCTION', 24),
+(3, 'JCTION', 'JUNCTION', 1),
+(1, 'JCTN', 'JUNCTION', 2),
+(2, 'JCTN', 'JUNCTION', 24),
+(3, 'JCTN', 'JUNCTION', 1),
+(1, 'JEEP TRAIL', 'JEEP TRAIL', 2),
+(1, 'JEEP TRL', 'JEEP TRAIL', 2),
+(1, 'JFK', 'JOHN F KENNEDY', 1),
+(1, 'JNCT', 'JUNCTION', 2),
+(2, 'JNCT', 'JUNCTION', 24),
+(3, 'JNCT', 'JUNCTION', 1),
+(1, 'JOHN F KENNEDY', 'JOHN F KENNEDY', 1),
+(1, 'JUNC', 'JUNCTION', 2),
+(2, 'JUNC', 'JUNCTION', 24),
+(3, 'JUNC', 'JUNCTION', 1),
+(1, 'JUNCT', 'JUNCTION', 2),
+(2, 'JUNCT', 'JUNCTION', 24),
+(3, 'JUNCT', 'JUNCTION', 1),
+(1, 'JUNCTION', 'JUNCTION', 2),
+(2, 'JUNCTION', 'JUNCTION', 24),
+(3, 'JUNCTION', 'JUNCTION', 1),
+(1, 'JUNCTN', 'JUNCTION', 2),
+(2, 'JUNCTN', 'JUNCTION', 24),
+(3, 'JUNCTN', 'JUNCTION', 1),
+(1, 'JUNCTON', 'JUNCTION', 2),
+(2, 'JUNCTON', 'JUNCTION', 24),
+(3, 'JUNCTON', 'JUNCTION', 1),
+(1, 'K MART', 'K MART', 1),
+(1, 'KEY', 'KEY', 1),
+(2, 'KEY', 'KEY', 2),
+(1, 'KEYSTONE ROUTE', 'RURAL ROUTE', 8),
+(1, 'KEYSTONE RT', 'RURAL ROUTE', 8),
+(1, 'KEYSTONE RTE', 'RURAL ROUTE', 8),
+(1, 'KMART', 'K MART', 1),
+(1, 'KNL', 'KNOLL', 1),
+(2, 'KNL', 'KNOLL', 2),
+(1, 'KNLS', 'KNOLLS', 1),
+(2, 'KNLS', 'KNOLLS', 2),
+(1, 'KNOLL', 'KNOLL', 2),
+(1, 'KNOLLS', 'KNOLLS', 1),
+(4, 'KY', 'KEY', 2),
+(1, 'L B J', 'LYNDON B JOHNSON', 1),
+(1, 'L B JOHNSON', 'LYNDON B JOHNSON', 1),
+(1, 'L C D', 'LETTER CARRIER DEPOT', 24),
+(1, 'LA', 'LANE', 2),
+(2, 'LA', 'LA', 7),
+(1, 'LAKE', 'LAKE', 1),
+(1, 'LAKES', 'LAKE', 1),
+(1, 'LAND', 'LANDING', 2),
+(2, 'LAND', 'LANDING', 24),
+(3, 'LAND', 'LANDING', 1),
+(1, 'LANDING', 'LANDING', 2),
+(2, 'LANDING', 'LANDING', 24),
+(3, 'LANDING', 'LANDING', 1),
+(1, 'LANDINGS', 'LANDING', 2),
+(2, 'LANDINGS', 'LANDING', 24),
+(3, 'LANDINGS', 'LANDING', 1),
+(1, 'LANDNG', 'LANDING', 2),
+(1, 'LANE', 'LANE', 2),
+(1, 'LAS', 'LAS', 7),
+(1, 'LBBY', 'LOBBY', 17),
+(1, 'LBJ', 'LYNDON B JOHNSON', 1),
+(1, 'LCD', 'LETTER CARRIER DEPOT', 24),
+(1, 'LCKS', 'LOCKS', 1),
+(1, 'LDG', 'LODGE', 2),
+(2, 'LDG', 'LODGE', 24),
+(3, 'LDG', 'LODGE', 1),
+(1, 'LDGE', 'LODGE', 2),
+(2, 'LDGE', 'LODGE', 24),
+(3, 'LDGE', 'LODGE', 1),
+(1, 'LE', 'LANE', 2),
+(2, 'LE', 'LE', 1),
+(3, 'LE', 'LE', 7),
+(1, 'LEFT', 'LEFT', 17),
+(2, 'LEFT', 'LEFT', 1),
+(1, 'LES', 'LES', 7),
+(1, 'LETTER CARRIER DEPOT', 'LETTER CARRIER DEPOT', 24),
+(1, 'LEVEL', 'LEVEL', 17),
+(2, 'LEVEL', 'LEVEL', 1),
+(1, 'LF', 'LOAF', 1),
+(1, 'LGT', 'LIGHT', 1),
+(1, 'LI', 'LINE', 2),
+(1, 'LIGHT', 'LIGHT', 1),
+(1, 'LIMITS', 'LIMITS', 2),
+(2, 'LIMITS', 'LIMITS', 1),
+(1, 'LINE', 'LINE', 2),
+(2, 'LINE', 'LINE', 1),
+(1, 'LINK', 'LINK', 2),
+(2, 'LINK', 'LINK', 1),
+(1, 'LK', 'LAKE', 1),
+(2, 'LK', 'LINK', 2),
+(1, 'LKOUT', 'LOOKOUT', 2),
+(1, 'LKS', 'LAKE', 1),
+(1, 'LMTS', 'LIMITS', 2),
+(2, 'LMTS', 'LIMITS', 1),
+(1, 'LN', 'LANE', 2),
+(1, 'LNDG', 'LANDING', 2),
+(2, 'LNDG', 'LANDING', 24),
+(3, 'LNDG', 'LANDING', 1),
+(1, 'LNDNG', 'LANDING', 2),
+(2, 'LNDNG', 'LANDING', 24),
+(3, 'LNDNG', 'LANDING', 1),
+(1, 'LO', 'LOOP', 2),
+(1, 'LOAF', 'LOAF', 1),
+(1, 'LOBBY', 'LOBBY', 17),
+(1, 'LOBBY', 'LOBBY', 1),
+(1, 'LOCAL BOX', 'BOX', 14),
+(1, 'LOCAL HCR', 'HIGHWAY CONTRACT ROUTE', 8),
+(1, 'LOCAL PO BOX', 'POST OFFICE BOX', 14),
+(1, 'LOCKBOX', 'POST OFFICE BOX', 14),
+(1, 'LOCKS', 'LOCKS', 1),
+(1, 'LODGE', 'LODGE', 2),
+(2, 'LODGE', 'LODGE', 24),
+(3, 'LODGE', 'LODGE', 1),
+(1, 'LOOKOUT', 'LOOKOUT', 2),
+(2, 'LOOKOUT', 'LOOKOUT', 1),
+(1, 'LOOP', 'LOOP', 3),
+(2, 'LOOP', 'LOOP', 2),
+(1, 'LOS', 'LOS', 7),
+(1, 'LOT', 'LOT', 16),
+(2, 'LOT', 'LOT', 17),
+(3, 'LOT', 'LOT', 1),
+(1, 'LOWER', 'LOWER', 1),
+(2, 'LOWER', 'LOWER', 17),
+(1, 'LOWR', 'LOWER', 1),
+(2, 'LOWR', 'LOWER', 17),
+(1, 'LP', 'LOOP', 3),
+(2, 'LP', 'LOOP', 2),
+(1, 'LT', 'LOT', 16),
+(2, 'LT', 'LOT', 1),
+(3, 'LT', 'LOOKOUT', 2),
+(1, 'LVL', 'LEVEL', 17),
+(1, 'LWR', 'LOWER', 1),
+(2, 'LWR', 'LOWER', 17),
+(1, 'LYNDON B JOHNSON', 'LYNDON B JOHNSON', 1),
+(1, 'M H P', 'TRAILER PARK', 24),
+(1, 'M L K', 'MARTIN LUTHER KING', 1),
+(1, 'M L KING', 'MARTIN LUTHER KING', 1),
+(1, 'MAISON', 'MAISON', 24),
+(2, 'MAISON', 'MAISON', 19),
+(3, 'MAISON', 'MAISON', 1),
+(1, 'MAL', 'MALL', 2),
+(1, 'MALL', 'MALL', 2),
+(2, 'MALL', 'MALL', 24),
+(3, 'MALL', 'MALL', 1),
+(1, 'MALL IN', 'MALL', 24),
+(1, 'MANOR', 'MANOR', 2),
+(2, 'MANOR', 'MANOR', 24),
+(3, 'MANOR', 'MANOR', 1),
+(1, 'MANORS', 'MANOR', 24),
+(2, 'MANORS', 'MANOR', 1),
+(1, 'MARG', 'MARGINAL', 2),
+(1, 'MARGINAL', 'MARGINAL', 2),
+(1, 'MARKET', 'MARKET', 24),
+(2, 'MARKET', 'MARKET', 1),
+(1, 'MARKET PL', 'MARKET', 24),
+(1, 'MARKET PLACE', 'MARKET', 24),
+(1, 'MARKETPLACE', 'MARKET', 24),
+(1, 'MART', 'MARKET', 24),
+(1, 'MARTIN KING', 'MARTIN LUTHER KING', 1),
+(1, 'MARTIN L KING', 'MARTIN LUTHER KING', 1),
+(1, 'MARTIN LUTHER', 'MARTIN LUTHER KING', 1),
+(1, 'MARTIN LUTHER KING', 'MARTIN LUTHER KING', 1),
+(1, 'MARTIN LUTHER KING JR', 'MARTIN LUTHER KING', 1),
+(1, 'MAZE', 'MAZE', 2),
+(1, 'MC', 'MC', 1),
+(1, 'MDWS', 'MEADOWS', 1),
+(2, 'MDWS', 'MEADOWS', 24),
+(4, 'ME', 'MEWS', 2),
+(1, 'MEADOW', 'MEADOW', 1),
+(2, 'MEADOW', 'MEADOW', 2),
+(1, 'MEADOWS', 'MEADOWS', 1),
+(2, 'MEADOWS', 'MEADOWS', 24),
+(1, 'MED', 'MEDICAL', 1),
+(1, 'MEDICAL', 'MEDICAL', 1),
+(1, 'MEM', 'MEMORIAL', 1),
+(1, 'MEMORIAL', 'MEMORIAL', 1),
+(1, 'MERC', 'MERCADO', 24),
+(1, 'MERCADO', 'MERCADO', 24),
+(1, 'MEWS', 'MEWS', 2),
+(2, 'MEWS', 'MEWS', 1),
+(3, 'MEWS', 'MEWS', 24),
+(1, 'MH', 'MOBILE HOME', 16),
+(1, 'MH CT', 'TRAILER PARK', 24),
+(1, 'MH PARK', 'TRAILER PARK', 24),
+(1, 'MHP', 'TRAILER PARK', 24),
+(1, 'MI', 'MILE POST', 20),
+(1, 'MI POST', 'MILE', 1),
+(1, 'MIDDLE', 'MIDDLE', 17),
+(2, 'MIDDLE', 'MIDDLE', 1),
+(1, 'MILE', 'MILE', 1),
+(2, 'MILE', 'MILE POST', 20),
+(1, 'MILE POST', 'MILE', 1),
+(2, 'MILE POST', 'MILE POST', 20),
+(1, 'MILES', 'MILE', 1),
+(1, 'MILL', 'MILL', 1),
+(1, 'MILLS', 'MILLS', 1),
+(1, 'MISSION', 'MISSION', 1),
+(1, 'MKT', 'MARKET', 24),
+(1, 'MKT PL', 'MARKET', 24),
+(1, 'MKT PLACE', 'MARKET', 24),
+(1, 'MKTPL', 'MARKET', 24),
+(1, 'ML', 'MALL', 2),
+(2, 'ML', 'MALL', 24),
+(3, 'ML', 'MALL', 1),
+(1, 'ML KING', 'MARTIN LUTHER KING', 1),
+(1, 'MLK', 'MARTIN LUTHER KING', 1),
+(1, 'MLS', 'MILLS', 1),
+(1, 'MNR', 'MANOR', 2),
+(2, 'MNR', 'MANOR', 24),
+(3, 'MNR', 'MANOR', 1),
+(1, 'MNRS', 'MANOR', 24),
+(2, 'MNRS', 'MANOR', 1),
+(1, 'MNT', 'MOUNT', 1),
+(4, 'MO', 'MONTEE', 2),
+(1, 'MOB HM PK', 'TRAILER PARK', 24),
+(1, 'MOB HOME PARK', 'TRAILER PARK', 24),
+(1, 'MOBIL HOME PARK', 'TRAILER PARK', 24),
+(1, 'MOBIL HOME TRPK', 'TRAILER PARK', 24),
+(1, 'MOBILE COURT', 'TRAILER PARK', 24),
+(1, 'MOBILE CT', 'TRAILER PARK', 24),
+(1, 'MOBILE EST', 'TRAILER PARK', 24),
+(1, 'MOBILE ESTATE', 'TRAILER PARK', 24),
+(1, 'MOBILE HM PK', 'TRAILER PARK', 24),
+(1, 'MOBILE HOME', 'TRAILER PARK', 24),
+(2, 'MOBILE HOME', 'MOBILE HOME', 16),
+(1, 'MOBILE HOME PARK', 'TRAILER PARK', 24),
+(1, 'MOBILE HOME PK', 'TRAILER PARK', 24),
+(1, 'MOBILE HOME TRPK', 'TRAILER PARK', 24),
+(1, 'MOBILE HOMES', 'TRAILER PARK', 24),
+(1, 'MOBILE PARK', 'TRAILER PARK', 24),
+(1, 'MOBILE ROUTE', 'MOBILE ROUTE', 8),
+(1, 'MONTEE', 'MONTEE', 2),
+(2, 'MONTEE', 'MONTEE', 1),
+(1, 'MOOR', 'MOOR', 1),
+(2, 'MOOR', 'MOOR', 2),
+(1, 'MOTEL', 'MOTEL', 24),
+(1, 'MOTORWAY', 'MOTORWAY', 2),
+(1, 'MOUNT', 'MOUNT', 1),
+(2, 'MOUNT', 'MOUNT', 2),
+(1, 'MOUNTAIN', 'MOUNTAIN', 1),
+(2, 'MOUNTAIN', 'MOUNTAIN', 2),
+(1, 'MOUNTAINS', 'MOUNTAIN', 1),
+(1, 'MP', 'MILE', 1),
+(2, 'MP', 'MILE POST', 20),
+(1, 'MR', 'MOBILE ROUTE', 8),
+(1, 'MS', 'MS', 17),
+(1, 'MSN', 'MISSION', 1),
+(1, 'MT', 'MOUNT', 1),
+(1, 'MTD ROUTE', 'RURAL ROUTE', 8),
+(1, 'MTD RT', 'RURAL ROUTE', 8),
+(1, 'MTD RTE', 'RURAL ROUTE', 8),
+(1, 'MTL', 'MOTEL', 24),
+(1, 'MTN', 'MOUNTAIN', 1),
+(1, 'MTNS', 'MOUNTAIN', 1),
+(1, 'MTWY', 'MOTORWAY', 2),
+(1, 'MU', 'MOUNT', 2),
+(1, 'MURO', 'MURO', 2),
+(1, 'MW', 'MEADOW', 2),
+(1, 'N', 'NORTH', 22),
+(2, 'N', 'N', 18),
+(1, 'N A B', 'NAVAL AIR STATION', 1),
+(2, 'N A B', 'NAVAL AIR STATION', 24),
+(1, 'N A S', 'NAVAL AIR STATION', 1),
+(2, 'N A S', 'NAVAL AIR STATION', 24),
+(1, 'N E', 'NORTHEAST', 22),
+(1, 'N F D', 'NATL FOREST DEVELOP ROAD', 2),
+(1, 'N W', 'NORTHWEST', 22),
+(1, 'NAB', 'NAVAL AIR STATION', 1),
+(2, 'NAB', 'NAVAL AIR STATION', 24),
+(1, 'NAS', 'NAVAL AIR STATION', 1),
+(2, 'NAS', 'NAVAL AIR STATION', 24),
+(1, 'NATIONAL', 'NATIONAL', 1),
+(1, 'NATL', 'NATIONAL', 1),
+(1, 'NATL FOREST', 'NATL FOREST', 1),
+(1, 'NATL FOREST DEVELOP ROAD', 'NATL FOREST DEVELOP ROAD', 2),
+(1, 'NATL FOREST HIGHWAY', 'NATL FOREST HIGHWAY', 6),
+(1, 'NAVAL AIR BASE', 'NAVAL AIR STATION', 1),
+(2, 'NAVAL AIR BASE', 'NAVAL AIR STATION', 24),
+(1, 'NAVAL AIR STATION', 'NAVAL AIR STATION', 1),
+(2, 'NAVAL AIR STATION', 'NAVAL AIR STATION', 24),
+(1, 'NAVAL BASE', 'NAVAL AIR STATION', 1),
+(2, 'NAVAL BASE', 'NAVAL AIR STATION', 24),
+(1, 'NCK', 'NECK', 1),
+(1, 'NE', 'NORTHEAST', 22),
+(1, 'NEAR', 'NEAR', 1),
+(1, 'NECK', 'NECK', 1),
+(1, 'NF HWY', 'NATL FOREST HIGHWAY', 6),
+(1, 'NFD', 'NATL FOREST DEVELOP ROAD', 2),
+(1, 'NFD', 'NATL FOREST DEVELOP ROAD', 6),
+(1, 'NFHWY', 'NATL FOREST HIGHWAY', 6),
+(1, 'NINE', '9', 1),
+(2, 'NINE', '9', 0),
+(1, 'NINE MILE', 'NINE MILE', 1),
+(1, 'NINETEEN', '19', 0),
+(2, 'NINETEEN', '19', 1),
+(1, 'NINETEEN MILE', 'NINETEEN MILE', 1),
+(1, 'NINETEENTH', '19', 1),
+(2, 'NINETEENTH', '19', 15),
+(1, 'NINETIETH', '90', 1),
+(2, 'NINETIETH', '90', 15),
+(1, 'NINETY', '90', 0),
+(2, 'NINETY', '90', 1),
+(1, 'NINETY EIGHT', '98', 0),
+(2, 'NINETY EIGHT', '98', 1),
+(1, 'NINETY EIGHTH', '98', 1),
+(2, 'NINETY EIGHTH', '98', 15),
+(1, 'NINETY FIFTH', '95', 1),
+(2, 'NINETY FIFTH', '95', 15),
+(1, 'NINETY FIRST', '91', 1),
+(2, 'NINETY FIRST', '91', 15),
+(1, 'NINETY FIVE', '95', 0),
+(2, 'NINETY FIVE', '95', 1),
+(1, 'NINETY FOUR', '94', 0),
+(2, 'NINETY FOUR', '94', 1),
+(1, 'NINETY FOURTH', '94', 1),
+(2, 'NINETY FOURTH', '94', 15),
+(1, 'NINETY NINE', '99', 0),
+(2, 'NINETY NINE', '99', 1),
+(1, 'NINETY NINTH', '99', 1),
+(2, 'NINETY NINTH', '99', 15),
+(1, 'NINETY ONE', '91', 0),
+(2, 'NINETY ONE', '91', 1),
+(1, 'NINETY SECOND', '92', 1),
+(2, 'NINETY SECOND', '92', 15),
+(1, 'NINETY SEVEN', '97', 0),
+(2, 'NINETY SEVEN', '97', 1),
+(1, 'NINETY SEVENTH', '97', 1),
+(2, 'NINETY SEVENTH', '97', 15),
+(1, 'NINETY SIX', '96', 0),
+(2, 'NINETY SIX', '96', 1),
+(1, 'NINETY SIXTH', '96', 1),
+(2, 'NINETY SIXTH', '96', 15),
+(1, 'NINETY THIRD', '93', 1),
+(2, 'NINETY THIRD', '93', 15),
+(1, 'NINETY THREE', '93', 0),
+(2, 'NINETY THREE', '93', 1),
+(1, 'NINETY TWO', '92', 0),
+(2, 'NINETY TWO', '92', 1),
+(1, 'NINTH', '9', 1),
+(2, 'NINTH', '9', 15),
+(1, 'NO', '#', 16),
+(2, 'NO', 'NORTH', 22),
+(3, 'NO', '#', 7),
+(1, 'NOR', 'NORTH', 22),
+(1, 'NORD', 'NORD', 22),
+(1, 'NORD EST', 'NORD EST', 22),
+(1, 'NORD OUEST', 'NORD OUEST', 22),
+(1, 'NORDEST', 'NORD EST', 22),
+(1, 'NORDOUEST', 'NORD OUEST', 22),
+(1, 'NORTE', 'NORTH', 22),
+(1, 'NORTH', 'NORTH', 22),
+(1, 'NORTH & SOUTH', 'NORTH & SOUTH', 1),
+(1, 'NORTH EAST', 'NORTHEAST', 22),
+(1, 'NORTH SOUTH', 'NORTH SOUTH', 1),
+(1, 'NORTH WEST', 'NORTHWEST', 22),
+(1, 'NORTHBOUND', 'NORTHBOUND', 1),
+(2, 'NORTHBOUND', 'NORTHBOUND', 3),
+(1, 'NORTHEAST', 'NORTHEAST', 22),
+(1, 'NR', 'NEAR', 1),
+(1, 'NTH', 'NORTH', 22),
+(1, 'NUMBER', '#', 16),
+(2, 'NUMBER', '#', 7),
+(1, 'NW', 'NORTHWEST', 22),
+(1, 'O', '0', 18),
+(2, 'O', 'O', 7),
+(1, 'OESTE', 'OESTE', 22),
+(1, 'OF', 'OF', 7),
+(1, 'OF PK', 'OFFICE PARK', 24),
+(1, 'OF PRK', 'OFFICE PARK', 24),
+(1, 'OFC', 'OFFICE', 17),
+(1, 'OFC CENTER', 'OFFICE PARK', 24),
+(1, 'OFC COMPLEX', 'OFFICE PARK', 24),
+(1, 'OFC CTR', 'OFFICE PARK', 24),
+(1, 'OFC PARK', 'OFFICE PARK', 24),
+(1, 'OFC PRK', 'OFFICE PARK', 24),
+(1, 'OFFICE', 'OFFICE', 17),
+(2, 'OFFICE', 'OFFICE PARK', 24),
+(1, 'OFFICE CENTER', 'OFFICE PARK', 24),
+(1, 'OFFICE COMPLEX', 'OFFICE PARK', 24),
+(1, 'OFFICE CTR', 'OFFICE PARK', 24),
+(1, 'OFFICE PARK', 'OFFICE PARK', 24),
+(1, 'OFFICE PRK', 'OFFICE PARK', 24),
+(1, 'OFFICES', 'OFFICE PARK', 24),
+(1, 'OFPK', 'OFFICE PARK', 24),
+(1, 'OFPRK', 'OFFICE PARK', 24),
+(1, 'OLD', 'OLD', 3),
+(2, 'OLD', 'OLD', 1),
+(4, 'ON', 'ON', 7),
+(1, 'ONE', '1', 1),
+(2, 'ONE', '1', 0),
+(1, 'ONE HUNDRED', 'ONE HUNDRED', 1),
+(2, 'ONE HUNDRED', '100', 0),
+(1, 'ONE MILE', 'ONE MILE', 1),
+(1, 'ORCH', 'ORCHARD', 1),
+(1, 'ORCHARD', 'ORCHARD', 1),
+(2, 'ORCHARD', 'ORCHARD', 2),
+(1, 'OTLT', 'OUTLET', 24),
+(1, 'OUEST', 'OUEST', 22),
+(1, 'OUTLET', 'OUTLET', 24),
+(1, 'OUTLETS', 'OUTLET', 24),
+(1, 'OUTS', 'OUTSIDE OF', 1),
+(1, 'OUTSIDE', 'OUTSIDE OF', 1),
+(1, 'OVAL', 'OVAL', 2),
+(1, 'OVERPASS', 'OVERPASS', 2),
+(1, 'OVPS', 'OVERPASS', 2),
+(1, 'P BOX', 'POST OFFICE BOX', 14),
+(1, 'P BX', 'POST OFFICE BOX', 14),
+(1, 'P H', 'PENTHOUSE', 17),
+(1, 'P O', 'POST OFFICE BOX', 14),
+(1, 'P O B', 'POST OFFICE BOX', 14),
+(1, 'P O B X', 'POST OFFICE BOX', 14),
+(1, 'P O BOX', 'POST OFFICE BOX', 14),
+(1, 'P O BX', 'POST OFFICE BOX', 14),
+(1, 'P O DRAWER', 'POST OFFICE BOX', 14),
+(4, 'PA', 'PARADE', 2),
+(1, 'PAR', 'PARCELAS', 16),
+(2, 'PAR', 'PARCELAS', 1),
+(3, 'PAR', 'PARCELAS', 6),
+(1, 'PAR RD', 'PARISH ROAD', 6),
+(1, 'PAR ROAD', 'PARISH ROAD', 6),
+(1, 'PARADE', 'PARADE', 2),
+(2, 'PARADE', 'PARADE', 1),
+(1, 'PARADERO', 'PARADERO', 1),
+(1, 'PARC', 'PARC', 1),
+(2, 'PARC', 'PARC', 24),
+(3, 'PARC', 'PARC', 2),
+(1, 'PARCELAS', 'PARCELAS', 16),
+(1, 'PARISH RD', 'PARISH ROAD', 6),
+(1, 'PARISH ROAD', 'PARISH ROAD', 6),
+(1, 'PARK', 'PARK', 1),
+(2, 'PARK', 'PARK', 24),
+(3, 'PARK', 'PARK', 2),
+(1, 'PARK & SHOP', 'SHOPPING CENTER', 24),
+(1, 'PARK N SHOP', 'SHOPPING CENTER', 24),
+(1, 'PARKWAY', 'PARKWAY', 2),
+(1, 'PARKWY', 'PARKWAY', 2),
+(1, 'PARQUE', 'PARQUE', 2),
+(1, 'PARRD', 'PARISH ROAD', 6),
+(1, 'PASAJE', 'PASAJE', 2),
+(1, 'PASEO', 'PASEO', 2),
+(1, 'PASO', 'PASO', 1),
+(2, 'PASO', 'PASO', 2),
+(1, 'PASS', 'PASS', 2),
+(1, 'PASSAGE', 'PASSAGE', 2),
+(1, 'PATH', 'PATH', 2),
+(1, 'PATHWAY', 'PATHWAY', 2),
+(1, 'PAVILION', 'PAVILLION', 24),
+(2, 'PAVILION', 'PAVILLION', 1),
+(1, 'PAVILIONS', 'PAVILLION', 24),
+(2, 'PAVILIONS', 'PAVILLION', 1),
+(1, 'PAVILLION', 'PAVILLION', 24),
+(2, 'PAVILLION', 'PAVILLION', 1),
+(1, 'PAVILLIONS', 'PAVILLION', 24),
+(2, 'PAVILLIONS', 'PAVILLION', 1),
+(1, 'PAVL', 'PAVILLION', 24),
+(2, 'PAVL', 'PAVILLION', 1),
+(1, 'PD', 'POND', 1),
+(1, 'PDA', 'PARADERO', 1),
+(1, 'PENTHOUSE', 'PENTHOUSE', 17),
+(1, 'PH', 'PENTHOUSE', 17),
+(2, 'PH', 'PATH', 2),
+(1, 'PIECE', 'PIECE', 16),
+(2, 'PIECE', 'PIECE', 17),
+(1, 'PIECE', 'PIECE', 1),
+(1, 'PIER', 'PIER', 16),
+(2, 'PIER', 'PIER', 1),
+(3, 'PIER', 'PIER', 24),
+(1, 'PIKE', 'PIKE', 2),
+(1, 'PINES', 'PINES', 1),
+(2, 'PINES', 'PINES', 2),
+(1, 'PISO', 'PISO', 16),
+(1, 'PISTA', 'PISTA', 2),
+(1, 'PK', 'PARK', 1),
+(2, 'PK', 'PARK', 24),
+(3, 'PK', 'PARK', 2),
+(1, 'PKE', 'PIKE', 2),
+(1, 'PKW', 'PARKWAY', 2),
+(1, 'PKWAY', 'PARKWAY', 2),
+(1, 'PKWY', 'PARKWAY', 2),
+(1, 'PKY', 'PARKWAY', 2),
+(1, 'PL', 'PLACE', 2),
+(1, 'PLACE', 'PLACE', 2),
+(1, 'PLAIN', 'PLAINS', 1),
+(1, 'PLAINS', 'PLAINS', 1),
+(1, 'PLANTATION', 'PLANTATION', 24),
+(2, 'PLANTATION', 'PLANTATION', 1),
+(1, 'PLATEAU', 'PLATEAU', 1),
+(2, 'PLATEAU', 'PLATEAU', 2),
+(1, 'PLAZA', 'PLAZA', 2),
+(2, 'PLAZA', 'PLAZA', 24),
+(1, 'PLC', 'PLACE', 2),
+(1, 'PLN', 'PLAINS', 1),
+(1, 'PLNS', 'PLAINS', 1),
+(1, 'PLNT', 'PLANTATION', 24),
+(1, 'PLZ', 'PLAZA', 2),
+(2, 'PLZ', 'PLAZA', 24),
+(1, 'PLZA', 'PLAZA', 2),
+(2, 'PLZA', 'PLAZA', 24),
+(1, 'PM', 'PROMENADE', 2),
+(1, 'PNES', 'PINES', 1),
+(1, 'PO', 'POST OFFICE BOX', 14),
+(1, 'PO B', 'POST OFFICE BOX', 14),
+(1, 'PO B OX', 'POST OFFICE BOX', 14),
+(1, 'PO B X', 'POST OFFICE BOX', 14),
+(1, 'PO BOX', 'POST OFFICE BOX', 14),
+(1, 'PO BX', 'POST OFFICE BOX', 14),
+(1, 'PO DRAWER', 'POST OFFICE BOX', 14),
+(1, 'POB', 'POST OFFICE BOX', 14),
+(1, 'POBOX', 'POST OFFICE BOX', 14),
+(1, 'POINT', 'POINT', 1),
+(2, 'POINT', 'POINT', 2),
+(1, 'PORT', 'PORT', 1),
+(2, 'PORT', 'PORT', 2),
+(1, 'POST BOX', 'POST OFFICE BOX', 14),
+(1, 'POST BX', 'POST OFFICE BOX', 14),
+(1, 'POST OFFICE BOX', 'POST OFFICE BOX', 14),
+(1, 'POSTAL BOX', 'POST OFFICE BOX', 14),
+(1, 'POSTAL BX', 'POST OFFICE BOX', 14),
+(1, 'POSTAL OUTLET', 'POSTAL OUTLET', 14),
+(2, 'POSTAL OUTLET', 'POSTAL OUTLET', 24),
+(1, 'POSTOFFICE BOX', 'POST OFFICE BOX', 14),
+(1, 'POSTOFFICE BX', 'POST OFFICE BOX', 14),
+(1, 'POUCH', 'POST OFFICE BOX', 14),
+(4, 'PR', 'PARK', 2),
+(1, 'PR HI', 'PROVINCIAL HIGHWAY', 6),
+(1, 'PR HIGHWAY', 'PROVINCIAL HIGHWAY', 6),
+(1, 'PR HWY', 'PROVINCIAL HIGHWAY', 6),
+(1, 'PR ROUTE', 'STATE ROUTE', 6),
+(1, 'PR RT', 'PROVINCIAL ROUTE', 6),
+(1, 'PR RTE', 'PROVINCIAL ROUTE', 6),
+(1, 'PRAIRIE', 'PRAIRIE', 1),
+(1, 'PREMIERE', '1', 1),
+(2, 'PREMIERE', '1', 15),
+(1, 'PRIVATE', 'PRIVATE', 1),
+(2, 'PRIVATE', 'PRIVATE', 2),
+(1, 'PRK', 'PARK', 1),
+(2, 'PRK', 'PARK', 24),
+(3, 'PRK', 'PARK', 2),
+(1, 'PRO', 'PROFESSIONAL', 1),
+(1, 'PROF', 'PROFESSIONAL', 1),
+(1, 'PROFESSIONAL', 'PROFESSIONAL', 1),
+(1, 'PROJ', 'PROJECTS', 24),
+(1, 'PROJECTS', 'PROJECTS', 24),
+(1, 'PROM', 'PROMENADE', 24),
+(2, 'PROM', 'PROMENADE', 2),
+(1, 'PROMENADE', 'PROMENADE', 24),
+(2, 'PROMENADE', 'PROMENADE', 2),
+(1, 'PROVINCIAL HI', 'PROVINCIAL HIGHWAY', 6),
+(1, 'PROVINCIAL HIGHWAY', 'PROVINCIAL HIGHWAY', 6),
+(1, 'PROVINCIAL HWY', 'PROVINCIAL HIGHWAY', 6),
+(1, 'PROVINCIAL HY', 'PROVINCIAL HIGHWAY', 6),
+(1, 'PROVINCIAL ROUTE', 'PROVINCIAL ROUTE', 6),
+(1, 'PROVINCIAL RT', 'PROVINCIAL ROUTE', 6),
+(1, 'PROVINCIAL RTE', 'PROVINCIAL ROUTE', 6),
+(1, 'PRQE', 'PARQUE', 2),
+(1, 'PRRD', 'PARISH ROAD', 6),
+(1, 'PRT', 'PORT', 1),
+(2, 'PRT', 'PORT', 2),
+(1, 'PSC', 'PSC', 8),
+(1, 'PSO', 'PASEO', 2),
+(1, 'PSTA', 'PISTA', 2),
+(1, 'PT', 'POINT', 1),
+(2, 'PT', 'POINT', 2),
+(1, 'PTE', 'PUENTE', 2),
+(1, 'PU', 'PLATEAU', 2),
+(1, 'PUENTE', 'PUENTE', 2),
+(1, 'PV', 'PRIVATE', 2),
+(1, 'PVT', 'PRIVATE', 1),
+(2, 'PVT', 'PRIVATE', 2),
+(1, 'PW', 'PATHWAY', 2),
+(1, 'PWY', 'PARKWAY', 2),
+(1, 'PWKY', 'PARKWAY', 2),
+(1, 'PY', 'PARKWAY', 2),
+(1, 'QTRS', 'QUARTERS', 24),
+(1, 'QU', 'QUAY', 2),
+(1, 'QUAI', 'QUAI', 2),
+(2, 'QUAI', 'QUAI', 1),
+(1, 'QUARTERS', 'QUARTERS', 24),
+(1, 'QUATRE', '4', 1),
+(2, 'QUATRE', '3', 0),
+(1, 'QUATRIEME', 'QUATRIEME', 1),
+(1, 'QUAY', 'QUAY', 2),
+(2, 'QUAY', 'QUAY', 1),
+(1, 'QUAY RD', 'QUAY ROAD', 6),
+(1, 'QUAY ROAD', 'QUAY ROAD', 6),
+(1, 'R', 'R', 18),
+(2, 'R', 'RURAL ROUTE', 8),
+(1, 'R D', 'RURAL ROUTE', 8),
+(1, 'R D NO', 'RURAL ROUTE', 8),
+(1, 'R F D', 'RURAL ROUTE', 8),
+(1, 'R NO', 'RURAL ROUTE', 8),
+(1, 'R P O', 'POSTAL OUTLET', 14),
+(2, 'R P O', 'POSTAL OUTLET', 24),
+(1, 'R R', 'RURAL ROUTE', 8),
+(1, 'R R NO', 'RURAL ROUTE', 8),
+(1, 'R RT', 'RURAL ROUTE', 8),
+(1, 'R RTE', 'RURAL ROUTE', 8),
+(1, 'R T', 'ROUTE', 6),
+(2, 'R T', 'ROUTE', 8),
+(1, 'RA', 'RANGE', 2),
+(1, 'RADIAL', 'RADIAL', 1),
+(1, 'RADL', 'RADIAL', 1),
+(1, 'RAMAL', 'RAMAL', 2),
+(1, 'RAMP', 'RAMP', 2),
+(1, 'RAMPA', 'RAMPA', 2),
+(1, 'RANCH', 'RANCH', 1),
+(1, 'RANCH TO MARKET ROAD', 'RANCH TO MARKET ROAD', 6),
+(1, 'RANCH TO MARKET ROAD', 'RANCH TO MARKET ROAD', 2),
+(1, 'RANCH RD', 'RANCH ROAD', 6),
+(1, 'RANCH RD', 'RANCH ROAD', 2),
+(1, 'RANCH ROAD', 'RANCH ROAD', 6),
+(1, 'RANCH ROAD', 'RANCH ROAD', 2),
+(1, 'RANG', 'RANG', 2),
+(2, 'RANG', 'RANG', 1),
+(1, 'RANGE', 'RANGE', 2),
+(2, 'RANGE', 'RANGE', 1),
+(1, 'RANGE ROAD', 'RANGE ROAD', 6),
+(1, 'RANGE ROAD', 'RANGE ROAD', 2),
+(1, 'RAPIDS', 'RAPIDS', 1),
+(1, 'RD', 'ROAD', 2),
+(1, 'RDG', 'RIDGE', 1),
+(2, 'RDG', 'RIDGE', 2),
+(1, 'RDPT', 'ROND POINT', 2),
+(1, 'RDS', 'ROADS', 1),
+(1, 'RDWY', 'ROADWAY', 2),
+(1, 'RE', 'RIDGE', 2),
+(1, 'REAR', 'REAR', 17),
+(1, 'REAR', 'REAR', 1),
+(1, 'RES', 'RESIDENCIA', 24),
+(1, 'RES HWY', 'RESERVATION HIGHWAY', 6),
+(1, 'RESERVATION HIGHWAY', 'RESERVATION HIGHWAY', 6),
+(1, 'RESHY', 'RESERVATION HIGHWAY', 6),
+(1, 'RESIDENCIA', 'RESIDENCIA', 24),
+(1, 'RESORT', 'RESORT', 1),
+(2, 'RESORT', 'RESORT', 24),
+(1, 'REST', 'REST', 1),
+(1, 'REZ DE CHAUSEE', 'REZ DE CHAUSEE', 17),
+(1, 'RFD', 'RURAL ROUTE', 8),
+(1, 'RFD ROUTE', 'RURAL ROUTE', 8),
+(1, 'RG', 'RANGE', 2),
+(2, 'RG', 'RANGE', 1),
+(1, 'RGHT', 'RIGHT', 17),
+(4, 'RI', 'RISE', 2),
+(1, 'RIDGE', 'RIDGE', 1),
+(2, 'RIDGE', 'RIDGE', 2),
+(1, 'RIGHT', 'RIGHT', 17),
+(1, 'RISE', 'RISE', 2),
+(1, 'RIV', 'RIVER', 1),
+(1, 'RIVER', 'RIVER', 1),
+(1, 'RL', 'RUELLE', 2),
+(1, 'RLE', 'RUELLE', 2),
+(1, 'RM', 'ROOM', 16),
+(2, 'RM', 'ROOM', 17),
+(3, 'RM', 'RANCH TO MARKET ROAD', 6),
+(4, 'RM', 'RANCH TO MARKET ROAD', 2),
+(1, 'RM RD', 'RANCH TO MARKET ROAD', 6),
+(1, 'RM RD', 'RANCH TO MARKET ROAD', 2),
+(1, 'RML', 'RAMAL', 2),
+(1, 'RMP', 'RAMP', 2),
+(1, 'RN', 'RUN', 2),
+(1, 'RNCH', 'RANCH', 1),
+(1, 'RNG ROAD', 'RANGE ROAD', 6),
+(1, 'RNG ROAD', 'RANGE ROAD', 2),
+(1, 'RO', 'ROUTE', 2),
+(1, 'ROAD', 'ROAD', 2),
+(1, 'ROADS', 'ROADS', 1),
+(1, 'ROADWAY', 'ROADWAY', 2),
+(1, 'ROND POINT', 'ROND POINT', 2),
+(1, 'ROOM', 'ROOM', 16),
+(1, 'ROUTE', 'ROUTE', 6),
+(2, 'ROUTE', 'ROUTE', 8),
+(3, 'ROUTE', 'ROUTE', 2),
+(1, 'ROUTE NO', 'ROUTE', 6),
+(2, 'ROUTE NO', 'ROUTE', 8),
+(1, 'ROUTE NUMBER', 'ROUTE', 6),
+(2, 'ROUTE NUMBER', 'ROUTE', 8),
+(1, 'ROUTES', 'ROUTES', 6),
+(1, 'ROW', 'ROW', 2),
+(1, 'RP', 'RAMP', 2),
+(1, 'RPDS', 'RAPIDS', 1),
+(1, 'RPO', 'POSTAL OUTLET', 14),
+(2, 'RPO', 'POSTAL OUTLET', 24),
+(1, 'RR', 'RURAL ROUTE', 8),
+(1, 'RR NO', 'RURAL ROUTE', 8),
+(1, 'RRT', 'RURAL ROUTE', 8),
+(1, 'RRTE', 'RURAL ROUTE', 8),
+(1, 'RSRT', 'RESORT', 1),
+(2, 'RSRT', 'RESORT', 24),
+(1, 'RT', 'ROUTE', 6),
+(2, 'RT', 'ROUTE', 8),
+(1, 'RT NO', 'ROUTE', 6),
+(2, 'RT NO', 'ROUTE', 8),
+(1, 'RTE ROUTE CORD', 'COUNTY ROAD', 6),
+(1, 'RTE ROUTE COUNTY ROAD', 'COUNTY ROAD', 2),
+(1, 'RTE', 'ROUTE', 6),
+(2, 'RTE', 'ROUTE', 8),
+(3, 'RTE', 'ROUTE', 2),
+(1, 'RU', 'RUE', 2),
+(1, 'RUE', 'RUE', 2),
+(1, 'RUELLE', 'RUELLE', 2),
+(1, 'RUN', 'RUN', 2),
+(2, 'RUN', 'RUN', 1),
+(1, 'RURAL', 'RURAL', 1),
+(1, 'RURAL', 'RURAL ROUTE', 8),
+(1, 'RURAL ROUTE', 'RURAL ROUTE', 8),
+(1, 'RURAL ROUTE NO', 'RURAL ROUTE', 8),
+(1, 'RURAL RT', 'RURAL ROUTE', 8),
+(1, 'RUTA', 'RUTA', 2),
+(1, 'RW', 'ROW', 2),
+(1, 'S', 'SOUTH', 22),
+(2, 'S', 'S', 18),
+(1, 'S / C', 'SHOPPING CENTER', 24),
+(1, 'S C', 'SHOPPING CENTER', 24),
+(1, 'S E', 'SOUTH EAST', 22),
+(1, 'S R', 'STAR ROUTE', 6),
+(2, 'S R', 'STAR ROUTE', 8),
+(1, 'S RT', 'STAR ROUTE', 6),
+(2, 'S RT', 'STAR ROUTE', 8),
+(1, 'S W', 'SOUTHWEST', 22),
+(1, 'S/C', 'SHOPPING CENTER', 24),
+(1, 'SAINT', 'SAINT', 1),
+(1, 'SAINTE', 'SAINTE', 1),
+(1, 'SANTA FE', 'SANTA FE', 1),
+(1, 'SC', 'SHOPPING CENTER', 24),
+(1, 'SCH', 'SCHOOL', 24),
+(1, 'SCHOOL', 'SCHOOL', 24),
+(2, 'SCHOOL', 'SCHOOL', 1),
+(1, 'SE', 'SOUTHEAST', 22),
+(1, 'SEARING ROUTE', 'RURAL ROUTE', 8),
+(1, 'SEARING RT', 'RURAL ROUTE', 8),
+(1, 'SEARING RTE', 'RURAL ROUTE', 8),
+(1, 'SECOND', '2', 1),
+(2, 'SECOND', '2', 15),
+(1, 'SEM', 'SEMINARY', 24),
+(1, 'SEMINARY', 'SEMINARY', 24),
+(2, 'SEMINARY', 'SEMINARY', 1),
+(1, 'SENDERO', 'SENDERO', 2),
+(1, 'SENT', 'SENTIER', 2),
+(1, 'SENTIER', 'SENTIER', 2),
+(1, 'SER RD', 'SERVICE ROAD', 2),
+(1, 'SERV RD', 'SERVICE ROAD', 2),
+(1, 'SERV ROAD', 'SERVICE ROAD', 2),
+(1, 'SERVICE', 'SERVICE', 1),
+(2, 'SERVICE', 'SERVICE ROAD', 2),
+(1, 'SERVICE RD', 'SERVICE ROAD', 2),
+(1, 'SERVICE ROAD', 'SERVICE ROAD', 2),
+(1, 'SEVEN', '7', 0),
+(2, 'SEVEN', '7', 1),
+(1, 'SEVEN CORNERS', 'SEVEN CORNERS', 1),
+(2, 'SEVEN CORNERS', 'SEVEN CORNERS', 24),
+(1, 'SEVEN MILE', 'SEVEN MILE', 1),
+(1, 'SEVENTEEN', '17', 0),
+(2, 'SEVENTEEN', '17', 1),
+(1, 'SEVENTEEN MILE', 'SEVENTEEN MILE', 1),
+(1, 'SEVENTEENTH', '17', 1),
+(2, 'SEVENTEENTH', '17', 15),
+(1, 'SEVENTH', '7', 1),
+(2, 'SEVENTH', '7', 15),
+(1, 'SEVENTIETH', '70', 1),
+(2, 'SEVENTIETH', '70', 15),
+(1, 'SEVENTY', '70', 0),
+(2, 'SEVENTY', '70', 1),
+(1, 'SEVENTY EIGHT', '78', 0),
+(2, 'SEVENTY EIGHT', '78', 1),
+(1, 'SEVENTY EIGHTH', '78', 1),
+(2, 'SEVENTY EIGHTH', '78', 15),
+(1, 'SEVENTY FIFTH', '75', 1),
+(2, 'SEVENTY FIFTH', '75', 15),
+(1, 'SEVENTY FIRST', '71', 1),
+(2, 'SEVENTY FIRST', '71', 15),
+(1, 'SEVENTY FIVE', '75', 0),
+(2, 'SEVENTY FIVE', '75', 1),
+(1, 'SEVENTY FOUR', '74', 0),
+(2, 'SEVENTY FOUR', '74', 1),
+(1, 'SEVENTY FOURTH', '74', 1),
+(2, 'SEVENTY FOURTH', '74', 15),
+(1, 'SEVENTY NINE', '79', 0),
+(2, 'SEVENTY NINE', '79', 1),
+(1, 'SEVENTY NINTH', '79', 1),
+(2, 'SEVENTY NINTH', '79', 15),
+(1, 'SEVENTY ONE', '71', 0),
+(2, 'SEVENTY ONE', '71', 1),
+(1, 'SEVENTY SECOND', '72', 1),
+(2, 'SEVENTY SECOND', '72', 15),
+(1, 'SEVENTY SEVEN', '77', 0),
+(2, 'SEVENTY SEVEN', '77', 1),
+(1, 'SEVENTY SEVENTH', '77', 1),
+(2, 'SEVENTY SEVENTH', '77', 15),
+(1, 'SEVENTY SIX', '76', 0),
+(2, 'SEVENTY SIX', '76', 1),
+(1, 'SEVENTY SIXTH', '76', 1),
+(2, 'SEVENTY SIXTH', '76', 15),
+(1, 'SEVENTY THIRD', '73', 1),
+(2, 'SEVENTY THIRD', '73', 15),
+(1, 'SEVENTY THREE', '73', 0),
+(2, 'SEVENTY THREE', '73', 1),
+(1, 'SEVENTY TWO', '72', 0),
+(2, 'SEVENTY TWO', '72', 1),
+(1, 'SH', 'SHOPPING CENTER', 24),
+(1, 'SH CTR', 'SHOPPING CENTER', 24),
+(1, 'SHC', 'SHOPPING CENTER', 24),
+(1, 'SHL', 'SHOAL', 1),
+(1, 'SHLS', 'SHOALS', 1),
+(1, 'SHOAL', 'SHOAL', 1),
+(1, 'SHOALS', 'SHOALS', 1),
+(1, 'SHOP', 'SHOPPING CENTER', 24),
+(1, 'SHOP CEN', 'SHOPPING CENTER', 24),
+(1, 'SHOP CENTER', 'SHOPPING CENTER', 24),
+(1, 'SHOP CTR', 'SHOPPING CENTER', 24),
+(1, 'SHOP MALL', 'MALL', 24),
+(1, 'SHOP MART', 'SHOPPING MART', 24),
+(1, 'SHOP N SAVE', 'SHOPPING CENTER', 24),
+(1, 'SHOP PLZ', 'PLAZA', 24),
+(1, 'SHOP SQ', 'SHOPPING SQUARE', 24),
+(1, 'SHOPETTE', 'SHOPPING CENTER', 24),
+(1, 'SHOPPERS', 'SHOPPING CENTER', 24),
+(1, 'SHOPPES', 'SHOPPING CENTER', 24),
+(1, 'SHOPPETTE', 'SHOPPING CENTER', 24),
+(1, 'SHOPPING', 'SHOPPING CENTER', 24),
+(1, 'SHOPPING CENT', 'SHOPPING CENTER', 24),
+(1, 'SHOPPING CENTE', 'SHOPPING CENTER', 24),
+(1, 'SHOPPING CENTER', 'SHOPPING CENTER', 24),
+(1, 'SHOPPING CNTR', 'SHOPPING CENTER', 24),
+(1, 'SHOPPING CTR', 'SHOPPING CENTER', 24),
+(1, 'SHOPPING MALL', 'MALL', 24),
+(1, 'SHOPPING PARK', 'SHOPPING CENTER', 24),
+(1, 'SHOPPING PLAZA', 'PLAZA', 24),
+(1, 'SHOPS', 'SHOPPING CENTER', 24),
+(1, 'SHORE', 'SHORE', 1),
+(1, 'SHP', 'SHOPPING CENTER', 24),
+(1, 'SHP CENTER', 'SHOPPING CENTER', 24),
+(1, 'SHP CT', 'SHOPPING CENTER', 24),
+(1, 'SHP CTR', 'SHOPPING CENTER', 24),
+(1, 'SHP ML', 'MALL', 24),
+(1, 'SHP PL', 'PLAZA', 24),
+(1, 'SHPCT', 'SHOPPING CENTER', 24),
+(1, 'SHPG', 'SHOPPING CENTER', 24),
+(1, 'SHPG CENTER', 'SHOPPING CENTER', 24),
+(1, 'SHPG CNTR', 'SHOPPING CENTER', 24),
+(1, 'SHPG CTR', 'SHOPPING CENTER', 24),
+(1, 'SHPML', 'MALL', 24),
+(1, 'SHPPL', 'PLAZA', 24),
+(1, 'SHR', 'SHORE', 1),
+(1, 'SIDE', 'SIDE', 17),
+(2, 'SIDE', 'SIDE', 1),
+(1, 'SIDE ROAD', 'SIDE ROAD', 2),
+(1, 'SITE', 'SITE', 19),
+(2, 'SITE', 'SITE', 1),
+(1, 'SIX', '6', 0),
+(2, 'SIX', '6', 1),
+(1, 'SIX MILE', 'SIX MILE', 1),
+(1, 'SIXTEEN', '16', 0),
+(2, 'SIXTEEN', '16', 1),
+(1, 'SIXTEEN MILE', 'SIXTEEN MILE', 1),
+(1, 'SIXTEENTH', '16', 1),
+(2, 'SIXTEENTH', '16', 15),
+(1, 'SIXTH', '6', 1),
+(2, 'SIXTH', '6', 15),
+(1, 'SIXTIETH', '60', 1),
+(2, 'SIXTIETH', '60', 15),
+(1, 'SIXTY', '60', 0),
+(2, 'SIXTY', '60', 1),
+(1, 'SIXTY EIGHT', '68', 0),
+(2, 'SIXTY EIGHT', '68', 1),
+(1, 'SIXTY EIGHTH', '68', 1),
+(2, 'SIXTY EIGHTH', '68', 15),
+(1, 'SIXTY FIFTH', '65', 1),
+(2, 'SIXTY FIFTH', '65', 15),
+(1, 'SIXTY FIRST', '61', 1),
+(2, 'SIXTY FIRST', '61', 15),
+(1, 'SIXTY FIVE', '65', 0),
+(2, 'SIXTY FIVE', '65', 1),
+(1, 'SIXTY FOUR', '64', 0),
+(2, 'SIXTY FOUR', '64', 1),
+(1, 'SIXTY FOURTH', '64', 1),
+(2, 'SIXTY FOURTH', '64', 15),
+(1, 'SIXTY NINE', '69', 0),
+(2, 'SIXTY NINE', '69', 1),
+(1, 'SIXTY NINTH', '69', 1),
+(2, 'SIXTY NINTH', '69', 15),
+(1, 'SIXTY ONE', '61', 0),
+(2, 'SIXTY ONE', '61', 1),
+(1, 'SIXTY SECOND', '62', 1),
+(2, 'SIXTY SECOND', '62', 15),
+(1, 'SIXTY SEVEN', '67', 0),
+(2, 'SIXTY SEVEN', '67', 1),
+(1, 'SIXTY SEVENTH', '67', 1),
+(2, 'SIXTY SEVENTH', '67', 15),
+(1, 'SIXTY SIX', '66', 0),
+(2, 'SIXTY SIX', '66', 1),
+(1, 'SIXTY SIXTH', '66', 1),
+(2, 'SIXTY SIXTH', '66', 15),
+(1, 'SIXTY THIRD', '63', 1),
+(2, 'SIXTY THIRD', '63', 15),
+(1, 'SIXTY THREE', '63', 0),
+(2, 'SIXTY THREE', '63', 1),
+(1, 'SIXTY TWO', '62', 0),
+(2, 'SIXTY TWO', '62', 1),
+(1, 'SKWY', 'SKYWAY', 2),
+(1, 'SKYWAY', 'SKYWAY', 2),
+(1, 'SLIP', 'SLIP', 16),
+(2, 'SLIP', 'SLIP', 1),
+(1, 'SM', 'MALL', 24),
+(1, 'SMT', 'SUMMIT', 1),
+(2, 'SMT', 'SHOPPING MART', 24),
+(1, 'SNDR', 'SENDERO', 2),
+(1, 'SO', 'SOUTH', 22),
+(1, 'SOTA', 'SOTANO', 16),
+(2, 'SOTA', 'SOTA', 1),
+(1, 'SOTAN', 'SOTANO', 16),
+(1, 'SOTANO', 'SOTANO', 16),
+(1, 'SOUS SOL', 'SOUS SOL', 17),
+(1, 'SOUTH', 'SOUTH', 22),
+(1, 'SOUTH EAST', 'SOUTHEAST', 22),
+(1, 'SOUTH WEST', 'SOUTHWEST', 22),
+(1, 'SOUTHBOUND', 'SOUTHBOUND', 1),
+(2, 'SOUTHBOUND', 'SOUTHBOUND', 3),
+(1, 'SOUTHEAST', 'SOUTHEAST', 22),
+(1, 'SOUTHWEST', 'SOUTHWEST', 22),
+(1, 'SP', 'SPACE', 16),
+(2, 'SP', 'SHOPPING PLAZA', 24),
+(1, 'SPACE', 'SPACE', 16),
+(2, 'SPACE', 'SPACE', 1),
+(1, 'SPC', 'SPACE', 16),
+(1, 'SPDWY', 'SPEEDWAY', 2),
+(1, 'SPEEDWAY', 'SPEEDWAY', 2),
+(1, 'SPG', 'SPRING', 1),
+(1, 'SPGS', 'SPRING', 1),
+(1, 'SPR', 'SPRING', 1),
+(1, 'SPRG', 'SPRING', 1),
+(1, 'SPRING', 'SPRING', 1),
+(1, 'SPRINGS', 'SPRING', 1),
+(1, 'SPUR', 'SPUR', 3),
+(2, 'SPUR', 'SPUR', 2),
+(3, 'SPUR', 'SPUR', 1),
+(1, 'SPURNGS', 'SPUR', 1),
+(1, 'SQ', 'SQUARE', 2),
+(2, 'SQ', 'SQUARE', 24),
+(1, 'SQR', 'SQUARE', 2),
+(2, 'SQR', 'SQUARE', 24),
+(1, 'SQU', 'SQUARE', 2),
+(2, 'SQU', 'SQUARE', 24),
+(1, 'SQUARE', 'SQUARE', 2),
+(2, 'SQUARE', 'SQUARE', 24),
+(1, 'SQURE', 'SQUARE', 2),
+(2, 'SQURE', 'SQUARE', 24),
+(1, 'SR', 'STAR ROUTE', 6),
+(2, 'SR', 'STAR ROUTE', 8),
+(3, 'SR', 'STAR ROUTE', 1),
+(4, 'SR', 'SIDE ROAD', 2),
+(1, 'SRA', 'RURAL ROUTE', 8),
+(1, 'SRV RD', 'SERVICE ROAD', 2),
+(1, 'SRV RTE', 'SERVICE ROUTE', 2),
+(1, 'SRVC', 'SERVICE ROAD', 2),
+(1, 'SRVRD', 'SERVICE ROAD', 2),
+(1, 'SRVRTE', 'SERVICE ROAD', 2),
+(1, 'SS', 'SUBURBAN SERVICE', 8),
+(1, 'ST', 'STREET', 2),
+(2, 'ST', 'SAINT', 1),
+(1, 'ST HI', 'STATE HIGHWAY', 6),
+(1, 'ST HIGHWAY', 'STATE HIGHWAY', 6),
+(1, 'ST HWY', 'STATE HIGHWAY', 6),
+(1, 'ST HY', 'STATE HIGHWAY', 6),
+(1, 'ST R', 'STAR ROUTE', 6),
+(2, 'ST R', 'STAR ROUTE', 8),
+(1, 'ST RD', 'STATE ROAD', 6),
+(1, 'ST ROAD', 'STATE ROAD', 6),
+(1, 'ST ROUTE', 'STATE ROUTE', 6),
+(2, 'ST ROUTE', 'STAR ROUTE', 8),
+(1, 'ST RT', 'STATE ROUTE', 6),
+(2, 'ST RT', 'STAR ROUTE', 8),
+(1, 'ST RTE', 'STATE ROUTE', 6),
+(2, 'ST RTE', 'STAR ROUTE', 8),
+(1, 'STA', 'STATION', 2),
+(2, 'STA', 'STATION', 24),
+(3, 'STA', 'STATION', 1),
+(1, 'STALL', 'STALL', 16),
+(2, 'STALL', 'STALL', 1),
+(1, 'STAR ROUTE', 'STAR ROUTE', 8),
+(1, 'STAR RT', 'STAR ROUTE', 8),
+(1, 'STAT', 'STATION', 2),
+(2, 'STAT', 'STATION', 24),
+(3, 'STAT', 'STATION', 1),
+(1, 'STATE', 'STATE', 1),
+(2, 'STATE', 'STATE ROAD', 6),
+(1, 'STATE HI', 'STATE HIGHWAY', 6),
+(1, 'STATE HIGHWAY', 'STATE HIGHWAY', 6),
+(1, 'STATE HWY', 'STATE HIGHWAY', 6),
+(1, 'STATE HY', 'STATE HIGHWAY', 6),
+(1, 'STATE RD', 'STATE ROAD', 6),
+(1, 'STATE ROAD', 'STATE ROAD', 6),
+(1, 'STATE ROUTE', 'STATE ROUTE', 6),
+(1, 'STATE RT', 'STATE ROUTE', 6),
+(1, 'STATE RTE', 'STATE ROUTE', 6),
+(1, 'STATION', 'STATION', 2),
+(2, 'STATION', 'STATION', 24),
+(3, 'STATION', 'STATION', 1),
+(1, 'STATION FORCES', 'STATION FORCES', 24),
+(1, 'STATN', 'STATION', 2),
+(2, 'STATN', 'STATION', 24),
+(3, 'STATN', 'STATION', 1),
+(1, 'STE', 'SUITE', 16),
+(2, 'STE', 'SAINTE', 1),
+(1, 'STES', 'SUITES', 24),
+(1, 'STH', 'SOUTH', 22),
+(1, 'STHW', 'STATE HIGHWAY', 6),
+(1, 'STHWY', 'STATE HIGHWAY', 6),
+(1, 'STHY', 'STATE HIGHWAY', 6),
+(1, 'STLL', 'STALL', 16),
+(1, 'STN', 'STATION', 2),
+(2, 'STN', 'STATION', 24),
+(3, 'STN', 'STATION', 1),
+(1, 'STN FORCES', 'STATION FORCES', 24),
+(1, 'STOP', 'STOP', 16),
+(2, 'STOP', 'STOP', 1),
+(1, 'STOP & SHOP', 'SHOPPING CENTER', 24),
+(1, 'STOP & SHOP CTR', 'SHOPPING CENTER', 24),
+(1, 'STOR', 'STORE', 16),
+(2, 'STOR', 'STORE', 1),
+(1, 'STORE', 'STORE', 16),
+(2, 'STORE', 'STORE', 1),
+(3, 'STORE', 'SHOPPING CENTER', 24),
+(1, 'STORES', 'SHOPPING CENTER', 24),
+(1, 'STR', 'STREET', 2),
+(1, 'STRA', 'STRAVENUE', 2),
+(1, 'STRAV', 'STRAVENUE', 2),
+(1, 'STRAVE', 'STRAVENUE', 2),
+(1, 'STRAVEN', 'STRAVENUE', 2),
+(1, 'STRAVENUE', 'STRAVENUE', 2),
+(1, 'STRAVN', 'STRAVENUE', 2),
+(1, 'STRD', 'STATE ROAD', 2),
+(1, 'STREAM', 'STREAM', 1),
+(1, 'STREET', 'STREET', 2),
+(1, 'STREETS', 'STREETS', 1),
+(1, 'STRIP', 'STRIP', 1),
+(2, 'STRIP', 'STRIP', 2),
+(1, 'STRM', 'STREAM', 1),
+(1, 'STRP', 'STRIP', 1),
+(2, 'STRP', 'STRIP', 2),
+(1, 'STRT', 'STAR ROUTE', 6),
+(2, 'STRT', 'STAR ROUTE', 8),
+(1, 'STRVN', 'STRAVENUE', 2),
+(1, 'STRVNUE', 'STRAVENUE', 2),
+(1, 'STS', 'STREETS', 1),
+(1, 'STUDIO', 'STUDIO', 16),
+(2, 'STUDIO', 'STUDIO', 1),
+(1, 'SU', 'SUITE', 16),
+(1, 'SUBD', 'SUBDIVISION', 1),
+(2, 'SUBD', 'SUBDIVISION', 2),
+(1, 'SUBDIV', 'SUBDIVISION', 1),
+(2, 'SUBDIV', 'SUBDIVISION', 2),
+(1, 'SUBDIVISION', 'SUBDIVISION', 1),
+(2, 'SUBDIVISION', 'SUBDIVISION', 2),
+(1, 'SUBURBAN ROUTE', 'RURAL ROUTE', 8),
+(1, 'SUBURBAN RT', 'RURAL ROUTE', 8),
+(1, 'SUBURBAN RTE', 'RURAL ROUTE', 8),
+(1, 'SUBURBAN SERVICE', 'SUBURBAN SERVICE', 8),
+(1, 'SUD', 'SUD', 22),
+(1, 'SUD EST', 'SUD EST', 22),
+(1, 'SUD OUEST', 'SUD OUEST', 22),
+(1, 'SUDEST', 'SUD EST', 22),
+(1, 'SUDOUEST', 'SUD OUEST', 22),
+(1, 'SUIT', 'SUITE', 16),
+(2, 'SUIT', 'SUITE', 1),
+(1, 'SUITE', 'SUITE', 16),
+(1, 'SUITES', 'SUITES', 16),
+(2, 'SUITES', 'SUITES', 24),
+(1, 'SUMMIT', 'SUMMIT', 1),
+(1, 'SUR', 'SOUTH', 22),
+(1, 'SV RTE', 'SERVICE ROUTE', 2),
+(1, 'SVC RD', 'SERVICE ROAD', 2),
+(1, 'SVRD', 'SERVICE ROAD', 2),
+(1, 'SW', 'SOUTHWEST', 22),
+(1, 'SWP', 'SWAMP', 1),
+(1, 'TANK TRAIL', 'TANK TRAIL', 2),
+(1, 'TEN', '10', 1),
+(2, 'TEN', '10', 0),
+(1, 'TEN MILE', 'TEN MILE', 1),
+(1, 'TENTH', '10', 1),
+(2, 'TENTH', '10', 15),
+(1, 'TER', 'TERRACE', 2),
+(1, 'TERM', 'TERMINAL', 1),
+(2, 'TERM', 'TERMINAL', 2),
+(1, 'TERMINAL', 'TERMINAL', 1),
+(2, 'TERMINAL', 'TERMINAL', 2),
+(1, 'TERR', 'TERRACE', 2),
+(1, 'TERRASSE', 'TERRASSE', 2),
+(2, 'TERRASSE', 'TERRASSE', 1),
+(1, 'TFWY', 'TRAFFICWAY', 2),
+(1, 'THE', 'THE', 7),
+(1, 'THFR', 'THOROUGHFARE', 2),
+(1, 'THICKET', 'THICKET', 1),
+(2, 'THICKET', 'THICKET', 2),
+(1, 'THIRD', '3', 1),
+(2, 'THIRD', '3', 15),
+(1, 'THIRTEEN', '13', 0),
+(2, 'THIRTEEN', '13', 1),
+(1, 'THIRTEEN MILE', 'THIRTEEN MILE', 1),
+(1, 'THIRTEENTH', '13', 1),
+(2, 'THIRTEENTH', '13', 15),
+(1, 'THIRTIETH', '30', 1),
+(2, 'THIRTIETH', '30', 15),
+(1, 'THIRTY', '30', 0),
+(2, 'THIRTY', '30', 1),
+(1, 'THIRTY EIGHT', '38', 0),
+(2, 'THIRTY EIGHT', '38', 1),
+(1, 'THIRTY EIGHTH', '38', 1),
+(2, 'THIRTY EIGHTH', '38', 15),
+(1, 'THIRTY FIFTH', '35', 1),
+(2, 'THIRTY FIFTH', '35', 15),
+(1, 'THIRTY FIRST', '31', 1),
+(2, 'THIRTY FIRST', '31', 15),
+(1, 'THIRTY FIVE', '35', 0),
+(2, 'THIRTY FIVE', '35', 1),
+(1, 'THIRTY FOURTH', '34', 1),
+(2, 'THIRTY FOURTH', '34', 15),
+(1, 'THIRTY FOUR', '34', 0),
+(2, 'THIRTY FOUR', '34', 1),
+(1, 'THIRTY NINE', '39', 0),
+(2, 'THIRTY NINE', '39', 1),
+(1, 'THIRTY NINTH', '39', 1),
+(2, 'THIRTY NINTH', '39', 15),
+(1, 'THIRTY ONE', '31', 0),
+(2, 'THIRTY ONE', '31', 1),
+(1, 'THIRTY SECOND', '32', 1),
+(2, 'THIRTY SECOND', '32', 15),
+(1, 'THIRTY SEVEN', '37', 0),
+(2, 'THIRTY SEVEN', '37', 1),
+(1, 'THIRTY SEVENTH', '37', 1),
+(2, 'THIRTY SEVENTH', '37', 15),
+(1, 'THIRTY SIX', '36', 0),
+(2, 'THIRTY SIX', '36', 1),
+(1, 'THIRTY SIXTH', '36', 1),
+(2, 'THIRTY SIXTH', '36', 15),
+(1, 'THIRTY THIRD', '33', 1),
+(2, 'THIRTY THIRD', '33', 15),
+(1, 'THIRTY THREE', '33', 0),
+(2, 'THIRTY THREE', '33', 1),
+(1, 'THIRTY TWO', '32', 0),
+(2, 'THIRTY TWO', '32', 1),
+(1, 'THORO', 'THOROUGHFARE', 2),
+(1, 'THOROFARE', 'THOROUGHFARE', 2),
+(1, 'THOROUGHFARE', 'THOROUGHFARE', 2),
+(1, 'THREE', '3', 0),
+(2, 'THREE', '3', 1),
+(1, 'THREE MILE', 'THREE MILE', 1),
+(1, 'THROUGHWAY', 'THROUGHWAY', 2),
+(1, 'THRUWAY', 'THROUGHWAY', 2),
+(1, 'THWY', 'THROUGHWAY', 2),
+(1, 'TK TRL', 'TANK TRAIL', 2),
+(1, 'TKTRL', 'TANK TRAIL', 2),
+(1, 'TL', 'TRAIL', 2),
+(1, 'TLINE', 'TOWNLINE', 2),
+(1, 'TLR', 'TRAILER', 16),
+(1, 'TLR COURT', 'TRAILER PARK', 24),
+(1, 'TLR CRT', 'TRAILER PARK', 24),
+(1, 'TLR CT', 'TRAILER PARK', 24),
+(1, 'TLR PARK', 'TRAILER PARK', 24),
+(1, 'TLR PK', 'TRAILER PARK', 24),
+(1, 'TLR PRK', 'TRAILER PARK', 24),
+(1, 'TNPK', 'TURNPIKE', 2),
+(1, 'TNPKE', 'TURNPIKE', 2),
+(1, 'TOP', 'TOP', 17),
+(2, 'TOP', 'TOP', 1),
+(1, 'TOWER', 'TOWERS', 24),
+(2, 'TOWER', 'TOWER', 19),
+(3, 'TOWER', 'TOWER', 1),
+(1, 'TOWERS', 'TOWERS', 24),
+(2, 'TOWERS', 'TOWERS', 19),
+(3, 'TOWERS', 'TOWERS', 2),
+(4, 'TOWERS', 'TOWERS', 1),
+(1, 'TOWN HIGHWAY', 'TOWN HIGHWAY', 2),
+(2, 'TOWN HIGHWAY', 'TOWN HIGHWAY', 6),
+(1, 'TOWN HWY', 'TOWN HIGHWAY', 2),
+(2, 'TOWN HWY', 'TOWN HIGHWAY', 6),
+(1, 'TOWN RD', 'TOWN ROAD', 2),
+(2, 'TOWN RD', 'TOWN ROAD', 6),
+(1, 'TOWN ROAD', 'TOWN ROAD', 2),
+(2, 'TOWN ROAD', 'TOWN ROAD', 6),
+(1, 'TOWNHOME', 'TOWNHOUSE', 24),
+(1, 'TOWNHOMES', 'TOWNHOUSE', 24),
+(1, 'TOWNHOUSE', 'TOWNHOUSE', 24),
+(1, 'TOWNHOUSES', 'TOWNHOUSE', 24),
+(1, 'TOWNLINE', 'TOWNLINE', 2),
+(1, 'TOWNSHIP HIGHWAY', 'TOWNSHIP HIGHWAY', 6),
+(1, 'TOWNSHIP HIWAY', 'TOWNSHIP HIGHWAY', 6),
+(1, 'TOWNSHIP HWY', 'TOWNSHIP HIGHWAY', 6),
+(1, 'TOWNSHIP RD', 'TOWNSHIP ROAD', 6),
+(1, 'TOWNSHIP ROAD', 'TOWNSHIP ROAD', 6),
+(1, 'TP', 'TRAILER PARK', 24),
+(1, 'TPK', 'TURNPIKE', 2),
+(2, 'TPK', 'TURNPIKE', 6),
+(1, 'TPKE', 'TURNPIKE', 2),
+(2, 'TPKE', 'TURNPIKE', 6),
+(1, 'TR', 'TOWNSHIP ROAD', 6),
+(2, 'TR', 'TRAIL', 2),
+(1, 'TR COURT', 'TRAILER PARK', 24),
+(1, 'TR CRT', 'TRAILER PARK', 24),
+(1, 'TR CT', 'TRAILER PARK', 24),
+(1, 'TR PARK', 'TRAILER PARK', 24),
+(1, 'TR PK', 'TRAILER PARK', 24),
+(1, 'TR PRK', 'TRAILER PARK', 24),
+(1, 'TR VILLAGE', 'TRAILER PARK', 24),
+(1, 'TR VLG', 'TRAILER PARK', 24),
+(1, 'TRACE', 'TRACE', 1),
+(2, 'TRACE', 'TRACE', 2),
+(1, 'TRACK', 'TRACK', 1),
+(1, 'TRAFFICWAY', 'TRAFFICWAY', 2),
+(1, 'TRAIL', 'TRAIL', 2),
+(2, 'TRAIL', 'TRAIL', 1),
+(1, 'TRAILER', 'TRAILER', 16),
+(2, 'TRAILER', 'TRAILER', 24),
+(1, 'TRAILER COURT', 'TRAILER PARK', 24),
+(1, 'TRAILER CRT', 'TRAILER PARK', 24),
+(1, 'TRAILER CT', 'TRAILER PARK', 24),
+(1, 'TRAILER PARK', 'TRAILER PARK', 24),
+(1, 'TRAILER PK', 'TRAILER PARK', 24),
+(1, 'TRAILER PRK', 'TRAILER PARK', 24),
+(1, 'TRAILER VILLAGE', 'TRAILER PARK', 24),
+(1, 'TRAILER VLG', 'TRAILER PARK', 24),
+(1, 'TRAILERCOURT', 'TRAILER PARK', 24),
+(1, 'TRAILERPARK', 'TRAILER PARK', 24),
+(1, 'TRAILERS', 'TRAILER PARK', 24),
+(1, 'TRAILS', 'TRAIL', 2),
+(1, 'TRAK', 'TRACK', 1),
+(1, 'TRANS CANADA', 'TRANS CANADA', 6),
+(2, 'TRANS CANADA', 'TRANS CANADA', 1),
+(1, 'TRANSCANADA', 'TRANS CANADA', 6),
+(2, 'TRANSCANADA', 'TRANS CANADA', 1),
+(1, 'TRCE', 'TRACE', 1),
+(2, 'TRCE', 'TRACE', 2),
+(1, 'TRCRT', 'TRAILER PARK', 24),
+(1, 'TRCT', 'TRAILER PARK', 24),
+(1, 'TRL', 'TRAIL', 2),
+(1, 'TRL COURT', 'TRAILER PARK', 24),
+(1, 'TRL CRT', 'TRAILER PARK', 24),
+(1, 'TRL CT', 'TRAILER PARK', 24),
+(1, 'TRL PARK', 'TRAILER PARK', 24),
+(1, 'TRL PK', 'TRAILER PARK', 24),
+(1, 'TRL PRK', 'TRAILER PARK', 24),
+(1, 'TRL VILLAGE', 'TRAILER PARK', 24),
+(1, 'TRL VLG', 'TRAILER PARK', 24),
+(1, 'TRLCRT', 'TRAILER PARK', 24),
+(1, 'TRLCT', 'TRAILER PARK', 24),
+(1, 'TRLPK', 'TRAILER PARK', 24),
+(1, 'TRLPRK', 'TRAILER PARK', 24),
+(1, 'TRLR', 'TRAILER', 16),
+(2, 'TRLR', 'TRAILER', 24),
+(1, 'TRLR COURT', 'TRAILER PARK', 24),
+(1, 'TRLR CRT', 'TRAILER PARK', 24),
+(1, 'TRLR CT', 'TRAILER PARK', 24),
+(1, 'TRLR PARK', 'TRAILER PARK', 24),
+(1, 'TRLR PK', 'TRAILER PARK', 24),
+(1, 'TRLR PRK', 'TRAILER PARK', 24),
+(1, 'TRLR VILLAGE', 'TRAILER PARK', 24),
+(1, 'TRLR VLG', 'TRAILER PARK', 24),
+(1, 'TRNABT', 'TURNABOUT', 2),
+(1, 'TRNPK', 'TURNPIKE', 2),
+(1, 'TROIS', '3', 1),
+(2, 'TROIS', '3', 0),
+(1, 'TROISIEME', 'TROISIEME', 1),
+(1, 'TRPK', 'TRAILER PARK', 24),
+(1, 'TRPRK', 'TRAILER PARK', 24),
+(1, 'TSSE', 'TERRASSE', 2),
+(2, 'TSSE', 'TERRASEE', 1),
+(1, 'TUN', 'TUNNEL', 2),
+(1, 'TUNEL', 'TUNEL', 2),
+(1, 'TUNL', 'TUNEL', 2),
+(1, 'TUNNEL', 'TUNNEL', 2),
+(1, 'TURNABOUT', 'TURNABOUT', 2),
+(1, 'TURN', 'TURNPIKE', 2),
+(2, 'TURN', 'TURNPIKE', 6),
+(1, 'TURNPIKE', 'TURNPIKE', 2),
+(2, 'TURNPIKE', 'TURNPIKE', 6),
+(1, 'TURNPK', 'TURNPIKE', 2),
+(2, 'TURNPK', 'TURNPIKE', 6),
+(1, 'TW HY', 'TOWNSHIP HIGHWAY', 6),
+(1, 'TW RD', 'TOWNSHIP ROAD', 6),
+(1, 'TWELFTH', '12', 1),
+(2, 'TWELFTH', '12', 15),
+(1, 'TWELVE', '12', 0),
+(2, 'TWELVE', '12', 1),
+(1, 'TWELVE MILE', 'TWELVE MILE', 1),
+(1, 'TWENTIETH', '20', 1),
+(2, 'TWENTIETH', '20', 15),
+(1, 'TWENTY', '20', 0),
+(2, 'TWENTY', '20', 1),
+(1, 'TWENTY EIGHT', '28', 0),
+(2, 'TWENTY EIGHT', '28', 1),
+(1, 'TWENTY EIGHTH', '28', 1),
+(2, 'TWENTY EIGHTH', '28', 15),
+(1, 'TWENTY FIRST', '21', 1),
+(2, 'TWENTY FIRST', '21', 15),
+(1, 'TWENTY FIFTH', '25', 1),
+(2, 'TWENTY FIFTH', '25', 15),
+(1, 'TWENTY FIVE', '25', 0),
+(2, 'TWENTY FIVE', '25', 1),
+(1, 'TWENTY FOURTH', '24', 1),
+(2, 'TWENTY FOURTH', '24', 15),
+(1, 'TWENTY FOUR', '24', 0),
+(2, 'TWENTY FOUR', '24', 1),
+(1, 'TWENTY MILE', 'TWENTY MILE', 1),
+(1, 'TWENTY NINE', '29', 0),
+(2, 'TWENTY NINE', '29', 1),
+(1, 'TWENTY NINTH', '29', 1),
+(2, 'TWENTY NINTH', '29', 15),
+(1, 'TWENTY ONE', '21', 0),
+(2, 'TWENTY ONE', '21', 1),
+(1, 'TWENTY SECOND', '22', 1),
+(2, 'TWENTY SECOND', '22', 15),
+(1, 'TWENTY SEVEN', '27', 0),
+(2, 'TWENTY SEVEN', '27', 1),
+(1, 'TWENTY SEVENTH', '27', 1),
+(2, 'TWENTY SEVENTH', '27', 15),
+(1, 'TWENTY SIX', '26', 0),
+(2, 'TWENTY SIX', '26', 1),
+(1, 'TWENTY SIXTH', '26', 1),
+(2, 'TWENTY SIXTH', '26', 15),
+(1, 'TWENTY THIRD', '23', 1),
+(2, 'TWENTY THIRD', '23', 15),
+(1, 'TWENTY THREE', '23', 0),
+(2, 'TWENTY THREE', '23', 1),
+(1, 'TWENTY THREE MILE', 'TWENTY THREE MILE', 1),
+(1, 'TWENTY TWO', '22', 0),
+(2, 'TWENTY TWO', '22', 1),
+(1, 'TWHY', 'TOWNSHIP HIGHWAY', 6),
+(1, 'TWNH', 'TOWNHOUSE', 24),
+(1, 'TWNHS', 'TOWNHOUSE', 24),
+(1, 'TWNHWY', 'TOWN HIGHWAY', 2),
+(2, 'TWNHWY', 'TOWN HIGHWAY', 6),
+(1, 'TWNRD', 'TOWN ROAD', 2),
+(2, 'TWNRD', 'TOWN ROAD', 6),
+(1, 'TWO', '2', 0),
+(2, 'TWO', '2', 1),
+(1, 'TWO MILE', 'TWO MILE', 1),
+(1, 'TWP', 'TOWNSHIP', 1),
+(2, 'TWP', 'TOWNSHIP HIGHWAY', 6),
+(1, 'TWP HIGHWAY', 'TOWNSHIP HIGHWAY', 6),
+(1, 'TWP HIWAY', 'TOWNSHIP HIGHWAY', 6),
+(1, 'TWP HWY', 'TOWNSHIP HIGHWAY', 6),
+(1, 'TWP HY', 'TOWNSHIP HIGHWAY', 6),
+(1, 'TWP RD', 'TOWNSHIP ROAD', 6),
+(1, 'TWP ROAD', 'TOWNSHIP ROAD', 6),
+(1, 'TWPHWY', 'TOWNSHIP HIGHWAY', 6),
+(1, 'TWPHY', 'TOWNSHIP HIGHWAY', 6),
+(1, 'TWPRD', 'TOWNSHIP ROAD', 6),
+(1, 'TWPROAD', 'TOWNSHIP ROAD', 6),
+(1, 'TWR', 'TOWER', 24),
+(2, 'TWR', 'TOWER', 19),
+(1, 'TWRD', 'TOWNSHIP ROAD', 6),
+(1, 'TWRS', 'TOWERS', 24),
+(2, 'TWRS', 'TOWERS', 19),
+(3, 'TWRS', 'TOWERS', 2),
+(1, 'U', 'UNIVERSITY', 1),
+(2, 'U', 'U', 18),
+(1, 'U S', 'US ROUTE', 6),
+(1, 'U S HGWY', 'US HIGHWAY', 6),
+(1, 'U S HIGHWAY', 'US HIGHWAY', 6),
+(1, 'U S HIWAY', 'US HIGHWAY', 6),
+(1, 'U S HWY', 'US HIGHWAY', 6),
+(1, 'U S HY', 'US HIGHWAY', 6),
+(1, 'U S ROUTE', 'US ROUTE', 6),
+(1, 'U S RT', 'US ROUTE', 6),
+(1, 'U S RTE', 'US ROUTE', 6),
+(1, 'UN', 'UNION', 1),
+(1, 'UN RD', 'UNNAMED ROAD', 2),
+(1, 'UNDERPASS', 'UNDERPASS', 2),
+(1, 'UNI', 'UNIVERSITY', 1),
+(1, 'UNION', 'UNION', 1),
+(1, 'UNIT', 'UNIT', 16),
+(1, 'UNITE', 'UNITE', 16),
+(1, 'UNITED STATES HIGHWAY', 'US HIGHWAY', 6),
+(1, 'UNITED STATES HWY', 'US HIGHWAY', 6),
+(1, 'UNITED STATES LOOP', 'US LOOP', 6),
+(1, 'UNIV', 'UNIVERSITY', 1),
+(2, 'UNIV', 'UNIVERSITY', 24),
+(1, 'UNIVD', 'UNIVERSITY', 1),
+(2, 'UNIVD', 'UNIVERSITY', 24),
+(1, 'UNIVERSIDAD', 'UNIVERSIDAD', 1),
+(2, 'UNIVERSIDAD', 'UNIVERSIDAD', 24),
+(1, 'UNIVERSITY', 'UNIVERSITY', 1),
+(2, 'UNIVERSITY', 'UNIVERSITY', 24),
+(3, 'UNIVERSITY', 'UNIVERSITY', 19),
+(1, 'UNNAMED ROAD', 'UNNAMED ROAD', 2),
+(1, 'UNP', 'UNDERPASS', 2),
+(1, 'UNPS', 'UNDERPASS', 2),
+(1, 'UNRD', 'UNNAMED ROAD', 2),
+(1, 'UNT', 'UNIT', 16),
+(1, 'UP', 'UP', 17),
+(2, 'UP', 'UP', 1),
+(1, 'UPPER', 'UPPER', 1),
+(2, 'UPPER', 'UPPER', 17),
+(1, 'UPPR', 'UPPER', 1),
+(2, 'UPPR', 'UPPER', 17),
+(1, 'UPSTAIRS', 'UPSTAIRS', 17),
+(1, 'US', 'US ROUTE', 6),
+(1, 'US FOREST SERVICE ROAD', 'US FOREST SERVICE ROAD', 6),
+(1, 'US HGWY', 'US HIGHWAY', 6),
+(1, 'US HIGHWAY', 'US HIGHWAY', 6),
+(1, 'US HIWAY', 'US HIGHWAY', 6),
+(1, 'US HWY', 'US HIGHWAY', 6),
+(1, 'US HY', 'US HIGHWAY', 6),
+(1, 'US LOOP', 'US LOOP', 6),
+(1, 'US LP', 'US LOOP', 6),
+(1, 'US ROUTE', 'US ROUTE', 6),
+(1, 'US RT', 'US ROUTE', 6),
+(1, 'US RTE', 'US ROUTE', 6),
+(1, 'USFS RD', 'US FOREST SERVICE RD', 6),
+(1, 'USFSR', 'US FOREST SERVICE RD', 6),
+(1, 'USHW', 'US HIGHWAY', 6),
+(1, 'USHWY', 'US HIGHWAY', 6),
+(1, 'USHY', 'US HIGHWAY', 6),
+(1, 'USLP', 'US LOOP', 6),
+(1, 'USROUTE', 'US ROUTE', 6),
+(1, 'USRT', 'US ROUTE', 6),
+(1, 'USRTE', 'US ROUTE', 6),
+(1, 'VAL', 'VALLEY', 1),
+(1, 'VALL', 'VALLEY', 1),
+(1, 'VALLEY', 'VALLEY', 1),
+(1, 'VALLY', 'VALLEY', 1),
+(1, 'VER', 'VEREDA', 2),
+(1, 'VEREDA', 'VEREDA', 2),
+(2, 'VI', 'VIA', 2),
+(1, 'VIA', 'VIA', 2),
+(1, 'VIADUCT', 'VIADUCT', 1),
+(1, 'VIEW', 'VIEW', 1),
+(2, 'VIEW', 'VIEW', 2),
+(1, 'VILL', 'VILLAGE', 2),
+(2, 'VILL', 'VILLAGE', 24),
+(3, 'VILL', 'VILLAGE', 1),
+(1, 'VILLA', 'VILLA', 2),
+(2, 'VILLA', 'VILLA', 24),
+(3, 'VILLA', 'VILLA', 1),
+(1, 'VILLAG', 'VILLAGE', 2),
+(2, 'VILLAG', 'VILLAGE', 24),
+(3, 'VILLAG', 'VILLAGE', 1),
+(1, 'VILLAGE', 'VILLAGE', 2),
+(2, 'VILLAGE', 'VILLAGE', 24),
+(3, 'VILLAGE', 'VILLAGE', 1),
+(1, 'VILLAS', 'VILLA', 24),
+(1, 'VILLE', 'VILLE', 1),
+(1, 'VILLG', 'VILLAGE', 2),
+(2, 'VILLG', 'VILLAGE', 24),
+(3, 'VILLG', 'VILLAGE', 1),
+(1, 'VILLGE', 'VILLAGE', 2),
+(1, 'VILLIAGE', 'VILLAGE', 2),
+(2, 'VILLIAGE', 'VILLAGE', 24),
+(3, 'VILLIAGE', 'VILLAGE', 1),
+(1, 'VIS', 'VISTA', 1),
+(2, 'VIS', 'VISTA', 2),
+(1, 'VISTA', 'VISTA', 1),
+(2, 'VISTA', 'VISTA', 2),
+(1, 'VIVI', 'VIVIENDA', 24),
+(1, 'VIVIENDA', 'VIVIENDA', 24),
+(1, 'VL', 'VILLE', 1),
+(2, 'VL', 'VILLAGE', 2),
+(1, 'VLG', 'VILLAGE', 2),
+(2, 'VLG', 'VILLAGE', 24),
+(3, 'VLG', 'VILLAGE', 1),
+(1, 'VLGE', 'VILLAGE', 2),
+(2, 'VLGE', 'VILLAGE', 24),
+(3, 'VLGE', 'VILLAGE', 1),
+(1, 'VLLA', 'VILLA', 2),
+(2, 'VLLA', 'VILLA', 24),
+(1, 'VLY', 'VALLEY', 1),
+(1, 'VOIE', 'VOIE', 2),
+(1, 'VRDA', 'VEREDA', 2),
+(1, 'VW', 'VIEW', 1),
+(2, 'VW', 'VIEW', 2),
+(1, 'W', 'WEST', 22),
+(2, 'W', 'W', 18),
+(1, 'WALK', 'WALK', 2),
+(1, 'WALKWAY', 'WALKWAY', 2),
+(1, 'WALKWY', 'WALKWAY', 2),
+(1, 'WALL', 'WALL', 2),
+(1, 'WAREHOUSE', 'WAREHOUSE', 24),
+(2, 'WAREHOUSE', 'WAREHOUSE', 1),
+(1, 'WATERWAY', 'WATERWAY', 1),
+(1, 'WAY', 'WAY', 2),
+(1, 'WD', 'WYND', 2),
+(1, 'WDS', 'WOODS', 1),
+(1, 'WE', 'WEST', 22),
+(1, 'WELLS', 'WELLS', 1),
+(1, 'WEST', 'WEST', 22),
+(1, 'WESTBOUND', 'WESTBOUND', 1),
+(2, 'WESTBOUND', 'WESTBOUND', 3),
+(1, 'WHARF', 'WHARF', 1),
+(2, 'WHARF', 'WHARF', 2),
+(1, 'WHF', 'WHARF', 1),
+(2, 'WHF', 'WHARF', 2),
+(1, 'WHS', 'WAREHOUSE', 24),
+(2, 'WHS', 'WAREHOUSE', 1),
+(1, 'WILDLIFE MGMT AREA', 'WILDLIFE AREA', 1),
+(1, 'WK', 'WALK', 2),
+(1, 'WKWY', 'WALKWAY', 2),
+(1, 'WLKWY', 'WALKWAY', 2),
+(1, 'WLS', 'WELLS', 1),
+(1, 'WMA', 'WILDLIFE AREA', 1),
+(1, 'WO', 'WOOD', 2),
+(1, 'WOOD', 'WOOD', 1),
+(2, 'WOOD', 'WOOD', 2),
+(1, 'WOODS', 'WOODS', 1),
+(1, 'WTRWY', 'WATERWAY', 1),
+(1, 'WWY', 'WATERWAY', 1),
+(1, 'WY', 'WAY', 2),
+(4, 'WY', 'WAY', 6),
+(1, 'WYND', 'WYND', 2),
+(1, 'XING', 'CROSSING', 2),
+(2, 'XING', 'CROSSING', 24),
+(1, 'XRD', 'CROSSROAD', 2),
+(1, 'XRDS', 'CROSSROADS', 24),
+(1, 'XWAY', 'EXPRESSWAY', 2),
+(1, 'XWY', 'EXPRESSWAY', 2),
+(1, 'YARD', 'YARD', 1),
+(1, 'YARDS', 'YARDS', 1),
+(1, 'YD', 'YARD', 1),
+(1, 'YDS', 'YARDS', 1),
+(1, 'ZANJA', 'ZANJA', 1),
+(1, 'ZERO', '0', 0),
+(1, 'ZERO', '0', 1),
+(1, 'ZNJA', 'ZANJA', 1) )
+SELECT seq, word, stdword, token
+FROM t
+WHERE NOT EXISTS(SELECT 1 FROM us_lex AS t2 WHERE t2.seq = t.seq AND t2.word = t.word AND t2.stdword = t.stdword AND t2.token = t.token )
+ORDER BY word, seq, token, stdword;
+
+-- needed set default back to original
+ALTER TABLE us_lex ALTER COLUMN is_custom SET DEFAULT true;
+CREATE TABLE IF NOT EXISTS us_gaz (
+    id serial,
+    seq integer,
+    word text,
+    stdword text,
+    token integer, is_custom boolean NOT NULL DEFAULT true, CONSTRAINT pk_us_gaz PRIMARY KEY(id)
+);
+
+-- this will be needed for upgrading to prevent purging of custom entries
+DELETE FROM us_gaz WHERE is_custom = false;
+
+-- needed so entries we add will default to not custom
+ALTER TABLE us_gaz ALTER COLUMN is_custom SET DEFAULT false;
+
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'AB', 'ALBERTA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'AB', 'ALBERTA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'AB', 'ALBERTA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'AFB', 'AIR FORCE BASE', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'A F B', 'AIR FORCE BASE', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'AIR FORCE BASE', 'AIR FORCE BASE', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'AK', 'ALASKA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'AK', 'ALASKA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'AK', 'ALASKA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'AL', 'ALABAMA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'AL', 'ALABAMA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'AL', 'ALABAMA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ALA', 'ALABAMA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'ALA', 'ALABAMA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'ALA', 'ALABAMA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ALABAMA', 'ALABAMA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'ALABAMA', 'ALABAMA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ALASKA', 'ALASKA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'ALASKA', 'ALASKA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ALBERTA', 'ALBERTA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'ALBERTA', 'ALBERTA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'AR', 'ARKANSAS', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'AR', 'ARKANSAS', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'AR', 'ARKANSAS', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ARIZ', 'ARIZONA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'ARIZ', 'ARIZONA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'ARIZ', 'ARIZONA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ARIZONA', 'ARIZONA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'ARIZONA', 'ARIZONA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ARK', 'ARKANSAS', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'ARK', 'ARKANSAS', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'ARK', 'ARKANSAS', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ARKANSAS', 'ARKANSAS', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'ARKANSAS', 'ARKANSAS', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'AZ', 'ARIZONA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'AZ', 'ARIZONA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'AZ', 'ARIZONA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'B C', 'BRITISH COLUMBIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'B C', 'BRITISH COLUMBIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'B C', 'BRITISH COLUMBIA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'BC', 'BRITISH COLUMBIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'BC', 'BRITISH COLUMBIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'BC', 'BRITISH COLUMBIA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'BRITISH COLUMBIA', 'BRITISH COLUMBIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'BRITISH COLUMBIA', 'BRITISH COLUMBIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'CA', 'CALIFORNIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'CA', 'CALIFORNIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'CA', 'CALIFORNIA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (4, 'CA', 'CANADA', 12);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (5, 'CA', 'CARRE', 2);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'CALIF', 'CALIFORNIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'CALIF', 'CALIFORNIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'CALIF', 'CALIFORNIA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'CALIFORNIA', 'CALIFORNIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'CALIFORNIA', 'CALIFORNIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'CANADA', 'CANADA', 12);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'CANADA', 'CANADA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'CO', 'COLORADO', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'CO', 'COLORADO', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'CO', 'COLORADO', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'COLOMBIE BRITANNIQUE', 'BRITISH COLUMBIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'COLOMBIE BRITANNIQUE', 'BRITISH COLUMBIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'COLORADO', 'COLORADO', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'COLORADO', 'COLORADO', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'CONN', 'CONNECTICUT', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'CONN', 'CONNECTICUT', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'CONN', 'CONNECTICUT', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'CONNECTICUT', 'CONNECTICUT', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'CONNECTICUT', 'CONNECTICUT', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'CT', 'CONNECTICUT', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'CT', 'CONNECTICUT', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'CT', 'CONNECTICUT', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DC', 'DISTRICT OF COLUMBIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'DC', 'DISTRICT OF COLUMBIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'DC', 'DISTRICT OF COLUMBIA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE', 'DELAWARE', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'DE', 'DELAWARE', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DEL', 'DELAWARE', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'DEL', 'DELAWARE', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'DEL', 'DELAWARE', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DELAWARE', 'DELAWARE', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'DELAWARE', 'DELAWARE', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DISTRICT OF COLUMBIA', 'DISTRICT OF COLUMBIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'DISTRICT OF COLUMBIA', 'DISTRICT OF COLUMBIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FL', 'FLORIDA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'FL', 'FLORIDA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'FL', 'FLORIDA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FLA', 'FLORIDA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'FLA', 'FLORIDA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'FLA', 'FLORIDA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FLORIDA', 'FLORIDA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'FLORIDA', 'FLORIDA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FRKS', 'FORKS', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'GA', 'GEORGIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'GA', 'GEORGIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'GA', 'GEORGIA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'GEORGIA', 'GEORGIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'GEORGIA', 'GEORGIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'HAWAII', 'HAWAII', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'HAWAII', 'HAWAII', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'HI', 'HAWAII', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'HI', 'HAWAII', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'HI', 'HAWAII', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'IA', 'IOWA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'IA', 'IOWA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'IA', 'IOWA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ID', 'IDAHO', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'ID', 'IDAHO', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'ID', 'IDAHO', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'IDAHO', 'IDAHO', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'IDAHO', 'IDAHO', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'IL', 'ILLINOIS', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'IL', 'ILLINOIS', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'IL', 'ILLINOIS', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ILE DU PRINCE EDOUARD', 'PRINCE EDWARD ISLAND', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'ILE DU PRINCE EDOUARD', 'PRINCE EDWARD ISLAND', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ILL', 'ILLINOIS', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'ILL', 'ILLINOIS', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'ILL', 'ILLINOIS', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ILLINOIS', 'ILLINOIS', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'ILLINOIS', 'ILLINOIS', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'IN', 'INDIANA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'IN', 'INDIANA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'IN', 'INDIANA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'IND', 'INDIANA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'IND', 'INDIANA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'IND', 'INDIANA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'INDIANA', 'INDIANA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'INDIANA', 'INDIANA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'IOWA', 'IOWA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'IOWA', 'IOWA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'KANSAS', 'KANSAS', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'KANSAS', 'KANSAS', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'KENT', 'KENTUCKY', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'KENT', 'KENTUCKY', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'KENT', 'KENTUCKY', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'KENTUCKY', 'KENTUCKY', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'KENTUCKY', 'KENTUCKY', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'KS', 'KANSAS', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'KS', 'KANSAS', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'KS', 'KANSAS', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'KY', 'KENTUCKY', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'KY', 'KENTUCKY', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'KY', 'KENTUCKY', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA', 'LOUISIANA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'LA', 'LOUISIANA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'LA', 'LOUISIANA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LABRADOR', 'NEWFOUNDLAND AND LABRADOR', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'LABRADOR', 'NEWFOUNDLAND AND LABRADOR', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LOUISIANA', 'LOUISIANA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'LOUISIANA', 'LOUISIANA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MA', 'MASSACHUSETTS', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MA', 'MASSACHUSETTS', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'MA', 'MASSACHUSETTS', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (4, 'MA', 'MANOR', 2);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MAINE', 'MAINE', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MAINE', 'MAINE', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MANITOBA', 'MANITOBA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MANITOBA', 'MANITOBA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MARYLAND', 'MARYLAND', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MARYLAND', 'MARYLAND', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MASS', 'MASSACHUSETTS', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MASS', 'MASSACHUSETTS', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'MASS', 'MASSACHUSETTS', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MASSACHUSETTS', 'MASSACHUSETTS', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MASSACHUSETTS', 'MASSACHUSETTS', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MB', 'MANITOBA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MB', 'MANITOBA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'MB', 'MANITOBA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MD', 'MARYLAND', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MD', 'MARYLAND', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'MD', 'MARYLAND', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ME', 'MAINE', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'ME', 'MAINE', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'ME', 'MAINE', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MI', 'MICHIGAN', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MI', 'MICHIGAN', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'MI', 'MICHIGAN', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MICH', 'MICHIGAN', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MICH', 'MICHIGAN', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'MICH', 'MICHIGAN', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MICHIGAN', 'MICHIGAN', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MICHIGAN', 'MICHIGAN', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MINN', 'MINNESOTA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MINN', 'MINNESOTA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'MINN', 'MINNESOTA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MINNESOTA', 'MINNESOTA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MINNESOTA', 'MINNESOTA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MISSISSIPPI', 'MISSISSIPPI', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MISSISSIPPI', 'MISSISSIPPI', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MISSOURI', 'MISSOURI', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MISSOURI', 'MISSOURI', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MN', 'MINNESOTA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MN', 'MINNESOTA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'MN', 'MINNESOTA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MO', 'MISSOURI', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MO', 'MISSOURI', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'MO', 'MISSOURI', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MONT', 'MONTANA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MONT', 'MONTANA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'MONT', 'MONTANA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MONTANA', 'MONTANA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MONTANA', 'MONTANA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MT', 'MONTANA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MT', 'MONTANA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'MT', 'MONTANA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MS', 'MISSISSIPPI', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'MS', 'MISSISSIPPI', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'MS', 'MISSISSIPPI', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'N CAROLINA', 'NORTH CAROLINA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'N CAROLINA', 'NORTH CAROLINA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'N DAKOTA', 'NORTH DAKOTA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'N DAKOTA', 'NORTH DAKOTA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NB', 'NEW BRUNSWICK', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NB', 'NEW BRUNSWICK', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'NB', 'NEW BRUNSWICK', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NC', 'NORTH CAROLINA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NC', 'NORTH CAROLINA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'NC', 'NORTH CAROLINA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ND', 'NORTH DAKOTA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'ND', 'NORTH DAKOTA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'ND', 'NORTH DAKOTA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NE', 'NEBRASKA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NE', 'NEBRASKA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'NE', 'NEBRASKA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NEB', 'NEBRASKA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NEB', 'NEBRASKA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'NEB', 'NEBRASKA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NEBRASKA', 'NEBRASKA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NEBRASKA', 'NEBRASKA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NEV', 'NEVADA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NEV', 'NEVADA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'NEV', 'NEVADA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NEVADA', 'NEVADA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NEVADA', 'NEVADA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NEW BRUNSWICK', 'NEW BRUNSWICK', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NEW BRUNSWICK', 'NEW BRUNSWICK', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NEW HAMPSHIRE', 'NEW HAMPSHIRE', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NEW HAMPSHIRE', 'NEW HAMPSHIRE', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NEW JERSEY', 'NEW JERSEY', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NEW JERSEY', 'NEW JERSEY', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NEW MEXICO', 'NEW MEXICO', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NEW MEXICO', 'NEW MEXICO', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NEW YORK', 'NEW YORK', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NEW YORK', 'NEW YORK', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NEWFOUNDLAND', 'NEWFOUNDLAND AND LABRADOR', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NEWFOUNDLAND', 'NEWFOUNDLAND AND LABRADOR', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NF', 'NEWFOUNDLAND AND LABRADOR', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NF', 'NEWFOUNDLAND AND LABRADOR', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'NF', 'NEWFOUNDLAND AND LABRADOR', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NH', 'NEW HAMPSHIRE', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NH', 'NEW HAMPSHIRE', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'NH', 'NEW HAMPSHIRE', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NJ', 'NEW JERSEY', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NJ', 'NEW JERSEY', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'NJ', 'NEW JERSEY', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NL', 'NEWFOUNDLAND AND LABRADOR', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NL', 'NEWFOUNDLAND AND LABRADOR', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'NL', 'NEWFOUNDLAND AND LABRADOR', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NM', 'NEW MEXICO', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NM', 'NEW MEXICO', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'NM', 'NEW MEXICO', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NORTH CAROLINA', 'NORTH CAROLINA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NORTH CAROLINA', 'NORTH CAROLINA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NORTH DAKOTA', 'NORTH DAKOTA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NORTH DAKOTA', 'NORTH DAKOTA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NORTHWEST', 'NORTHWEST', 22);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NORTHWEST TERRITORIES', 'NORTHWEST TERRITORIES', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NORTHWEST TERRITORIES', 'NORTHWEST TERRITORIES', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NOUVEAU BRUNSWICK', 'NEW BRUNSWICK', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NOUVEAU BRUNSWICK', 'NEW BRUNSWICK', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NOUVELLE ECOSSE', 'NOVA SCOTIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NOUVELLE ECOSSE', 'NOVA SCOTIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NOVA SCOTIA', 'NOVA SCOTIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NOVA SCOTIA', 'NOVA SCOTIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NS', 'NOVA SCOTIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NS', 'NOVA SCOTIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'NS', 'NOVA SCOTIA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NT', 'NORTHWEST TERRITORIES', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NT', 'NORTHWEST TERRITORIES', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'NT', 'NORTHWEST TERRITORIES', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NU', 'NUNAVUT', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NU', 'NUNAVUT', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'NU', 'NUNAVUT', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NUNAVUT', 'NUNAVUT', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NUNAVUT', 'NUNAVUT', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NV', 'NEVADA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NV', 'NEVADA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'NV', 'NEVADA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NY', 'NEW YORK', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'NY', 'NEW YORK', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'NY', 'NEW YORK', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'OH', 'OHIO', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'OH', 'OHIO', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'OH', 'OHIO', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'OHIO', 'OHIO', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'OHIO', 'OHIO', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'OK', 'OKLAHOMA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'OK', 'OKLAHOMA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'OK', 'OKLAHOMA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'OKLA', 'OKLAHOMA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'OKLA', 'OKLAHOMA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'OKLA', 'OKLAHOMA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'OKLAHOMA', 'OKLAHOMA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'OKLAHOMA', 'OKLAHOMA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ON', 'ONTARIO', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'ON', 'ONTARIO', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'ON', 'ONTARIO', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ONT', 'ONTARIO', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'ONT', 'ONTARIO', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'ONT', 'ONTARIO', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ONTARIO', 'ONTARIO', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'ONTARIO', 'ONTARIO', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'OR', 'OREGON', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'OR', 'OREGON', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'OR', 'OREGON', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ORE', 'OREGON', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'ORE', 'OREGON', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'ORE', 'OREGON', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'OREGON', 'OREGON', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'OREGON', 'OREGON', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'PA', 'PENNSYLVANIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'PA', 'PENNSYLVANIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'PA', 'PENNSYLVANIA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'PE', 'PRINCE EDWARD ISLAND', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'PE', 'PRINCE EDWARD ISLAND', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'PE', 'PRINCE EDWARD ISLAND', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'PEI', 'PRINCE EDWARD ISLAND', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'PEI', 'PRINCE EDWARD ISLAND', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'PEI', 'PRINCE EDWARD ISLAND', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'PENN', 'PENNSYLVANIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'PENN', 'PENNSYLVANIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'PENN', 'PENNSYLVANIA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'PENNA', 'PENNSYLVANIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'PENNA', 'PENNSYLVANIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'PENNA', 'PENNSYLVANIA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'PENNSYLVANIA', 'PENNSYLVANIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'PENNSYLVANIA', 'PENNSYLVANIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'PQ', 'QUEBEC', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'PQ', 'QUEBEC', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'PQ', 'QUEBEC', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'PR', 'PUERTO RICO', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'PR', 'PUERTO RICO', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'PR', 'PUERTO RICO', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'PRINCE EDWARD ISLAND', 'PRINCE EDWARD ISLAND', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'PRINCE EDWARD ISLAND', 'PRINCE EDWARD ISLAND', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'PUERTO RICO', 'PUERTO RICO', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'PUERTO RICO', 'PUERTO RICO', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'QC', 'QUEBEC', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'QC', 'QUEBEC', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'QC', 'QUEBEC', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'QUEBEC', 'QUEBEC', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'QUEBEC', 'QUEBEC', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'RHODE ISLAND', 'RHODE ISLAND', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'RHODE ISLAND', 'RHODE ISLAND', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'RI', 'RHODE ISLAND', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'RI', 'RHODE ISLAND', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'RI', 'RHODE ISLAND', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'S CAROLINA', 'SOUTH CAROLINA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'S CAROLINA', 'SOUTH CAROLINA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'S DAKOTA', 'SOUTH DAKOTA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'S DAKOTA', 'SOUTH DAKOTA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SASK', 'SASKATCHEWAN', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'SASK', 'SASKATCHEWAN', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SASKATCHEWAN', 'SASKATCHEWAN', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'SASKATCHEWAN', 'SASKATCHEWAN', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SC', 'SOUTH CAROLINA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'SC', 'SOUTH CAROLINA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'SC', 'SOUTH CAROLINA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SD', 'SOUTH DAKOTA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'SD', 'SOUTH DAKOTA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'SD', 'SOUTH DAKOTA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SK', 'SASKATCHEWAN', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'SK', 'SASKATCHEWAN', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'SK', 'SASKATCHEWAN', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SOUTH CAROLINA', 'SOUTH CAROLINA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'SOUTH CAROLINA', 'SOUTH CAROLINA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SOUTH DAKOTA', 'SOUTH DAKOTA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'SOUTH DAKOTA', 'SOUTH DAKOTA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'TENN', 'TENNESSEE', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'TENN', 'TENNESSEE', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'TENN', 'TENNESSEE', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'TENNESSEE', 'TENNESSEE', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'TENNESSEE', 'TENNESSEE', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'TERRE NEUVE', 'NEWFOUNDLAND', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'TERRE NEUVE', 'NEWFOUNDLAND', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'TERRITOIRES DU NORD OUES', 'NORTHWEST TERRITORIES', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'TERRITOIRES DU NORD OUES', 'NORTHWEST TERRITORIES', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'TEX', 'TEXAS', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'TEX', 'TEXAS', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'TEX', 'TEXAS', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'TEXAS', 'TEXAS', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'TEXAS', 'TEXAS', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'TN', 'TENNESSEE', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'TN', 'TENNESSEE', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'TN', 'TENNESSEE', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'TX', 'TEXAS', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'TX', 'TEXAS', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'TX', 'TEXAS', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'U S', 'US', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'U S', 'USA', 12);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'U S A', 'USA', 12);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'UNITED STATES OF AMERICA', 'USA', 12);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'US', 'US', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'US', 'USA', 12);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'USA', 'USA', 12);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'UT', 'UTAH', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'UT', 'UTAH', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'UT', 'UTAH', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'UTAH', 'UTAH', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'UTAH', 'UTAH', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'VA', 'VIRGINIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'VA', 'VIRGINIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'VA', 'VIRGINIA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'VERMONT', 'VERMONT', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'VERMONT', 'VERMONT', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'VIRGINIA', 'VIRGINIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'VIRGINIA', 'VIRGINIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'VT', 'VERMONT', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'VT', 'VERMONT', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'VT', 'VERMONT', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'W VIRGINIA', 'WEST VIRGINIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'W VIRGINIA', 'WEST VIRGINIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'WA', 'WASHINGTON', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'WA', 'WASHINGTON', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'WA', 'WASHINGTON', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'WASH', 'WASHINGTON', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'WASH', 'WASHINGTON', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'WASH', 'WASHINGTON', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'WASHINGTON', 'WASHINGTON', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'WASHINGTON', 'WASHINGTON', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'WEST VIRGINIA', 'WEST VIRGINIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'WEST VIRGINIA', 'WEST VIRGINIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'WI', 'WISCONSIN', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'WI', 'WISCONSIN', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'WI', 'WISCONSIN', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'WISC', 'WISCONSIN', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'WISC', 'WISCONSIN', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'WISC', 'WISCONSIN', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'WISCONSIN', 'WISCONSIN', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'WISCONSIN', 'WISCONSIN', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'WV', 'WEST VIRGINIA', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'WV', 'WEST VIRGINIA', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'WV', 'WEST VIRGINIA', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'WY', 'WYOMING', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'WY', 'WYOMING', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'WY', 'WYOMING', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'WYOMING', 'WYOMING', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'WYOMING', 'WYOMING', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'YK', 'YUKON', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'YK', 'YUKON', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'YK', 'YUKON', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'YT', 'YUKON', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'YT', 'YUKON', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (3, 'YT', 'YUKON', 6);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'YUKON', 'YUKON', 11);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'YUKON', 'YUKON', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'BOIS D ARC', 'BOIS D ARC', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'BOIS D''ARC', 'BOIS D ARC', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'CAMP H M SMITH', 'CAMP H M SMITH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'CAMP HM SMITH', 'CAMP H M SMITH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'COEUR D ALENE', 'COEUR D ALENE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'COEUR D''ALENE', 'COEUR D ALENE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'D HANIS', 'D HANIS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'D''HANIS', 'D HANIS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'EL PASO', 'EL PASO', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (2, 'EL PASO', 'EL PASO', 1);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FORT GEORGE G MEADE', 'FORT GEORGE G MEADE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FORT GEORGE MEADE', 'FORT GEORGE G MEADE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FORT MEADE', 'FORT GEORGE G MEADE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LAND O LAKES', 'LAND O LAKES', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LAND O''LAKES', 'LAND O LAKES', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'M C B H KANEOHE BAY', 'M C B H KANEOHE BAY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCBH KANEOHE BAY', 'M C B H KANEOHE BAY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'N VAN', 'NORTH VANCOUVER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'N VANCOUVER', 'NORTH VANCOUVER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NO VANCOUVER', 'NORTH VANCOUVER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'NORTH VANCOUVER', 'NORTH VANCOUVER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'O BRIEN', 'O BRIEN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'O''BRIEN', 'O BRIEN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'O FALLON', 'O FALLON', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'O''FALLON', 'O FALLON', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'O NEALS', 'O NEALS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'O''NEALS', 'O NEALS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ROUND O', 'ROUND O', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'S COFFEYVILLE', 'SOUTH COFFEYVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SOUTH COFFEYVILLE', 'SOUTH COFFEYVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'U S A F ACADEMY', 'U S A F ACADEMY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'USAF ACADEMY', 'U S A F ACADEMY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'W VAN', 'WEST VANCOUVER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'W VANCOUVER', 'WEST VANCOUVER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'WEST VANCOUVER', 'WEST VANCOUVER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'AU GRES', 'AU GRES', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'AU SABLE FORKS', 'AU SABLE FORKS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'AU SABLE FRKS', 'AU SABLE FORKS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'AU TRAIN', 'AU TRAIN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'AVON BY THE SEA', 'AVON BY THE SEA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'AVON BY SEA', 'AVON BY THE SEA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'BAYOU LA BATRE', 'BAYOU LA BATRE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'BIRD IN HAND', 'BIRD IN HAND', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'CAMDEN ON GAULEY', 'CAMDEN ON GAULEY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'CARDIFF BY THE SEA', 'CARDIFF BY THE SEA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'CARDIFF BY SEA', 'CARDIFF BY THE SEA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'CASTLETON ON HUDSON', 'CASTLETON ON HUDSON', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'CAVE IN ROCK', 'CAVE IN ROCK', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'CORNWALL ON HUDSON', 'CORNWALL ON HUDSON', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'CROTON ON HUDSON', 'CROTON ON HUDSON', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE BEQUE', 'DE BEQUE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE BERRY', 'DE BERRY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE FOREST', 'DE FOREST', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE GRAFF', 'DE GRAFF', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE KALB', 'DE KALB', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE KALB JUNCTION', 'DE KALB JUNCTION', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE LAND', 'DE LAND', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE LEON', 'DE LEON', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE LEON SPRINGS', 'DE LEON SPRINGS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE MOSSVILLE', 'DE MOSSVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE PERE', 'DE PERE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE PEYSTER', 'DE PEYSTER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE QUEEN', 'DE QUEEN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE RUYTER', 'DE RUYTER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE SMET', 'DE SMET', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE SOTO', 'DE SOTO', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE TOUR VILLAGE', 'DE TOUR VILLAGE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE VALLS BLUFF', 'DE VALLS BLUFF', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'VALLS BLUFF', 'DE VALLS BLUFF', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE WITT', 'DE WITT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DE YOUNG', 'DE YOUNG', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DU BOIS', 'DU BOIS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DU PONT', 'DU PONT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'DU QUOIN', 'DU QUOIN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'E MC KEESPORT', 'EAST MC KEESPORT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'E MCKEESPORT', 'EAST MC KEESPORT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'EAST MC KEESPORT', 'EAST MC KEESPORT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'EAST MCKEESPORT', 'EAST MC KEESPORT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'EL CAJON', 'EL CAJON', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'EL CAMPO', 'EL CAMPO', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'EL CENTRO', 'EL CENTRO', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'EL CERRITO', 'EL CERRITO', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'EL DORADO', 'EL DORADO', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'EL DORADO HILLS', 'EL DORADO HILLS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'EL DORADO SPRINGS', 'EL DORADO SPRINGS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'EL MIRAGE', 'EL MIRAGE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'EL MONTE', 'EL MONTE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'EL NIDO', 'EL NIDO', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'EL PRADO', 'EL PRADO', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'EL RENO', 'EL RENO', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'EL RITO', 'EL RITO', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'EL SEGUNDO', 'EL SEGUNDO', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'EL SOBRANTE', 'EL SOBRANTE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FALLS OF ROUGH', 'FALLS OF ROUGH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FOND DU LAC', 'FOND DU LAC', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FORKS OF SALMON', 'FORKS OF SALMON', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FORT MC COY', 'FORT MC COY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FORT MCCOY', 'FORT MC COY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FORT MC KAVETT', 'FORT MC KAVETT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FORT MCKAVETT', 'FORT MC KAVETT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FT MITCHELL', 'FORT MITCHELL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FORT MITCHELL', 'FORT MITCHELL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FT MYER', 'FORT MYER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FORT MYER', 'FORT MYER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FT WARREN AFB', 'FORT WARREN AFB', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'FORT WARREN AFB', 'FORT WARREN AFB', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'HASTINGS ON HUDSON', 'HASTINGS ON HUDSON', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'HAVRE DE GRACE', 'HAVRE DE GRACE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'HI HAT', 'HI HAT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'HO HO KUS', 'HO HO KUS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'HOWEY IN THE HILLS', 'HOWEY IN THE HILLS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'HOWEY IN HILLS', 'HOWEY IN THE HILLS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ISLE LA MOTTE', 'ISLE LA MOTTE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ISLE OF PALMS', 'ISLE OF PALMS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ISLE OF SPRINGS', 'ISLE OF SPRINGS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'JAY EM', 'JAY EM', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'KING OF PRUSSIA', 'KING OF PRUSSIA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA BARGE', 'LA BARGE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA BELLE', 'LA BELLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA CANADA FLINTRIDGE', 'LA CANADA FLINTRIDGE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA CENTER', 'LA CENTER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA CONNER', 'LA CONNER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA COSTE', 'LA COSTE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA CRESCENT', 'LA CRESCENT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA CRESCENTA', 'LA CRESCENTA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA CROSSE', 'LA CROSSE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA FARGE', 'LA FARGE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA FARGEVILLE', 'LA FARGEVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA FAYETTE', 'LA FAYETTE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA FERIA', 'LA FERIA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA FOLLETTE', 'LA FOLLETTE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA FONTAINE', 'LA FONTAINE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA GRANDE', 'LA GRANDE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA GRANGE', 'LA GRANGE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA GRANGE PARK', 'LA GRANGE PARK', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA HABRA', 'LA HABRA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA HARPE', 'LA HARPE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA HONDA', 'LA HONDA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA JARA', 'LA JARA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA JOLLA', 'LA JOLLA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA JOSE', 'LA JOSE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA JOYA', 'LA JOYA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA JUNTA', 'LA JUNTA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA LOMA', 'LA LOMA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA LUZ', 'LA LUZ', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA MADERA', 'LA MADERA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA MARQUE', 'LA MARQUE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA MESA', 'LA MESA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA MIRADA', 'LA MIRADA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA MOILLE', 'LA MOILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA MONTE', 'LA MONTE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA MOTTE', 'LA MOTTE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA PALMA', 'LA PALMA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA PINE', 'LA PINE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA PLACE', 'LA PLACE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA PLATA', 'LA PLATA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA PORTE', 'LA PORTE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA PORTE CITY', 'LA PORTE CITY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA PRAIRIE', 'LA PRAIRIE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA PUENTE', 'LA PUENTE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA QUINTA', 'LA QUINTA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA RUE', 'LA RUE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA RUSSELL', 'LA RUSSELL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA SALLE', 'LA SALLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA VALLE', 'LA VALLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA VERGNE', 'LA VERGNE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA VERKIN', 'LA VERKIN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA VERNE', 'LA VERNE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA VERNIA', 'LA VERNIA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA VETA', 'LA VETA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LA VISTA', 'LA VISTA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LAC DU FLAMBEAU', 'LAC DU FLAMBEAU', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LAKE IN THE HILLS', 'LAKE IN THE HILLS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LAKE IN HILLS', 'LAKE IN THE HILLS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LE CENTER', 'LE CENTER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LE CLAIRE', 'LE CLAIRE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LE GRAND', 'LE GRAND', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LE MARS', 'LE MARS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LE RAYSVILLE', 'LE RAYSVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LE ROY', 'LE ROY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LE SUEUR', 'LE SUEUR', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LE VERNE', 'LU VERNE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'LU VERNE', 'LU VERNE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MARINE ON SAINT CROIX', 'MARINE ON SAINT CROIX', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC ADENVILLE', 'MC ADENVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCADENVILLE', 'MC ADENVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC ALISTER', 'MC ALISTER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCALISTER', 'MC ALISTER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC ALISTERVILLE', 'MC ALISTERVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCALISTERVILLE', 'MC ALISTERVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC ALPIN', 'MC ALPIN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCALPIN', 'MC ALPIN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC ANDREWS', 'MC ANDREWS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCANDREWS', 'MC ANDREWS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC ARTHUR', 'MC ARTHUR', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCARTHUR', 'MC ARTHUR', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC BAIN', 'MC BAIN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCBAIN', 'MC BAIN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC BEE', 'MC BEE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCBEE', 'MC BEE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CALL CREEK', 'MC CALL CREEK', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCALL CREEK', 'MC CALL CREEK', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CALLA', 'MC CALLA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCALLA', 'MC CALLA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CALLSBURG', 'MC CALLSBURG', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCALLSBURG', 'MC CALLSBURG', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CAMEY', 'MC CAMEY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCAMEY', 'MC CAMEY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CARLEY', 'MC CARLEY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCARLEY', 'MC CARLEY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CARR', 'MC CARR', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCARR', 'MC CARR', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CASKILL', 'MC CASKILL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCASKILL', 'MC CASKILL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CAULLEY', 'MC CAULLEY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCAULLEY', 'MC CAULLEY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CAYSVILLE', 'MC CAYSVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCAYSVILLE', 'MC CAYSVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CLAVE', 'MC CLAVE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCLAVE', 'MC CLAVE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CLELLAND', 'MC CLELLAND', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCLELLAND', 'MC CLELLAND', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CLELLANDTOWN', 'MC CLELLANDTOWN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCLELLANDTOWN', 'MC CLELLANDTOWN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CLELLANVILLE', 'MC CLELLANVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCLELLANVILLE', 'MC CLELLANVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CLURE', 'MC CLURE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCLURE', 'MC CLURE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CLURG', 'MC CLURG', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCLURG', 'MC CLURG', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC COLL', 'MC COLL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCOLL', 'MC COLL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC COMB', 'MC COMB', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCOMB', 'MC COMB', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CONNELL', 'MC CONNELL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCONNELL', 'MC CONNELL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CONNELLS', 'MC CONNELLS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCONNELLS', 'MC CONNELLS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CONNELLSBURG', 'MC CONNELLSBURG', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCONNELLSBURG', 'MC CONNELLSBURG', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC COOK', 'MC COOK', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCOOK', 'MC COOK', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC COOL', 'MC COOL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCOOL', 'MC COOL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC COOL JUNCTION', 'MC COOL JUNCTION', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCOOL JUNCTION', 'MC COOL JUNCTION', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CORDSVILLE', 'MC CORDSVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCORDSVILLE', 'MC CORDSVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CORMICK', 'MC CORMICK', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCORMICK', 'MC CORMICK', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC COY', 'MC COY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCOY', 'MC COY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CRACKEN', 'MC CRACKEN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCRACKEN', 'MC CRACKEN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CRORY', 'MC CRORY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCRORY', 'MC CRORY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CUNE', 'MC CUNE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCUNE', 'MC CUNE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC CUTCHENVILLE', 'MC CUTCHENVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCCUTCHENVILLE', 'MC CUTCHENVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC DADE', 'MC DADE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCDADE', 'MC DADE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC DANIELS', 'MC DANIELS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCDANIELS', 'MC DANIELS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC DAVID', 'MC DAVID', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCDAVID', 'MC DAVID', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC DERMOTT', 'MC DERMOTT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCDERMOTT', 'MC DERMOTT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC DONALD', 'MC DONALD', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCDONALD', 'MC DONALD', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC DONOUGH', 'MC DONOUGH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCDONOUGH', 'MC DONOUGH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC DOWELL', 'MC DOWELL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCDOWELL', 'MC DOWELL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC EWEN', 'MC EWEN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCEWEN', 'MC EWEN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC FALL', 'MC FALL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCFALL', 'MC FALL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC FARLAND', 'MC FARLAND', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCFARLAND', 'MC FARLAND', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC GAHEYSVILLE', 'MC GAHEYSVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCGAHEYSVILLE', 'MC GAHEYSVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC GEE', 'MC GEE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCGEE', 'MC GEE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC GEHEE', 'MC GEHEE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCGEHEE', 'MC GEHEE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC GRADY', 'MC GRADY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCGRADY', 'MC GRADY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC GRATH', 'MC GRATH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCGRATH', 'MC GRATH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC GRAW', 'MC GRAW', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCGRAW', 'MC GRAW', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC GREGOR', 'MC GREGOR', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCGREGOR', 'MC GREGOR', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC HENRY', 'MC HENRY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCHENRY', 'MC HENRY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC INTIRE', 'MC INTIRE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCINTIRE', 'MC INTIRE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC INTOSH', 'MC INTOSH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCINTOSH', 'MC INTOSH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC INTYRE', 'MC INTYRE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCINTYRE', 'MC INTYRE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC KEAN', 'MC KEAN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCKEAN', 'MC KEAN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC KEE', 'MC KEE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCKEE', 'MC KEE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC KEES ROCKS', 'MC KEES ROCKS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCKEES ROCKS', 'MC KEES ROCKS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC KENNEY', 'MC KENNEY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCKENNEY', 'MC KENNEY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC KENZIE', 'MC KENZIE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCKENZIE', 'MC KENZIE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC KITTRICK', 'MC KITTRICK', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCKITTRICK', 'MC KITTRICK', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC LAIN', 'MC LAIN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCLAIN', 'MC LAIN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC LAUGHLIN', 'MC LAUGHLIN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCLAUGHLIN', 'MC LAUGHLIN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC LEAN', 'MC LEAN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCLEAN', 'MC LEAN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC LEANSBORO', 'MC LEANSBORO', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCLEANSBORO', 'MC LEANSBORO', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC LEANSVILLE', 'MC LEANSVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCLEANSVILLE', 'MC LEANSVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC LEOD', 'MC LEOD', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCLEOD', 'MC LEOD', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC LOUTH', 'MC LOUTH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCLOUTH', 'MC LOUTH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC MILLAN', 'MC MILLAN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCMILLAN', 'MC MILLAN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC MINNVILLE', 'MC MINNVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCMINNVILLE', 'MC MINNVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC NABB', 'MC NABB', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCNABB', 'MC NABB', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC NEAL', 'MC NEAL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCNEAL', 'MC NEAL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC NEIL', 'MC NEIL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCNEIL', 'MC NEIL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC QUEENEY', 'MC QUEENEY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCQUEENEY', 'MC QUEENEY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC RAE', 'MC RAE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCRAE', 'MC RAE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC ROBERTS', 'MC ROBERTS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCROBERTS', 'MC ROBERTS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC SHERRYSTOWN', 'MC SHERRYSTOWN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCSHERRYSTOWN', 'MC SHERRYSTOWN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MC VEYTOWN', 'MC VEYTOWN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MCVEYTOWN', 'MC VEYTOWN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MEADOWS OF DAN', 'MEADOWS OF DAN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MI WUK VILLAGE', 'MI WUK VILLAGE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MOUTH OF WILSON', 'MOUTH OF WILSON', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MT ZION', 'MOUNT ZION', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'MOUNT ZION', 'MOUNT ZION', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'PE ELL', 'PE ELL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'POINT OF ROCKS', 'POINT OF ROCKS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'PONCE DE LEON', 'PONCE DE LEON', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'PRAIRIE DU CHIEN', 'PRAIRIE DU CHIEN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'PRAIRIE DU ROCHER', 'PRAIRIE DU ROCHER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'PRAIRIE DU SAC', 'PRAIRIE DU SAC', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'RANCHO SANTA FE', 'RANCHO SANTA FE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'RANCHOS DE TAOS', 'RANCHOS DE TAOS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SANTA FE', 'SANTA FE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SANTA FE SPRINGS', 'SANTA FE SPRINGS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'S EL MONTE', 'SOUTH EL MONTE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SOUTH EL MONTE', 'SOUTH EL MONTE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT COLUMBANS', 'SAINT COLUMBANS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST COLUMBANS', 'SAINT COLUMBANS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'TOWNSHIP OF WASHINGTON', 'TOWNSHIP OF WASHINGTON', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'TRUTH OR CONSEQUENCES', 'TRUTH OR CONSEQUENCES', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'TY TY', 'TY TY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'VILLAGE OF NAGOG WOODS', 'VILLAGE OF NAGOG WOODS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST AGATHA', 'SAINT AGATHA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST ALBANS', 'SAINT ALBANS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST ANDREWS', 'SAINT ANDREWS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST ANN', 'SAINT ANN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST ANN HIGHLANDS', 'SAINT ANN HIGHLANDS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST ANNA', 'SAINT ANNA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST ANNE', 'SAINT ANNE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST ANSGAR', 'SAINT ANSGAR', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST ANTHONY', 'SAINT ANTHONY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST ARMAND', 'SAINT ARMAND', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST AUBERT', 'SAINT AUBERT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST AUGUSTA', 'SAINT AUGUSTA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST AUGUSTINE', 'SAINT AUGUSTINE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST AUGUSTINE BEACH', 'SAINT AUGUSTINE BEACH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST AUGUSTINE SHORES', 'SAINT AUGUSTINE SHORES', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST AUGUSTINE SOUTH', 'SAINT AUGUSTINE SOUTH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST BENEDICT', 'SAINT BENEDICT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST BERNARD', 'SAINT BERNARD', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST BERNICE', 'SAINT BERNICE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST BONAVENTURE', 'SAINT BONAVENTURE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST BONIFACIUS', 'SAINT BONIFACIUS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST BRIDGET', 'SAINT BRIDGET', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST CHARLES', 'SAINT CHARLES', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST CHARLES MESA', 'SAINT CHARLES MESA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST CLAIR', 'SAINT CLAIR', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST CLAIR SHORES', 'SAINT CLAIR SHORES', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST CLAIRSVILLE', 'SAINT CLAIRSVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST CLEMENT', 'SAINT CLEMENT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST CLERE', 'SAINT CLERE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST CLOUD', 'SAINT CLOUD', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST CROIX', 'SAINT CROIX', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST CROIX FALLS', 'SAINT CROIX FALLS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST DAVID', 'SAINT DAVID', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST DONATUS', 'SAINT DONATUS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST EDWARD', 'SAINT EDWARD', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST ELIZABETH', 'SAINT ELIZABETH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST ELMO', 'SAINT ELMO', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST FERDINAND', 'SAINT FERDINAND', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST FLORIAN', 'SAINT FLORIAN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST FRANCIS', 'SAINT FRANCIS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST FRANCISVILLE', 'SAINT FRANCISVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST FRANCOIS', 'SAINT FRANCOIS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST GABRIEL', 'SAINT GABRIEL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST GEORGE', 'SAINT GEORGE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST GEORGE ISLAND', 'SAINT GEORGE ISLAND', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST GERMAIN', 'SAINT GERMAIN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST HEDWIG', 'SAINT HEDWIG', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST HELEN', 'SAINT HELEN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST HELENA', 'SAINT HELENA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST HELENA ISLAND', 'SAINT HELENA ISLAND', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST HELENS', 'SAINT HELENS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST HENRY', 'SAINT HENRY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST HILAIRE', 'SAINT HILAIRE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST IGNACE', 'SAINT IGNACE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST IGNATIUS', 'SAINT IGNATIUS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST JACOB', 'SAINT JACOB', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST JAMES', 'SAINT JAMES', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST JAMES CITY', 'SAINT JAMES CITY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST JO', 'SAINT JO', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST JOE', 'SAINT JOE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST JOHN', 'SAINT JOHN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST JOHNS', 'SAINT JOHNS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST JOHNS-FREEMONT', 'SAINT JOHNS-FREEMONT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST JOHNS FREEMONT', 'SAINT JOHNS-FREEMONT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST JOHNSBURY', 'SAINT JOHNSBURY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST JOHNSVILLE', 'SAINT JOHNSVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST JOSEPH', 'SAINT JOSEPH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST JUST', 'SAINT JUST', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST LAWRENCE', 'SAINT LAWRENCE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST LEO', 'SAINT LEO', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST LEON', 'SAINT LEON', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST LEONARD', 'SAINT LEONARD', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST LIBORY', 'SAINT LIBORY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST LOUIS', 'SAINT LOUIS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST LOUIS PARK', 'SAINT LOUIS PARK', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST LOUISVILLE', 'SAINT LOUISVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST LUCAS', 'SAINT LUCAS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST LUCIE VILLAGE', 'SAINT LUCIE VILLAGE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST MARIE', 'SAINT MARIE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST MARIES', 'SAINT MARIES', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST MARKS', 'SAINT MARKS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST MARTIN', 'SAINT MARTIN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST MARTINS', 'SAINT MARTINS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST MARTINVILLE', 'SAINT MARTINVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST MARY', 'SAINT MARY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST MARY OF THE WOODS', 'SAINT MARY OF THE WOODS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST MARY''S', 'SAINT MARY''S', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST MARYS', 'SAINT MARYS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST MARYS POINT', 'SAINT MARYS POINT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST MATHIAS', 'SAINT MATHIAS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST MATTHEWS', 'SAINT MATTHEWS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST MAURICE', 'SAINT MAURICE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST MEINRAD', 'SAINT MEINRAD', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST MICHAEL', 'SAINT MICHAEL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST MICHAELS', 'SAINT MICHAELS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST NAZIANZ', 'SAINT NAZIANZ', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST OLAF', 'SAINT OLAF', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST ONGE', 'SAINT ONGE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST PARIS', 'SAINT PARIS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST PAUL', 'SAINT PAUL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST PAUL PARK', 'SAINT PAUL PARK', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST PAULS', 'SAINT PAULS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST PETE BEACH', 'SAINT PETE BEACH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST PETER', 'SAINT PETER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST PETERS', 'SAINT PETERS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST PETERSBURG', 'SAINT PETERSBURG', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST PIERRE', 'SAINT PIERRE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST REGIS', 'SAINT REGIS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST REGIS FALLS', 'SAINT REGIS FALLS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST REGIS MOHAWK', 'SAINT REGIS MOHAWK', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST REGIS PARK', 'SAINT REGIS PARK', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST ROBERT', 'SAINT ROBERT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST ROSA', 'SAINT ROSA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST ROSE', 'SAINT ROSE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST SIMONS', 'SAINT SIMONS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST STEPHEN', 'SAINT STEPHEN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST STEPHENS', 'SAINT STEPHENS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST STEPHENS CHURCH', 'SAINT STEPHENS CHURCH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST THOMAS', 'SAINT THOMAS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST VINCENT', 'SAINT VINCENT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST VINCENT COLLEGE', 'SAINT VINCENT COLLEGE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST WENDEL', 'SAINT WENDEL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'ST XAVIER', 'SAINT XAVIER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT AGATHA', 'SAINT AGATHA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT ALBANS', 'SAINT ALBANS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT ANDREWS', 'SAINT ANDREWS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT ANN', 'SAINT ANN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT ANN HIGHLANDS', 'SAINT ANN HIGHLANDS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT ANNA', 'SAINT ANNA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT ANNE', 'SAINT ANNE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT ANSGAR', 'SAINT ANSGAR', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT ANTHONY', 'SAINT ANTHONY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT ARMAND', 'SAINT ARMAND', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT AUBERT', 'SAINT AUBERT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT AUGUSTA', 'SAINT AUGUSTA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT AUGUSTINE', 'SAINT AUGUSTINE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT AUGUSTINE BEACH', 'SAINT AUGUSTINE BEACH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT AUGUSTINE SHORES', 'SAINT AUGUSTINE SHORES', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT AUGUSTINE SOUTH', 'SAINT AUGUSTINE SOUTH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT BENEDICT', 'SAINT BENEDICT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT BERNARD', 'SAINT BERNARD', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT BERNICE', 'SAINT BERNICE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT BONAVENTURE', 'SAINT BONAVENTURE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT BONIFACIUS', 'SAINT BONIFACIUS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT BRIDGET', 'SAINT BRIDGET', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT CHARLES', 'SAINT CHARLES', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT CHARLES MESA', 'SAINT CHARLES MESA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT CLAIR', 'SAINT CLAIR', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT CLAIR SHORES', 'SAINT CLAIR SHORES', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT CLAIRSVILLE', 'SAINT CLAIRSVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT CLEMENT', 'SAINT CLEMENT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT CLERE', 'SAINT CLERE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT CLOUD', 'SAINT CLOUD', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT CROIX', 'SAINT CROIX', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT CROIX FALLS', 'SAINT CROIX FALLS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT DAVID', 'SAINT DAVID', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT DONATUS', 'SAINT DONATUS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT EDWARD', 'SAINT EDWARD', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT ELIZABETH', 'SAINT ELIZABETH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT ELMO', 'SAINT ELMO', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT FERDINAND', 'SAINT FERDINAND', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT FLORIAN', 'SAINT FLORIAN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT FRANCIS', 'SAINT FRANCIS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT FRANCISVILLE', 'SAINT FRANCISVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT FRANCOIS', 'SAINT FRANCOIS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT GABRIEL', 'SAINT GABRIEL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT GEORGE', 'SAINT GEORGE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT GEORGE ISLAND', 'SAINT GEORGE ISLAND', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT GERMAIN', 'SAINT GERMAIN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT HEDWIG', 'SAINT HEDWIG', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT HELEN', 'SAINT HELEN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT HELENA', 'SAINT HELENA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT HELENA ISLAND', 'SAINT HELENA ISLAND', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT HELENS', 'SAINT HELENS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT HENRY', 'SAINT HENRY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT HILAIRE', 'SAINT HILAIRE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT IGNACE', 'SAINT IGNACE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT IGNATIUS', 'SAINT IGNATIUS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT JACOB', 'SAINT JACOB', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT JAMES', 'SAINT JAMES', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT JAMES CITY', 'SAINT JAMES CITY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT JO', 'SAINT JO', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT JOE', 'SAINT JOE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT JOHN', 'SAINT JOHN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT JOHNS', 'SAINT JOHNS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT JOHNS-FREEMONT', 'SAINT JOHNS-FREEMONT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT JOHNS FREEMONT', 'SAINT JOHNS-FREEMONT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT JOHNSBURY', 'SAINT JOHNSBURY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT JOHNSVILLE', 'SAINT JOHNSVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT JOSEPH', 'SAINT JOSEPH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT JUST', 'SAINT JUST', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT LAWRENCE', 'SAINT LAWRENCE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT LEO', 'SAINT LEO', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT LEON', 'SAINT LEON', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT LEONARD', 'SAINT LEONARD', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT LIBORY', 'SAINT LIBORY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT LOUIS', 'SAINT LOUIS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT LOUIS PARK', 'SAINT LOUIS PARK', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT LOUISVILLE', 'SAINT LOUISVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT LUCAS', 'SAINT LUCAS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT LUCIE VILLAGE', 'SAINT LUCIE VILLAGE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT MARIE', 'SAINT MARIE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT MARIES', 'SAINT MARIES', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT MARKS', 'SAINT MARKS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT MARTIN', 'SAINT MARTIN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT MARTINS', 'SAINT MARTINS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT MARTINVILLE', 'SAINT MARTINVILLE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT MARY', 'SAINT MARY', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT MARY OF THE WOODS', 'SAINT MARY OF THE WOODS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT MARY''S', 'SAINT MARY''S', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT MARYS', 'SAINT MARYS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT MARYS POINT', 'SAINT MARYS POINT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT MATHIAS', 'SAINT MATHIAS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT MATTHEWS', 'SAINT MATTHEWS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT MAURICE', 'SAINT MAURICE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT MEINRAD', 'SAINT MEINRAD', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT MICHAEL', 'SAINT MICHAEL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT MICHAELS', 'SAINT MICHAELS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT NAZIANZ', 'SAINT NAZIANZ', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT OLAF', 'SAINT OLAF', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT ONGE', 'SAINT ONGE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT PARIS', 'SAINT PARIS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT PAUL', 'SAINT PAUL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT PAUL PARK', 'SAINT PAUL PARK', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT PAULS', 'SAINT PAULS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT PETE BEACH', 'SAINT PETE BEACH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT PETER', 'SAINT PETER', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT PETERS', 'SAINT PETERS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT PETERSBURG', 'SAINT PETERSBURG', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT PIERRE', 'SAINT PIERRE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT REGIS', 'SAINT REGIS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT REGIS FALLS', 'SAINT REGIS FALLS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT REGIS MOHAWK', 'SAINT REGIS MOHAWK', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT REGIS PARK', 'SAINT REGIS PARK', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT ROBERT', 'SAINT ROBERT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT ROSA', 'SAINT ROSA', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT ROSE', 'SAINT ROSE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT SIMONS', 'SAINT SIMONS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT STEPHEN', 'SAINT STEPHEN', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT STEPHENS', 'SAINT STEPHENS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT STEPHENS CHURCH', 'SAINT STEPHENS CHURCH', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT THOMAS', 'SAINT THOMAS', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT VINCENT', 'SAINT VINCENT', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT VINCENT COLLEGE', 'SAINT VINCENT COLLEGE', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT WENDEL', 'SAINT WENDEL', 10);
+INSERT INTO us_gaz (seq, word, stdword, token) VALUES (1, 'SAINT XAVIER', 'SAINT XAVIER', 10);
+
+-- needed set default back to custom so new user entries won't be purged
+ALTER TABLE us_gaz ALTER COLUMN is_custom SET DEFAULT true;
+CREATE TABLE IF NOT EXISTS us_rules (
+    id serial, rule text, is_custom boolean NOT NULL DEFAULT true, CONSTRAINT pk_us_rules PRIMARY KEY(id)
+);
+
+-- this will be needed for upgrading to prevent purging of custom entries
+DELETE FROM us_rules WHERE is_custom = false;
+
+-- needed so entries we add will default to not custom
+ALTER TABLE us_rules ALTER COLUMN is_custom SET DEFAULT false;
+
+INSERT INTO us_rules (rule) VALUES ('1 -1 5 -1 2 7');
+INSERT INTO us_rules (rule) VALUES ('1 3 -1 5 3 -1 2 7');
+INSERT INTO us_rules (rule) VALUES ('1 22 -1 5 7 -1 2 7');
+INSERT INTO us_rules (rule) VALUES ('1 22 3 -1 5 7 3 -1 2 7');
+INSERT INTO us_rules (rule) VALUES ('1 2 -1 5 6 -1 2 13');
+INSERT INTO us_rules (rule) VALUES ('1 2 3 -1 5 6 3 -1 2 13');
+INSERT INTO us_rules (rule) VALUES ('1 2 22 -1 5 6 7 -1 2 13');
+INSERT INTO us_rules (rule) VALUES ('1 2 22 3 -1 5 6 7 3 -1 2 13');
+INSERT INTO us_rules (rule) VALUES ('18 -1 5 -1 2 2');
+INSERT INTO us_rules (rule) VALUES ('18 3 -1 5 3 -1 2 2');
+INSERT INTO us_rules (rule) VALUES ('18 22 -1 5 7 -1 2 2');
+INSERT INTO us_rules (rule) VALUES ('18 22 3 -1 5 7 3 -1 2 2');
+INSERT INTO us_rules (rule) VALUES ('18 2 -1 5 6 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('18 2 3 -1 5 6 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('18 2 22 -1 5 6 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('18 2 22 3 -1 5 6 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 -1 5 -1 2 2');
+INSERT INTO us_rules (rule) VALUES ('2 3 -1 5 3 -1 2 2');
+INSERT INTO us_rules (rule) VALUES ('2 22 -1 5 7 -1 2 2');
+INSERT INTO us_rules (rule) VALUES ('2 22 3 -1 5 7 3 -1 2 2');
+INSERT INTO us_rules (rule) VALUES ('2 2 -1 5 6 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('2 2 3 -1 5 6 3 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('2 2 22 -1 5 6 7 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('2 2 22 3 -1 5 6 7 3 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('22 -1 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 3 -1 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 22 -1 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 22 3 -1 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 -1 5 6 -1 2 8');
+INSERT INTO us_rules (rule) VALUES ('22 2 3 -1 5 6 3 -1 2 8');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 -1 5 6 7 -1 2 8');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 3 -1 5 6 7 3 -1 2 8');
+INSERT INTO us_rules (rule) VALUES ('22 1 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 -1 5 5 6 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 3 -1 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 22 -1 5 5 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('1 22 3 -1 5 5 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('1 22 22 -1 5 5 7 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('1 22 22 3 -1 5 5 7 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('1 22 2 -1 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 22 2 3 -1 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 22 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 22 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 2 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 2 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 2 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 2 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 2 2 -1 5 5 6 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('1 2 2 3 -1 5 5 6 3 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('1 2 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 2 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('2 1 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 1 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 1 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 1 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 -1 5 5 6 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 3 -1 5 5 6 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 22 -1 5 5 6 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 22 3 -1 5 5 6 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('15 2 -1 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('15 2 3 -1 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('15 2 22 -1 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('15 2 22 3 -1 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('16 0 2 -1 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('16 0 2 3 -1 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('24 2 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('24 2 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('24 2 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('24 2 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('24 2 2 -1 5 5 6 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('24 2 2 3 -1 5 5 6 3 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('24 2 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('24 2 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('0 22 -1 5 5 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 -1 5 5 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('0 22 22 -1 5 5 7 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 22 3 -1 5 5 7 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 -1 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 3 -1 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('2 24 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 24 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 24 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 24 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 24 2 -1 5 5 6 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 24 2 3 -1 5 5 6 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 24 2 22 -1 5 5 6 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 24 2 22 3 -1 5 5 6 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 22 -1 5 5 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('2 22 3 -1 5 5 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 22 22 -1 5 5 7 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('2 22 22 3 -1 5 5 7 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 22 2 -1 5 5 6 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 22 2 3 -1 5 5 6 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 22 2 22 -1 5 5 6 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 22 2 22 3 -1 5 5 6 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 0 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 0 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 0 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 0 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 0 2 -1 5 5 6 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 0 2 3 -1 5 5 6 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 0 2 22 -1 5 5 6 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 0 2 22 3 -1 5 5 6 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 18 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 18 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 18 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 18 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 18 2 -1 5 5 6 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 18 2 3 -1 5 5 6 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 18 2 22 -1 5 5 6 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 18 2 22 3 -1 5 5 6 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('2 2 -1 5 5 -1 2 3');
+INSERT INTO us_rules (rule) VALUES ('2 2 3 -1 5 5 3 -1 2 3');
+INSERT INTO us_rules (rule) VALUES ('2 2 22 -1 5 5 7 -1 2 3');
+INSERT INTO us_rules (rule) VALUES ('2 2 22 3 -1 5 5 7 3 -1 2 3');
+INSERT INTO us_rules (rule) VALUES ('2 2 2 -1 5 5 6 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('2 2 2 3 -1 5 5 6 3 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('2 2 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('2 2 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 2 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 2 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 2 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 2 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 2 2 -1 5 5 6 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('18 2 2 3 -1 5 5 6 3 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('18 2 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 2 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 18 2 -1 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 18 2 3 -1 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 18 2 22 -1 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 18 2 22 3 -1 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 18 2 2 -1 5 5 5 6 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('1 18 2 2 3 -1 5 5 5 6 3 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('1 18 2 2 22 -1 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 18 2 2 22 3 -1 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('0 -1 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 3 -1 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 22 -1 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 -1 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 2 -1 5 6 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('0 2 3 -1 5 6 3 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('0 2 22 -1 5 6 7 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('0 2 22 3 -1 5 6 7 3 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 -1 5 5 6 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 3 -1 5 5 6 3 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 22 -1 5 5 6 7 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 22 3 -1 5 5 6 7 3 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('0 1 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 1 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 1 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 1 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 1 2 -1 5 5 6 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('0 1 2 3 -1 5 5 6 3 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('0 1 2 22 -1 5 5 6 7 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('0 1 2 22 3 -1 5 5 6 7 3 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('1 2 2 -1 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 2 2 3 -1 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 2 2 22 -1 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 2 2 22 3 -1 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 2 2 2 -1 5 5 5 6 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('1 2 2 2 3 -1 5 5 5 6 3 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('1 2 2 2 22 -1 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 2 2 2 22 3 -1 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 2 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 -1 5 5 6 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 3 -1 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('14 -1 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('14 3 -1 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('14 22 -1 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('14 22 3 -1 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('14 2 -1 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('14 2 3 -1 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('14 2 22 -1 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('14 2 22 3 -1 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('15 1 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('15 1 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('15 1 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('15 1 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('15 1 2 -1 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('15 1 2 3 -1 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('15 1 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('15 1 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('24 -1 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('24 3 -1 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('24 22 -1 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('24 22 3 -1 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('24 2 -1 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('24 2 3 -1 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('24 2 22 -1 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('24 2 22 3 -1 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('24 24 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('24 24 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('24 24 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('24 24 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('24 24 2 -1 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('24 24 2 3 -1 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('24 24 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('24 24 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('24 1 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('24 1 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('24 1 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('24 1 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('24 1 2 -1 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('24 1 2 3 -1 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('24 1 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('24 1 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('25 -1 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('25 3 -1 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('25 22 -1 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 -1 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('25 2 -1 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('25 2 3 -1 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('25 2 22 -1 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('25 2 22 3 -1 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('23 -1 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('23 3 -1 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('23 22 -1 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('23 22 3 -1 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('23 2 -1 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('23 2 3 -1 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('23 2 22 -1 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('23 2 22 3 -1 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('0 13 0 -1 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 13 0 3 -1 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 13 0 22 -1 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 13 0 22 3 -1 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 13 0 2 -1 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('0 13 0 2 3 -1 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('0 13 0 2 22 -1 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('0 13 0 2 22 3 -1 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('0 25 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 -1 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 3 -1 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 -1 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('11 3 -1 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('11 22 -1 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('11 22 3 -1 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('11 2 -1 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 2 3 -1 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 2 22 -1 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 2 22 3 -1 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 0 -1 3 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('3 0 3 -1 3 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('3 0 22 -1 3 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('3 0 22 3 -1 3 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('3 0 2 -1 3 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 0 2 3 -1 3 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 0 2 22 -1 3 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 0 2 22 3 -1 3 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 1 -1 3 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('3 1 3 -1 3 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('3 1 22 -1 3 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('3 1 22 3 -1 3 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('3 1 2 -1 3 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 1 2 3 -1 3 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 1 2 22 -1 3 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 1 2 22 3 -1 3 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 13 18 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 13 18 3 -1 5 5 3 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 13 18 22 -1 5 5 3 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 13 18 22 3 -1 5 5 3 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 13 18 2 -1 5 5 3 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 13 18 2 3 -1 5 5 3 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 13 18 2 22 -1 5 5 3 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 13 18 2 22 3 -1 5 5 3 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 0 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 0 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 0 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 0 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 0 2 -1 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 0 2 3 -1 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 0 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 0 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 18 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 18 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 18 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 18 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 18 2 -1 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 18 2 3 -1 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 18 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 18 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 18 18 -1 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 18 18 3 -1 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 18 18 22 -1 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 18 18 22 3 -1 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 18 18 2 -1 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 18 18 2 3 -1 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 18 18 2 22 -1 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 18 18 2 22 3 -1 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 18 1 -1 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 18 1 3 -1 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 18 1 22 -1 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 18 1 22 3 -1 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 18 1 2 -1 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 18 1 2 3 -1 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 18 1 2 22 -1 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 18 1 2 22 3 -1 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 1 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 1 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 1 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 1 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('18 1 2 -1 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 1 2 3 -1 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 1 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('18 1 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('5 -1 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('5 3 -1 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('5 22 -1 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('5 22 3 -1 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('5 2 -1 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('5 2 3 -1 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('5 2 22 -1 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('5 2 22 3 -1 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('21 -1 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('21 3 -1 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('21 22 -1 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('21 22 3 -1 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('21 2 -1 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('21 2 3 -1 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('21 2 22 -1 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('21 2 22 3 -1 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 13 1 -1 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 13 1 3 -1 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 13 1 22 -1 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 13 1 22 3 -1 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 13 1 2 -1 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 13 1 2 3 -1 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 13 1 2 22 -1 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 13 1 2 22 3 -1 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 24 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 24 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 24 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 24 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 24 2 -1 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 24 2 3 -1 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 24 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 24 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 24 24 -1 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 24 24 3 -1 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 24 24 22 -1 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 24 24 22 3 -1 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 24 24 2 -1 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 24 24 2 3 -1 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 24 24 2 22 -1 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 24 24 2 22 3 -1 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 24 1 -1 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 24 1 3 -1 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 24 1 22 -1 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 24 1 22 3 -1 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 24 1 2 -1 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 24 1 2 3 -1 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 24 1 2 22 -1 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 24 1 2 22 3 -1 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 15 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 15 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 15 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 15 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 15 2 -1 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 15 2 3 -1 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 15 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 15 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 22 1 -1 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 22 1 3 -1 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 22 1 22 -1 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 22 1 22 3 -1 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 22 1 2 -1 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 22 1 2 3 -1 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 22 1 2 22 -1 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 22 1 2 22 3 -1 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 25 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 25 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 25 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 25 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 25 2 -1 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 25 2 3 -1 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 25 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 25 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 0 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 0 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 0 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 0 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 0 2 -1 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 0 2 3 -1 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 0 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 0 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 3 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 3 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 3 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 3 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 3 2 -1 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 3 2 3 -1 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 3 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 3 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 18 -1 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 18 3 -1 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 18 22 -1 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 18 22 3 -1 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 18 2 -1 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 18 2 3 -1 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 18 2 22 -1 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 18 2 22 3 -1 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 18 18 1 -1 5 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 18 18 1 3 -1 5 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 18 18 1 22 -1 5 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 18 18 1 22 3 -1 5 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 18 18 1 2 -1 5 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 18 18 1 2 3 -1 5 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 18 18 1 2 22 -1 5 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 18 18 1 2 22 3 -1 5 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 18 1 -1 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 18 1 3 -1 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 18 1 22 -1 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 18 1 22 3 -1 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 18 1 2 -1 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 18 1 2 3 -1 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 18 1 2 22 -1 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 18 1 2 22 3 -1 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 2 0 -1 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 2 0 3 -1 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 2 0 22 -1 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 2 0 22 3 -1 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 2 0 2 -1 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 2 0 2 3 -1 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 2 0 2 22 -1 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 2 0 2 22 3 -1 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 2 1 -1 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 2 1 3 -1 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 2 1 22 -1 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 2 1 22 3 -1 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('1 2 1 2 -1 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 2 1 2 3 -1 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 2 1 2 22 -1 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('1 2 1 2 22 3 -1 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('16 -1 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('16 3 -1 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('16 22 -1 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('16 22 3 -1 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('16 2 -1 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('16 2 3 -1 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('16 2 22 -1 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('16 2 22 3 -1 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('2 1 -1 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 3 -1 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 22 -1 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 22 3 -1 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 -1 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 3 -1 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 22 -1 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 22 3 -1 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 -1 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 3 -1 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 22 -1 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 22 3 -1 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 22 -1 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 22 3 -1 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 22 22 -1 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 22 22 3 -1 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 22 1 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 22 1 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 22 1 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 22 1 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 22 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 22 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 22 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 22 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 -1 4 5 5 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 3 -1 4 5 5 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 22 -1 4 5 5 7 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 22 3 -1 4 5 5 7 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 2 1 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 1 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 1 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 1 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 24 2 -1 4 5 5 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 24 2 3 -1 4 5 5 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 24 2 22 -1 4 5 5 7 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 24 2 22 3 -1 4 5 5 7 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 0 22 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 22 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 22 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 22 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 24 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 24 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 24 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 24 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 22 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 22 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 22 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 22 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 0 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 0 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 0 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 0 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 18 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 18 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 18 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 18 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 2 2 -1 4 5 5 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 2 2 3 -1 4 5 5 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 2 2 22 -1 4 5 5 7 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 2 2 22 3 -1 4 5 5 7 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 18 2 -1 4 5 5 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 18 2 3 -1 4 5 5 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 18 2 22 -1 4 5 5 7 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 18 2 22 3 -1 4 5 5 7 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 1 18 2 -1 4 5 5 5 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 1 18 2 3 -1 4 5 5 5 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 1 18 2 22 -1 4 5 5 5 7 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 1 18 2 22 3 -1 4 5 5 5 7 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 0 -1 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 3 -1 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 22 -1 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 22 3 -1 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 18 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 18 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 18 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 18 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 1 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 1 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 1 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 1 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 2 -1 4 5 5 5 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 2 3 -1 4 5 5 5 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 2 22 -1 4 5 5 5 7 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 2 22 3 -1 4 5 5 5 7 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('2 22 2 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 22 2 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 22 2 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 22 2 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 14 -1 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 14 3 -1 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 14 22 -1 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 14 22 3 -1 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 15 1 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 15 1 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 15 1 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 15 1 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 24 -1 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 24 3 -1 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 24 22 -1 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 24 22 3 -1 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 24 24 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 24 24 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 24 24 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 24 24 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 24 1 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 24 1 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 24 1 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 24 1 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 25 -1 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 25 3 -1 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 25 22 -1 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 25 22 3 -1 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 23 -1 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 23 3 -1 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 23 22 -1 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 23 22 3 -1 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 13 0 -1 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 13 0 3 -1 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 13 0 22 -1 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 13 0 22 3 -1 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 25 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 25 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 25 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 0 25 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 11 -1 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 11 3 -1 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 11 22 -1 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 11 22 3 -1 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 3 0 -1 4 3 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 3 0 3 -1 4 3 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 3 0 22 -1 4 3 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 3 0 22 3 -1 4 3 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 3 1 -1 4 3 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 3 1 3 -1 4 3 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 3 1 22 -1 4 3 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 3 1 22 3 -1 4 3 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 13 18 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 13 18 3 -1 4 5 5 3 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 13 18 22 -1 4 5 5 3 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 13 18 22 3 -1 4 5 5 3 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 0 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 0 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 0 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 0 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 18 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 18 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 18 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 18 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 18 18 -1 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 18 18 3 -1 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 18 18 22 -1 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 18 18 22 3 -1 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 18 1 -1 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 18 1 3 -1 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 18 1 22 -1 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 18 1 22 3 -1 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 1 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 1 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 1 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 18 1 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 5 -1 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 5 3 -1 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 5 22 -1 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 5 22 3 -1 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 21 -1 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 21 3 -1 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 21 22 -1 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 21 22 3 -1 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 13 1 -1 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 13 1 3 -1 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 13 1 22 -1 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 13 1 22 3 -1 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 24 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 24 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 24 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 24 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 24 24 -1 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 24 24 3 -1 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 24 24 22 -1 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 24 24 22 3 -1 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 24 1 -1 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 24 1 3 -1 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 24 1 22 -1 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 24 1 22 3 -1 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 15 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 15 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 15 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 15 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 22 1 -1 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 22 1 3 -1 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 22 1 22 -1 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 22 1 22 3 -1 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 25 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 25 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 25 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 25 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 0 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 0 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 0 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 0 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 3 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 3 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 3 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 3 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 18 -1 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 18 3 -1 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 18 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 18 22 3 -1 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 18 18 1 -1 4 5 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 18 18 1 3 -1 4 5 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 18 18 1 22 -1 4 5 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 18 18 1 22 3 -1 4 5 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 18 1 -1 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 18 1 3 -1 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 18 1 22 -1 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 18 1 22 3 -1 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 0 -1 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 0 3 -1 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 0 22 -1 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 0 22 3 -1 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 1 -1 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 1 3 -1 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 1 22 -1 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 2 1 22 3 -1 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 16 -1 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 16 3 -1 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 16 22 -1 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('2 16 22 3 -1 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 1 -1 2 5 -1 2 7');
+INSERT INTO us_rules (rule) VALUES ('22 1 3 -1 2 5 3 -1 2 7');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 -1 2 5 7 -1 2 7');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 3 -1 2 5 7 3 -1 2 7');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 -1 2 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 3 -1 2 5 6 3 -1 2 13');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 22 -1 2 5 6 7 -1 2 13');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 22 3 -1 2 5 6 7 3 -1 2 13');
+INSERT INTO us_rules (rule) VALUES ('22 18 -1 2 5 -1 2 2');
+INSERT INTO us_rules (rule) VALUES ('22 18 3 -1 2 5 3 -1 2 2');
+INSERT INTO us_rules (rule) VALUES ('22 18 22 -1 2 5 7 -1 2 2');
+INSERT INTO us_rules (rule) VALUES ('22 18 22 3 -1 2 5 7 3 -1 2 2');
+INSERT INTO us_rules (rule) VALUES ('22 18 2 -1 2 5 6 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 18 2 3 -1 2 5 6 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 18 2 22 -1 2 5 6 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 18 2 22 3 -1 2 5 6 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 -1 2 5 -1 2 2');
+INSERT INTO us_rules (rule) VALUES ('22 2 3 -1 2 5 3 -1 2 2');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 -1 2 5 7 -1 2 2');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 3 -1 2 5 7 3 -1 2 2');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 -1 2 5 6 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 3 -1 2 5 6 3 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 22 -1 2 5 6 7 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 22 3 -1 2 5 6 7 3 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('22 22 -1 2 5 -1 2 7');
+INSERT INTO us_rules (rule) VALUES ('22 22 3 -1 2 5 3 -1 2 7');
+INSERT INTO us_rules (rule) VALUES ('22 22 22 -1 2 5 7 -1 2 7');
+INSERT INTO us_rules (rule) VALUES ('22 22 22 3 -1 2 5 7 3 -1 2 7');
+INSERT INTO us_rules (rule) VALUES ('22 22 2 -1 2 5 6 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 22 2 3 -1 2 5 6 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 22 2 22 -1 2 5 6 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 22 2 22 3 -1 2 5 6 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 22 1 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 22 1 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 22 1 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 22 1 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 22 1 2 -1 2 5 5 6 -1 2 8');
+INSERT INTO us_rules (rule) VALUES ('22 22 1 2 3 -1 2 5 5 6 3 -1 2 8');
+INSERT INTO us_rules (rule) VALUES ('22 22 1 2 22 -1 2 5 5 6 7 -1 2 8');
+INSERT INTO us_rules (rule) VALUES ('22 22 1 2 22 3 -1 2 5 5 6 7 3 -1 2 8');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 -1 2 5 5 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 3 -1 2 5 5 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 22 -1 2 5 5 7 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 22 3 -1 2 5 5 7 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 2 -1 2 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 2 3 -1 2 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 2 22 -1 2 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 2 22 3 -1 2 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 2 -1 2 5 5 6 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 2 3 -1 2 5 5 6 3 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 2 22 -1 2 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 2 22 3 -1 2 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 -1 2 5 5 6 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 3 -1 2 5 5 6 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 22 -1 2 5 5 6 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 22 3 -1 2 5 5 6 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 15 2 -1 2 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 15 2 3 -1 2 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 15 2 22 -1 2 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 15 2 22 3 -1 2 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 16 0 2 -1 2 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 16 0 2 3 -1 2 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 24 2 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 24 2 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 24 2 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 24 2 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 24 2 2 -1 2 5 5 6 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 24 2 2 3 -1 2 5 5 6 3 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 24 2 2 22 -1 2 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 24 2 2 22 3 -1 2 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 0 22 -1 2 5 5 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 0 22 3 -1 2 5 5 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 0 22 22 -1 2 5 5 7 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 0 22 22 3 -1 2 5 5 7 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 0 22 2 -1 2 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 0 22 2 3 -1 2 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 0 22 2 22 -1 2 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 0 22 2 22 3 -1 2 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 2 -1 2 5 5 6 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 2 3 -1 2 5 5 6 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 2 22 -1 2 5 5 6 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 2 22 3 -1 2 5 5 6 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 -1 2 5 5 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 3 -1 2 5 5 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 22 -1 2 5 5 7 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 22 3 -1 2 5 5 7 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 2 -1 2 5 5 6 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 2 3 -1 2 5 5 6 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 2 22 -1 2 5 5 6 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 2 22 3 -1 2 5 5 6 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 2 -1 2 5 5 6 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 2 3 -1 2 5 5 6 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 2 22 -1 2 5 5 6 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 2 22 3 -1 2 5 5 6 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 2 -1 2 5 5 6 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 2 3 -1 2 5 5 6 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 2 22 -1 2 5 5 6 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 2 22 3 -1 2 5 5 6 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 -1 2 5 5 -1 2 3');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 3 -1 2 5 5 3 -1 2 3');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 22 -1 2 5 5 7 -1 2 3');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 22 3 -1 2 5 5 7 3 -1 2 3');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 2 -1 2 5 5 6 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 2 3 -1 2 5 5 6 3 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 2 22 -1 2 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 2 22 3 -1 2 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 2 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 2 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 2 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 2 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 2 2 -1 2 5 5 6 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 18 2 2 3 -1 2 5 5 6 3 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 18 2 2 22 -1 2 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 2 2 22 3 -1 2 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 2 -1 2 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 2 3 -1 2 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 2 22 -1 2 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 2 22 3 -1 2 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 2 2 -1 2 5 5 5 6 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 2 2 3 -1 2 5 5 5 6 3 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 2 2 22 -1 2 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 2 2 22 3 -1 2 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 0 -1 2 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 3 -1 2 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 22 -1 2 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 22 3 -1 2 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 2 -1 2 5 6 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('22 0 2 3 -1 2 5 6 3 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('22 0 2 22 -1 2 5 6 7 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('22 0 2 22 3 -1 2 5 6 7 3 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('22 0 18 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 18 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 18 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 18 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 18 2 -1 2 5 5 6 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('22 0 18 2 3 -1 2 5 5 6 3 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('22 0 18 2 22 -1 2 5 5 6 7 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('22 0 18 2 22 3 -1 2 5 5 6 7 3 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('22 0 1 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 1 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 1 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 1 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 1 2 -1 2 5 5 6 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('22 0 1 2 3 -1 2 5 5 6 3 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('22 0 1 2 22 -1 2 5 5 6 7 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('22 0 1 2 22 3 -1 2 5 5 6 7 3 -1 2 10');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 2 -1 2 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 2 3 -1 2 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 2 22 -1 2 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 2 22 3 -1 2 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 2 2 -1 2 5 5 5 6 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 2 2 3 -1 2 5 5 5 6 3 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 2 2 22 -1 2 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 2 2 22 3 -1 2 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 22 2 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 22 2 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 22 2 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 22 2 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 22 2 2 -1 2 5 5 6 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 22 2 2 3 -1 2 5 5 6 3 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 22 2 2 22 -1 2 5 5 6 7 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 22 2 2 22 3 -1 2 5 5 6 7 3 -1 2 5');
+INSERT INTO us_rules (rule) VALUES ('22 14 -1 2 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 14 3 -1 2 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 14 22 -1 2 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 14 22 3 -1 2 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 14 2 -1 2 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 14 2 3 -1 2 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 14 2 22 -1 2 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 14 2 22 3 -1 2 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 15 1 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 15 1 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 15 1 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 15 1 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 15 1 2 -1 2 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 15 1 2 3 -1 2 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 15 1 2 22 -1 2 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 15 1 2 22 3 -1 2 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 24 -1 2 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 24 3 -1 2 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 24 22 -1 2 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 24 22 3 -1 2 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 24 2 -1 2 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 24 2 3 -1 2 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 24 2 22 -1 2 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 24 2 22 3 -1 2 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 24 24 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 24 24 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 24 24 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 24 24 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 24 24 2 -1 2 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 24 24 2 3 -1 2 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 24 24 2 22 -1 2 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 24 24 2 22 3 -1 2 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 24 1 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 24 1 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 24 1 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 24 1 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 24 1 2 -1 2 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 24 1 2 3 -1 2 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 24 1 2 22 -1 2 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 24 1 2 22 3 -1 2 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 25 -1 2 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 25 3 -1 2 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 25 22 -1 2 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 25 22 3 -1 2 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 25 2 -1 2 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 25 2 3 -1 2 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 25 2 22 -1 2 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 25 2 22 3 -1 2 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 23 -1 2 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 23 3 -1 2 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 23 22 -1 2 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 23 22 3 -1 2 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 23 2 -1 2 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 23 2 3 -1 2 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 23 2 22 -1 2 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 23 2 22 3 -1 2 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 0 13 0 -1 2 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 13 0 3 -1 2 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 13 0 22 -1 2 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 13 0 22 3 -1 2 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 13 0 2 -1 2 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 0 13 0 2 3 -1 2 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 0 13 0 2 22 -1 2 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 0 13 0 2 22 3 -1 2 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 0 25 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 25 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 25 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 25 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 0 25 2 -1 2 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 0 25 2 3 -1 2 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 0 25 2 22 -1 2 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 0 25 2 22 3 -1 2 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 -1 2 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 11 3 -1 2 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 11 22 -1 2 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 11 22 3 -1 2 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 11 2 -1 2 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 2 3 -1 2 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 2 22 -1 2 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 2 22 3 -1 2 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 0 -1 2 3 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 3 0 3 -1 2 3 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 3 0 22 -1 2 3 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 3 0 22 3 -1 2 3 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 3 0 2 -1 2 3 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 0 2 3 -1 2 3 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 0 2 22 -1 2 3 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 0 2 22 3 -1 2 3 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 1 -1 2 3 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 3 1 3 -1 2 3 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 3 1 22 -1 2 3 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 3 1 22 3 -1 2 3 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 3 1 2 -1 2 3 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 1 2 3 -1 2 3 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 1 2 22 -1 2 3 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 1 2 22 3 -1 2 3 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 13 18 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 13 18 3 -1 2 5 5 3 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 13 18 22 -1 2 5 5 3 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 13 18 22 3 -1 2 5 5 3 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 13 18 2 -1 2 5 5 3 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 13 18 2 3 -1 2 5 5 3 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 13 18 2 22 -1 2 5 5 3 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 13 18 2 22 3 -1 2 5 5 3 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 0 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 0 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 0 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 0 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 0 2 -1 2 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 0 2 3 -1 2 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 0 2 22 -1 2 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 0 2 22 3 -1 2 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 2 -1 2 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 2 3 -1 2 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 2 22 -1 2 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 2 22 3 -1 2 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 18 -1 2 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 18 3 -1 2 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 18 22 -1 2 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 18 22 3 -1 2 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 18 2 -1 2 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 18 2 3 -1 2 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 18 2 22 -1 2 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 18 2 22 3 -1 2 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 1 -1 2 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 1 3 -1 2 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 1 22 -1 2 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 1 22 3 -1 2 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 1 2 -1 2 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 1 2 3 -1 2 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 1 2 22 -1 2 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 18 1 2 22 3 -1 2 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 1 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 1 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 1 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 1 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 18 1 2 -1 2 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 1 2 3 -1 2 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 1 2 22 -1 2 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 18 1 2 22 3 -1 2 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 5 -1 2 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 5 3 -1 2 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 5 22 -1 2 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 5 22 3 -1 2 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 5 2 -1 2 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 5 2 3 -1 2 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 5 2 22 -1 2 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 5 2 22 3 -1 2 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 21 -1 2 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 21 3 -1 2 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 21 22 -1 2 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 21 22 3 -1 2 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 21 2 -1 2 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 21 2 3 -1 2 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 21 2 22 -1 2 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 21 2 22 3 -1 2 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 13 1 -1 2 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 13 1 3 -1 2 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 13 1 22 -1 2 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 13 1 22 3 -1 2 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 13 1 2 -1 2 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 13 1 2 3 -1 2 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 13 1 2 22 -1 2 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 13 1 2 22 3 -1 2 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 2 -1 2 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 2 3 -1 2 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 2 22 -1 2 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 2 22 3 -1 2 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 24 -1 2 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 24 3 -1 2 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 24 22 -1 2 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 24 22 3 -1 2 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 24 2 -1 2 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 24 2 3 -1 2 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 24 2 22 -1 2 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 24 2 22 3 -1 2 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 1 -1 2 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 1 3 -1 2 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 1 22 -1 2 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 1 22 3 -1 2 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 1 2 -1 2 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 1 2 3 -1 2 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 1 2 22 -1 2 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 1 2 22 3 -1 2 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 15 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 15 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 15 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 15 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 15 2 -1 2 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 15 2 3 -1 2 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 15 2 22 -1 2 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 15 2 22 3 -1 2 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 1 -1 2 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 1 3 -1 2 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 1 22 -1 2 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 1 22 3 -1 2 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 1 2 -1 2 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 1 2 3 -1 2 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 1 2 22 -1 2 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 22 1 2 22 3 -1 2 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 25 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 25 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 25 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 25 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 25 2 -1 2 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 25 2 3 -1 2 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 25 2 22 -1 2 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 25 2 22 3 -1 2 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 0 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 0 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 0 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 0 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 0 2 -1 2 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 0 2 3 -1 2 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 0 2 22 -1 2 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 0 2 22 3 -1 2 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 3 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 3 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 3 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 3 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 3 2 -1 2 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 3 2 3 -1 2 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 3 2 22 -1 2 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 3 2 22 3 -1 2 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 -1 2 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 3 -1 2 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 22 -1 2 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 22 3 -1 2 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 2 -1 2 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 2 3 -1 2 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 2 22 -1 2 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 2 22 3 -1 2 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 18 1 -1 2 5 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 18 1 3 -1 2 5 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 18 1 22 -1 2 5 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 18 1 22 3 -1 2 5 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 18 1 2 -1 2 5 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 18 1 2 3 -1 2 5 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 18 1 2 22 -1 2 5 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 18 1 2 22 3 -1 2 5 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 1 -1 2 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 1 3 -1 2 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 1 22 -1 2 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 1 22 3 -1 2 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 1 2 -1 2 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 1 2 3 -1 2 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 1 2 22 -1 2 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 18 1 2 22 3 -1 2 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 0 -1 2 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 0 3 -1 2 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 0 22 -1 2 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 0 22 3 -1 2 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 0 2 -1 2 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 0 2 3 -1 2 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 0 2 22 -1 2 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 0 2 22 3 -1 2 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 1 -1 2 5 5 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 1 3 -1 2 5 5 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 1 22 -1 2 5 5 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 1 22 3 -1 2 5 5 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 1 2 -1 2 5 5 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 1 2 3 -1 2 5 5 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 1 2 22 -1 2 5 5 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 1 2 1 2 22 3 -1 2 5 5 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 16 -1 2 5 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 16 3 -1 2 5 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 16 22 -1 2 5 7 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 16 22 3 -1 2 5 7 3 -1 2 6');
+INSERT INTO us_rules (rule) VALUES ('22 16 2 -1 2 5 6 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 16 2 3 -1 2 5 6 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 16 2 22 -1 2 5 6 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 16 2 22 3 -1 2 5 6 7 3 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 -1 2 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 3 -1 2 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 22 -1 2 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 22 3 -1 2 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 -1 2 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 3 -1 2 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 22 -1 2 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 22 3 -1 2 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 -1 2 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 3 -1 2 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 22 -1 2 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 22 3 -1 2 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 -1 2 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 3 -1 2 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 22 -1 2 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 22 3 -1 2 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 1 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 1 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 1 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 1 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 22 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 22 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 22 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 22 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 -1 2 4 5 5 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 3 -1 2 4 5 5 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 22 -1 2 4 5 5 7 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 22 3 -1 2 4 5 5 7 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 1 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 1 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 1 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 1 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 2 -1 2 4 5 5 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 2 3 -1 2 4 5 5 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 2 22 -1 2 4 5 5 7 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 2 22 3 -1 2 4 5 5 7 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 22 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 22 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 22 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 22 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 24 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 24 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 24 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 24 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 22 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 22 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 22 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 22 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 0 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 0 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 0 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 0 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 18 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 18 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 18 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 18 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 2 -1 2 4 5 5 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 2 3 -1 2 4 5 5 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 2 22 -1 2 4 5 5 7 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 2 2 22 3 -1 2 4 5 5 7 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 2 -1 2 4 5 5 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 2 3 -1 2 4 5 5 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 2 22 -1 2 4 5 5 7 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 2 22 3 -1 2 4 5 5 7 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 18 2 -1 2 4 5 5 5 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 18 2 3 -1 2 4 5 5 5 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 18 2 22 -1 2 4 5 5 5 7 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 18 2 22 3 -1 2 4 5 5 5 7 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 -1 2 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 3 -1 2 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 22 -1 2 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 22 3 -1 2 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 18 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 18 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 18 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 18 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 1 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 1 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 1 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 1 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 2 -1 2 4 5 5 5 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 2 3 -1 2 4 5 5 5 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 2 22 -1 2 4 5 5 5 7 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 2 22 3 -1 2 4 5 5 5 7 3 -1 2 4');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 2 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 2 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 2 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 22 2 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 14 -1 2 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 14 3 -1 2 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 14 22 -1 2 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 14 22 3 -1 2 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 15 1 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 15 1 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 15 1 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 15 1 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 -1 2 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 3 -1 2 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 22 -1 2 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 22 3 -1 2 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 24 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 24 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 24 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 24 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 1 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 1 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 1 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 1 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 25 -1 2 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 25 3 -1 2 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 25 22 -1 2 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 25 22 3 -1 2 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 23 -1 2 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 23 3 -1 2 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 23 22 -1 2 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 23 22 3 -1 2 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 13 0 -1 2 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 13 0 3 -1 2 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 13 0 22 -1 2 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 13 0 22 3 -1 2 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 25 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 25 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 25 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 0 25 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 11 -1 2 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 11 3 -1 2 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 11 22 -1 2 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 11 22 3 -1 2 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 3 0 -1 2 4 3 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 3 0 3 -1 2 4 3 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 3 0 22 -1 2 4 3 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 3 0 22 3 -1 2 4 3 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 3 1 -1 2 4 3 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 3 1 3 -1 2 4 3 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 3 1 22 -1 2 4 3 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 3 1 22 3 -1 2 4 3 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 13 18 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 13 18 3 -1 2 4 5 5 3 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 13 18 22 -1 2 4 5 5 3 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 13 18 22 3 -1 2 4 5 5 3 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 0 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 0 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 0 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 0 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 18 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 18 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 18 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 18 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 18 18 -1 2 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 18 18 3 -1 2 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 18 18 22 -1 2 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 18 18 22 3 -1 2 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 18 1 -1 2 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 18 1 3 -1 2 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 18 1 22 -1 2 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 18 1 22 3 -1 2 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 1 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 1 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 1 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 18 1 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 5 -1 2 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 5 3 -1 2 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 5 22 -1 2 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 5 22 3 -1 2 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 21 -1 2 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 21 3 -1 2 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 21 22 -1 2 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 21 22 3 -1 2 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 13 1 -1 2 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 13 1 3 -1 2 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 13 1 22 -1 2 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 13 1 22 3 -1 2 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 24 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 24 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 24 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 24 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 24 24 -1 2 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 24 24 3 -1 2 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 24 24 22 -1 2 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 24 24 22 3 -1 2 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 24 1 -1 2 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 24 1 3 -1 2 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 24 1 22 -1 2 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 24 1 22 3 -1 2 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 15 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 15 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 15 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 15 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 22 1 -1 2 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 22 1 3 -1 2 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 22 1 22 -1 2 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 22 1 22 3 -1 2 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 25 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 25 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 25 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 25 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 0 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 0 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 0 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 0 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 3 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 3 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 3 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 3 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 18 -1 2 4 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 18 3 -1 2 4 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 18 22 -1 2 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 18 22 3 -1 2 4 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 18 18 1 -1 2 4 5 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 18 18 1 3 -1 2 4 5 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 18 18 1 22 -1 2 4 5 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 18 18 1 22 3 -1 2 4 5 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 18 1 -1 2 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 18 1 3 -1 2 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 18 1 22 -1 2 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 18 1 22 3 -1 2 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 0 -1 2 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 0 3 -1 2 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 0 22 -1 2 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 0 22 3 -1 2 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 1 -1 2 4 5 5 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 1 3 -1 2 4 5 5 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 1 22 -1 2 4 5 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 1 2 1 22 3 -1 2 4 5 5 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 16 -1 2 4 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 16 3 -1 2 4 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 16 22 -1 2 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 2 16 22 3 -1 2 4 5 7 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('6 0 -1 4 5 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('6 0 22 -1 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('6 21 -1 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('6 21 22 -1 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('6 21 0 -1 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('6 21 0 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('6 23 -1 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('6 23 22 -1 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('6 0 18 -1 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('6 0 18 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('6 0 0 -1 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('6 0 0 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('6 18 -1 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('6 18 22 -1 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('6 18 0 -1 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('6 18 0 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('6 18 18 -1 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('6 18 18 22 -1 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('6 6 0 -1 3 4 5 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('6 6 0 22 -1 3 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('6 6 21 -1 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('6 6 21 22 -1 3 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('6 6 21 0 -1 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('6 6 21 0 22 -1 3 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('6 6 23 -1 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('6 6 23 22 -1 3 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('6 6 0 18 -1 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('6 6 0 18 22 -1 3 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('6 6 0 0 -1 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('6 6 0 0 22 -1 3 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('6 6 18 -1 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('6 6 18 22 -1 3 4 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('6 6 18 0 -1 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('6 6 18 0 22 -1 3 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('6 6 18 18 -1 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('6 6 18 18 22 -1 3 4 5 5 7 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('3 6 0 -1 3 4 5 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('3 6 0 22 -1 3 4 5 7 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('3 6 21 -1 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 21 22 -1 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 21 0 -1 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 21 0 22 -1 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 23 -1 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 23 22 -1 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 0 18 -1 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 0 18 22 -1 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 0 0 -1 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 0 0 22 -1 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 18 -1 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 18 22 -1 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 18 0 -1 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 18 0 22 -1 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 18 18 -1 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 18 18 22 -1 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 6 0 -1 3 3 4 5 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('3 6 6 0 22 -1 3 3 4 5 7 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('3 6 6 21 -1 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 6 21 22 -1 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 6 21 0 -1 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 6 21 0 22 -1 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 6 23 -1 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 6 23 22 -1 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 6 0 18 -1 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 6 0 18 22 -1 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 6 0 0 -1 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 6 0 0 22 -1 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 6 18 -1 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 6 18 22 -1 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 6 18 0 -1 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 6 18 0 22 -1 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 6 18 18 -1 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 6 6 18 18 22 -1 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 0 -1 3 4 5 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('11 6 0 22 -1 3 4 5 7 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('11 6 21 -1 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 21 22 -1 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 21 0 -1 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 21 0 22 -1 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 23 -1 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 23 22 -1 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 0 18 -1 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 0 18 22 -1 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 0 0 -1 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 0 0 22 -1 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 18 -1 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 18 22 -1 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 18 0 -1 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 18 0 22 -1 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 18 18 -1 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 18 18 22 -1 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 6 0 -1 3 3 4 5 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('11 6 6 0 22 -1 3 3 4 5 7 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('11 6 6 21 -1 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 6 21 22 -1 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 6 21 0 -1 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 6 21 0 22 -1 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 6 23 -1 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 6 23 22 -1 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 6 0 18 -1 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 6 0 18 22 -1 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 6 0 0 -1 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 6 0 0 22 -1 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 6 18 -1 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 6 18 22 -1 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 6 18 0 -1 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 6 18 0 22 -1 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 6 18 18 -1 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('11 6 6 18 18 22 -1 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 0 -1 3 3 4 5 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 0 22 -1 3 3 4 5 7 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 21 -1 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 21 22 -1 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 21 0 -1 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 21 0 22 -1 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 23 -1 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 23 22 -1 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 0 18 -1 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 0 18 22 -1 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 0 0 -1 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 0 0 22 -1 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 18 -1 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 18 22 -1 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 18 0 -1 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 18 0 22 -1 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 18 18 -1 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 18 18 22 -1 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 6 0 -1 3 3 3 4 5 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 6 0 22 -1 3 3 3 4 5 7 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 6 21 -1 3 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 6 21 22 -1 3 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 6 21 0 -1 3 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 6 21 0 22 -1 3 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 6 23 -1 3 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 6 23 22 -1 3 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 6 0 18 -1 3 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 6 0 18 22 -1 3 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 6 0 0 -1 3 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 6 0 0 22 -1 3 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 6 18 -1 3 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 6 18 22 -1 3 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 6 18 0 -1 3 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 6 18 0 22 -1 3 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 6 18 18 -1 3 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('3 11 6 6 18 18 22 -1 3 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 0 -1 2 4 5 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('22 6 0 22 -1 2 4 5 7 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('22 6 21 -1 2 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 21 22 -1 2 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 21 0 -1 2 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 21 0 22 -1 2 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 23 -1 2 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 23 22 -1 2 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 0 18 -1 2 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 0 18 22 -1 2 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 0 0 -1 2 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 0 0 22 -1 2 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 18 -1 2 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 18 22 -1 2 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 18 0 -1 2 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 18 0 22 -1 2 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 18 18 -1 2 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 18 18 22 -1 2 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 6 0 -1 2 3 4 5 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('22 6 6 0 22 -1 2 3 4 5 7 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('22 6 6 21 -1 2 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 6 21 22 -1 2 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 6 21 0 -1 2 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 6 21 0 22 -1 2 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 6 23 -1 2 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 6 23 22 -1 2 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 6 0 18 -1 2 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 6 0 18 22 -1 2 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 6 0 0 -1 2 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 6 0 0 22 -1 2 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 6 18 -1 2 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 6 18 22 -1 2 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 6 18 0 -1 2 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 6 18 0 22 -1 2 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 6 18 18 -1 2 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 6 6 18 18 22 -1 2 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 0 -1 2 3 4 5 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 0 22 -1 2 3 4 5 7 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 21 -1 2 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 21 22 -1 2 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 21 0 -1 2 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 21 0 22 -1 2 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 23 -1 2 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 23 22 -1 2 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 0 18 -1 2 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 0 18 22 -1 2 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 0 0 -1 2 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 0 0 22 -1 2 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 18 -1 2 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 18 22 -1 2 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 18 0 -1 2 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 18 0 22 -1 2 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 18 18 -1 2 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 18 18 22 -1 2 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 6 0 -1 2 3 3 4 5 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 6 0 22 -1 2 3 3 4 5 7 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 6 21 -1 2 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 6 21 22 -1 2 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 6 21 0 -1 2 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 6 21 0 22 -1 2 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 6 23 -1 2 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 6 23 22 -1 2 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 6 0 18 -1 2 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 6 0 18 22 -1 2 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 6 0 0 -1 2 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 6 0 0 22 -1 2 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 6 18 -1 2 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 6 18 22 -1 2 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 6 18 0 -1 2 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 6 18 0 22 -1 2 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 6 18 18 -1 2 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 6 6 18 18 22 -1 2 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 0 -1 2 3 4 5 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 0 22 -1 2 3 4 5 7 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 21 -1 2 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 21 22 -1 2 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 21 0 -1 2 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 21 0 22 -1 2 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 23 -1 2 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 23 22 -1 2 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 0 18 -1 2 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 0 18 22 -1 2 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 0 0 -1 2 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 0 0 22 -1 2 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 18 -1 2 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 18 22 -1 2 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 18 0 -1 2 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 18 0 22 -1 2 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 18 18 -1 2 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 18 18 22 -1 2 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 6 0 -1 2 3 3 4 5 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 6 0 22 -1 2 3 3 4 5 7 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 6 21 -1 2 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 6 21 22 -1 2 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 6 21 0 -1 2 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 6 21 0 22 -1 2 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 6 23 -1 2 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 6 23 22 -1 2 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 6 0 18 -1 2 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 6 0 18 22 -1 2 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 6 0 0 -1 2 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 6 0 0 22 -1 2 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 6 18 -1 2 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 6 18 22 -1 2 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 6 18 0 -1 2 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 6 18 0 22 -1 2 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 6 18 18 -1 2 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 11 6 6 18 18 22 -1 2 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 0 -1 2 3 3 4 5 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 0 22 -1 2 3 3 4 5 7 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 21 -1 2 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 21 22 -1 2 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 21 0 -1 2 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 21 0 22 -1 2 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 23 -1 2 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 23 22 -1 2 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 0 18 -1 2 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 0 18 22 -1 2 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 0 0 -1 2 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 0 0 22 -1 2 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 18 -1 2 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 18 22 -1 2 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 18 0 -1 2 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 18 0 22 -1 2 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 18 18 -1 2 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 18 18 22 -1 2 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 6 0 -1 2 3 3 3 4 5 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 6 0 22 -1 2 3 3 3 4 5 7 -1 2 16');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 6 21 -1 2 3 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 6 21 22 -1 2 3 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 6 21 0 -1 2 3 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 6 21 0 22 -1 2 3 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 6 23 -1 2 3 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 6 23 22 -1 2 3 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 6 0 18 -1 2 3 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 6 0 18 22 -1 2 3 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 6 0 0 -1 2 3 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 6 0 0 22 -1 2 3 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 6 18 -1 2 3 3 3 4 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 6 18 22 -1 2 3 3 3 4 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 6 18 0 -1 2 3 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 6 18 0 22 -1 2 3 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 6 18 18 -1 2 3 3 3 4 5 5 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('22 3 11 6 6 18 18 22 -1 2 3 3 3 4 5 5 7 -1 2 12');
+INSERT INTO us_rules (rule) VALUES ('0 1 -1 1 5 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('0 1 22 -1 1 5 7 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('0 1 2 -1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 2 22 -1 1 5 6 7 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 5 -1 1 5 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('0 5 22 -1 1 5 7 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('0 5 2 -1 1 5 6 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 5 2 22 -1 1 5 6 7 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 2 1 -1 1 4 5 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 2 1 22 -1 1 4 5 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 2 5 -1 1 4 5 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 2 5 22 -1 1 4 5 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 -1 1 2 5 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 2 -1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 5 -1 1 2 5 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('0 22 5 2 -1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 1 -1 1 2 4 5 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 5 -1 1 2 4 5 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 -1 1 1 5 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 22 -1 1 1 5 7 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 2 -1 1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 2 22 -1 1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 5 -1 1 1 5 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('0 18 5 22 -1 1 1 5 7 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('0 18 5 2 -1 1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 5 2 22 -1 1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 1 -1 1 1 4 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 1 22 -1 1 1 4 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 5 -1 1 1 4 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 5 22 -1 1 1 4 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 -1 1 1 2 5 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 2 -1 1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 5 -1 1 1 2 5 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 5 2 -1 1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 2 1 -1 1 1 2 4 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 2 5 -1 1 1 2 4 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 -1 1 1 5 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 22 -1 1 1 5 7 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 2 -1 1 1 5 6 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 2 22 -1 1 1 5 6 7 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 25 5 -1 1 1 5 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('0 25 5 22 -1 1 1 5 7 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('0 25 5 2 -1 1 1 5 6 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 25 5 2 22 -1 1 1 5 6 7 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 1 -1 1 1 4 5 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 1 22 -1 1 1 4 5 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 5 -1 1 1 4 5 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 5 22 -1 1 1 4 5 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 -1 1 1 2 5 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 2 -1 1 1 2 5 6 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 5 -1 1 1 2 5 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 5 2 -1 1 1 2 5 6 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 2 1 -1 1 1 2 4 5 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 2 5 -1 1 1 2 4 5 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('25 1 -1 1 5 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('25 1 22 -1 1 5 7 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('25 1 2 -1 1 5 6 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('25 1 2 22 -1 1 5 6 7 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('25 5 -1 1 5 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('25 5 22 -1 1 5 7 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('25 5 2 -1 1 5 6 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('25 5 2 22 -1 1 5 6 7 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('25 2 1 -1 1 4 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('25 2 1 22 -1 1 4 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('25 2 5 -1 1 4 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('25 2 5 22 -1 1 4 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 -1 1 2 5 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 2 -1 1 2 5 6 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('25 22 5 -1 1 2 5 -1 1 7');
+INSERT INTO us_rules (rule) VALUES ('25 22 5 2 -1 1 2 5 6 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('25 22 2 1 -1 1 2 4 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('25 22 2 5 -1 1 2 4 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 0 -1 1 5 -1 1 4');
+INSERT INTO us_rules (rule) VALUES ('0 0 22 -1 1 5 7 -1 1 4');
+INSERT INTO us_rules (rule) VALUES ('0 0 2 -1 1 5 6 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('0 0 2 22 -1 1 5 6 7 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('0 18 -1 1 5 -1 1 6');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 -1 1 5 7 -1 1 6');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 -1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 22 -1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 2 0 -1 1 4 5 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 2 0 22 -1 1 4 5 7 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 2 18 -1 1 4 5 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 2 18 22 -1 1 4 5 7 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 22 0 -1 1 2 5 -1 1 6');
+INSERT INTO us_rules (rule) VALUES ('0 22 0 22 -1 1 2 5 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 22 0 2 -1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 0 2 22 -1 1 2 5 6 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 22 18 -1 1 2 5 -1 1 6');
+INSERT INTO us_rules (rule) VALUES ('0 22 18 22 -1 1 2 5 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 22 18 2 -1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 18 2 22 -1 1 2 5 6 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 0 -1 1 2 4 5 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 0 22 -1 1 2 4 5 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 18 -1 1 2 4 5 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 18 22 -1 1 2 4 5 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 18 0 -1 1 1 5 -1 1 3');
+INSERT INTO us_rules (rule) VALUES ('0 18 0 22 -1 1 1 5 7 -1 1 3');
+INSERT INTO us_rules (rule) VALUES ('0 18 0 2 -1 1 1 5 6 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('0 18 0 2 22 -1 1 1 5 6 7 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 -1 1 1 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 22 -1 1 1 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 2 -1 1 1 5 6 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 2 22 -1 1 1 5 6 7 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 0 -1 1 1 4 5 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 0 22 -1 1 1 4 5 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 18 -1 1 1 4 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 18 22 -1 1 1 4 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 0 -1 1 1 2 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 0 2 -1 1 1 2 5 6 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 18 -1 1 1 2 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 18 2 -1 1 1 2 5 6 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 2 0 -1 1 1 2 4 5 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 2 18 -1 1 1 2 4 5 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 25 0 -1 1 1 5 -1 1 3');
+INSERT INTO us_rules (rule) VALUES ('0 25 0 22 -1 1 1 5 7 -1 1 3');
+INSERT INTO us_rules (rule) VALUES ('0 25 0 2 -1 1 1 5 6 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('0 25 0 2 22 -1 1 1 5 6 7 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 -1 1 1 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 22 -1 1 1 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 2 -1 1 1 5 6 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 2 22 -1 1 1 5 6 7 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 0 -1 1 1 4 5 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 0 22 -1 1 1 4 5 7 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 18 -1 1 1 4 5 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 18 22 -1 1 1 4 5 7 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 0 -1 1 1 2 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 0 2 -1 1 1 2 5 6 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 18 -1 1 1 2 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 18 2 -1 1 1 2 5 6 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 2 0 -1 1 1 2 4 5 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 2 18 -1 1 1 2 4 5 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('25 0 -1 1 5 -1 1 3');
+INSERT INTO us_rules (rule) VALUES ('25 0 22 -1 1 5 7 -1 1 3');
+INSERT INTO us_rules (rule) VALUES ('25 0 2 -1 1 5 6 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('25 0 2 22 -1 1 5 6 7 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('25 18 -1 1 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 18 22 -1 1 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 18 2 -1 1 5 6 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('25 18 2 22 -1 1 5 6 7 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('25 2 0 -1 1 4 5 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('25 2 0 22 -1 1 4 5 7 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('25 2 18 -1 1 4 5 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('25 2 18 22 -1 1 4 5 7 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('25 22 0 -1 1 2 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 0 2 -1 1 2 5 6 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('25 22 18 -1 1 2 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 18 2 -1 1 2 5 6 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('25 22 2 0 -1 1 2 4 5 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('25 22 2 18 -1 1 2 4 5 -1 1 14');
+INSERT INTO us_rules (rule) VALUES ('0 6 0 -1 1 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 6 0 22 -1 1 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 6 21 -1 1 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 21 22 -1 1 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 21 0 -1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 21 0 22 -1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 23 -1 1 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 23 22 -1 1 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 0 18 -1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 0 18 22 -1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 0 0 -1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 0 0 22 -1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 18 -1 1 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 18 22 -1 1 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 18 0 -1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 18 0 22 -1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 18 18 -1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 18 18 22 -1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 6 0 -1 1 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 6 6 0 22 -1 1 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 6 6 21 -1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 6 21 22 -1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 6 21 0 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 6 21 0 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 6 23 -1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 6 23 22 -1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 6 0 18 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 6 0 18 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 6 0 0 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 6 0 0 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 6 18 -1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 6 18 22 -1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 6 18 0 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 6 18 0 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 6 18 18 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 6 6 18 18 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 0 -1 1 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 0 22 -1 1 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 21 -1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 21 22 -1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 21 0 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 21 0 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 23 -1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 23 22 -1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 0 18 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 0 18 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 0 0 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 0 0 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 18 -1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 18 22 -1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 18 0 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 18 0 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 18 18 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 18 18 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 6 0 -1 1 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 6 0 22 -1 1 3 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 6 21 -1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 6 21 22 -1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 6 21 0 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 6 21 0 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 6 23 -1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 6 23 22 -1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 6 0 18 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 6 0 18 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 6 0 0 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 6 0 0 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 6 18 -1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 6 18 22 -1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 6 18 0 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 6 18 0 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 6 18 18 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 6 18 18 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 0 -1 1 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 0 22 -1 1 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 21 -1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 21 22 -1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 21 0 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 21 0 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 23 -1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 23 22 -1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 0 18 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 0 18 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 0 0 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 0 0 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 18 -1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 18 22 -1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 18 0 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 18 0 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 18 18 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 18 18 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 6 0 -1 1 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 6 0 22 -1 1 3 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 6 21 -1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 6 21 22 -1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 6 21 0 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 6 21 0 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 6 23 -1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 6 23 22 -1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 6 0 18 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 6 0 18 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 6 0 0 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 6 0 0 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 6 18 -1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 6 18 22 -1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 6 18 0 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 6 18 0 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 6 18 18 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 11 6 6 18 18 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 0 -1 1 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 0 22 -1 1 3 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 21 -1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 21 22 -1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 21 0 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 21 0 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 23 -1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 23 22 -1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 0 18 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 0 18 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 0 0 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 0 0 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 18 -1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 18 22 -1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 18 0 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 18 0 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 18 18 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 18 18 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 6 0 -1 1 3 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 6 0 22 -1 1 3 3 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 6 21 -1 1 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 6 21 22 -1 1 3 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 6 21 0 -1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 6 21 0 22 -1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 6 23 -1 1 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 6 23 22 -1 1 3 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 6 0 18 -1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 6 0 18 22 -1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 6 0 0 -1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 6 0 0 22 -1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 6 18 -1 1 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 6 18 22 -1 1 3 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 6 18 0 -1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 6 18 0 22 -1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 6 18 18 -1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 3 11 6 6 18 18 22 -1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 0 -1 1 2 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 21 -1 1 2 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 21 0 -1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 23 -1 1 2 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 0 18 -1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 0 0 -1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 18 -1 1 2 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 18 0 -1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 18 18 -1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 6 0 -1 1 2 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 6 21 -1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 6 21 0 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 6 23 -1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 6 0 18 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 6 0 0 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 6 18 -1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 6 18 0 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 6 18 18 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 6 0 -1 1 2 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 6 21 -1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 6 21 0 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 6 23 -1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 6 0 18 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 6 0 0 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 6 18 -1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 6 18 0 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 6 18 18 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 6 6 0 -1 1 2 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 6 6 21 -1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 6 6 21 0 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 6 6 23 -1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 6 6 0 18 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 6 6 0 0 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 6 6 18 -1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 6 6 18 0 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 6 6 18 18 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 11 6 0 -1 1 2 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 22 11 6 21 -1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 11 6 21 0 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 11 6 23 -1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 11 6 0 18 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 11 6 0 0 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 11 6 18 -1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 11 6 18 0 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 11 6 18 18 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 11 6 6 0 -1 1 2 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 22 11 6 6 21 -1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 11 6 6 21 0 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 11 6 6 23 -1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 11 6 6 0 18 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 11 6 6 0 0 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 11 6 6 18 -1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 11 6 6 18 0 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 11 6 6 18 18 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 11 6 0 -1 1 2 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 11 6 21 -1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 11 6 21 0 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 11 6 23 -1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 11 6 0 18 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 11 6 0 0 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 11 6 18 -1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 11 6 18 0 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 11 6 18 18 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 11 6 6 0 -1 1 2 3 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 11 6 6 21 -1 1 2 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 11 6 6 21 0 -1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 11 6 6 23 -1 1 2 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 11 6 6 0 18 -1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 11 6 6 0 0 -1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 11 6 6 18 -1 1 2 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 11 6 6 18 0 -1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 3 11 6 6 18 18 -1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 0 -1 1 1 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 0 22 -1 1 1 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 21 -1 1 1 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 21 22 -1 1 1 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 21 0 -1 1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 21 0 22 -1 1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 23 -1 1 1 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 23 22 -1 1 1 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 0 18 -1 1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 0 18 22 -1 1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 0 0 -1 1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 0 0 22 -1 1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 18 -1 1 1 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 18 22 -1 1 1 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 18 0 -1 1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 18 0 22 -1 1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 18 18 -1 1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 18 18 22 -1 1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 6 0 -1 1 1 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 6 0 22 -1 1 1 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 6 21 -1 1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 6 21 22 -1 1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 6 21 0 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 6 21 0 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 6 23 -1 1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 6 23 22 -1 1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 6 0 18 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 6 0 18 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 6 0 0 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 6 0 0 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 6 18 -1 1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 6 18 22 -1 1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 6 18 0 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 6 18 0 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 6 18 18 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 6 6 18 18 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 0 -1 1 1 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 0 22 -1 1 1 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 21 -1 1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 21 22 -1 1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 21 0 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 21 0 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 23 -1 1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 23 22 -1 1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 0 18 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 0 18 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 0 0 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 0 0 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 18 -1 1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 18 22 -1 1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 18 0 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 18 0 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 18 18 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 18 18 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 6 0 -1 1 1 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 6 0 22 -1 1 1 3 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 6 21 -1 1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 6 21 22 -1 1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 6 21 0 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 6 21 0 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 6 23 -1 1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 6 23 22 -1 1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 6 0 18 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 6 0 18 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 6 0 0 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 6 0 0 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 6 18 -1 1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 6 18 22 -1 1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 6 18 0 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 6 18 0 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 6 18 18 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 6 6 18 18 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 0 -1 1 1 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 0 22 -1 1 1 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 21 -1 1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 21 22 -1 1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 21 0 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 21 0 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 23 -1 1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 23 22 -1 1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 0 18 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 0 18 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 0 0 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 0 0 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 18 -1 1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 18 22 -1 1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 18 0 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 18 0 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 18 18 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 18 18 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 6 0 -1 1 1 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 6 0 22 -1 1 1 3 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 6 21 -1 1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 6 21 22 -1 1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 6 21 0 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 6 21 0 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 6 23 -1 1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 6 23 22 -1 1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 6 0 18 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 6 0 18 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 6 0 0 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 6 0 0 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 6 18 -1 1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 6 18 22 -1 1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 6 18 0 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 6 18 0 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 6 18 18 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 11 6 6 18 18 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 0 -1 1 1 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 0 22 -1 1 1 3 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 21 -1 1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 21 22 -1 1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 21 0 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 21 0 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 23 -1 1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 23 22 -1 1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 0 18 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 0 18 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 0 0 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 0 0 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 18 -1 1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 18 22 -1 1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 18 0 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 18 0 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 18 18 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 18 18 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 6 0 -1 1 1 3 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 6 0 22 -1 1 1 3 3 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 6 21 -1 1 1 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 6 21 22 -1 1 1 3 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 6 21 0 -1 1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 6 21 0 22 -1 1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 6 23 -1 1 1 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 6 23 22 -1 1 1 3 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 6 0 18 -1 1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 6 0 18 22 -1 1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 6 0 0 -1 1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 6 0 0 22 -1 1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 6 18 -1 1 1 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 6 18 22 -1 1 1 3 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 6 18 0 -1 1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 6 18 0 22 -1 1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 6 18 18 -1 1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 3 11 6 6 18 18 22 -1 1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 6 0 -1 1 1 2 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 6 21 -1 1 1 2 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 6 21 0 -1 1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 6 23 -1 1 1 2 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 6 0 18 -1 1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 6 0 0 -1 1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 6 18 -1 1 1 2 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 6 18 0 -1 1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 6 18 18 -1 1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 6 6 0 -1 1 1 2 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 6 6 21 -1 1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 6 6 21 0 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 6 6 23 -1 1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 6 6 0 18 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 6 6 0 0 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 6 6 18 -1 1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 6 6 18 0 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 6 6 18 18 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 6 0 -1 1 1 2 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 6 21 -1 1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 6 21 0 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 6 23 -1 1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 6 0 18 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 6 0 0 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 6 18 -1 1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 6 18 0 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 6 18 18 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 6 6 0 -1 1 1 2 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 6 6 21 -1 1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 6 6 21 0 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 6 6 23 -1 1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 6 6 0 18 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 6 6 0 0 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 6 6 18 -1 1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 6 6 18 0 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 6 6 18 18 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 11 6 0 -1 1 1 2 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 11 6 21 -1 1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 11 6 21 0 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 11 6 23 -1 1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 11 6 0 18 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 11 6 0 0 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 11 6 18 -1 1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 11 6 18 0 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 11 6 18 18 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 11 6 6 0 -1 1 1 2 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 11 6 6 21 -1 1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 11 6 6 21 0 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 11 6 6 23 -1 1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 11 6 6 0 18 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 11 6 6 0 0 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 11 6 6 18 -1 1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 11 6 6 18 0 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 11 6 6 18 18 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 11 6 0 -1 1 1 2 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 11 6 21 -1 1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 11 6 21 0 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 11 6 23 -1 1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 11 6 0 18 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 11 6 0 0 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 11 6 18 -1 1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 11 6 18 0 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 11 6 18 18 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 11 6 6 0 -1 1 1 2 3 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 11 6 6 21 -1 1 1 2 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 11 6 6 21 0 -1 1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 11 6 6 23 -1 1 1 2 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 11 6 6 0 18 -1 1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 11 6 6 0 0 -1 1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 11 6 6 18 -1 1 1 2 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 11 6 6 18 0 -1 1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 3 11 6 6 18 18 -1 1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 0 -1 1 1 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 0 22 -1 1 1 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 21 -1 1 1 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 21 22 -1 1 1 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 21 0 -1 1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 21 0 22 -1 1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 23 -1 1 1 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 23 22 -1 1 1 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 0 18 -1 1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 0 18 22 -1 1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 0 0 -1 1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 0 0 22 -1 1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 18 -1 1 1 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 18 22 -1 1 1 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 18 0 -1 1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 18 0 22 -1 1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 18 18 -1 1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 18 18 22 -1 1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 6 0 -1 1 1 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 6 0 22 -1 1 1 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 6 21 -1 1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 6 21 22 -1 1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 6 21 0 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 6 21 0 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 6 23 -1 1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 6 23 22 -1 1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 6 0 18 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 6 0 18 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 6 0 0 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 6 0 0 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 6 18 -1 1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 6 18 22 -1 1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 6 18 0 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 6 18 0 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 6 18 18 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 6 6 18 18 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 0 -1 1 1 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 0 22 -1 1 1 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 21 -1 1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 21 22 -1 1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 21 0 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 21 0 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 23 -1 1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 23 22 -1 1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 0 18 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 0 18 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 0 0 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 0 0 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 18 -1 1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 18 22 -1 1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 18 0 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 18 0 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 18 18 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 18 18 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 6 0 -1 1 1 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 6 0 22 -1 1 1 3 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 6 21 -1 1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 6 21 22 -1 1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 6 21 0 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 6 21 0 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 6 23 -1 1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 6 23 22 -1 1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 6 0 18 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 6 0 18 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 6 0 0 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 6 0 0 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 6 18 -1 1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 6 18 22 -1 1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 6 18 0 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 6 18 0 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 6 18 18 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 6 6 18 18 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 0 -1 1 1 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 0 22 -1 1 1 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 21 -1 1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 21 22 -1 1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 21 0 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 21 0 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 23 -1 1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 23 22 -1 1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 0 18 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 0 18 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 0 0 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 0 0 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 18 -1 1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 18 22 -1 1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 18 0 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 18 0 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 18 18 -1 1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 18 18 22 -1 1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 6 0 -1 1 1 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 6 0 22 -1 1 1 3 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 6 21 -1 1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 6 21 22 -1 1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 6 21 0 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 6 21 0 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 6 23 -1 1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 6 23 22 -1 1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 6 0 18 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 6 0 18 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 6 0 0 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 6 0 0 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 6 18 -1 1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 6 18 22 -1 1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 6 18 0 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 6 18 0 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 6 18 18 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 11 6 6 18 18 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 0 -1 1 1 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 0 22 -1 1 1 3 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 21 -1 1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 21 22 -1 1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 21 0 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 21 0 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 23 -1 1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 23 22 -1 1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 0 18 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 0 18 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 0 0 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 0 0 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 18 -1 1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 18 22 -1 1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 18 0 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 18 0 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 18 18 -1 1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 18 18 22 -1 1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 6 0 -1 1 1 3 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 6 0 22 -1 1 1 3 3 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 6 21 -1 1 1 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 6 21 22 -1 1 1 3 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 6 21 0 -1 1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 6 21 0 22 -1 1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 6 23 -1 1 1 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 6 23 22 -1 1 1 3 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 6 0 18 -1 1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 6 0 18 22 -1 1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 6 0 0 -1 1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 6 0 0 22 -1 1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 6 18 -1 1 1 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 6 18 22 -1 1 1 3 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 6 18 0 -1 1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 6 18 0 22 -1 1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 6 18 18 -1 1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 3 11 6 6 18 18 22 -1 1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 6 0 -1 1 1 2 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 6 21 -1 1 1 2 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 6 21 0 -1 1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 6 23 -1 1 1 2 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 6 0 18 -1 1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 6 0 0 -1 1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 6 18 -1 1 1 2 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 6 18 0 -1 1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 6 18 18 -1 1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 6 6 0 -1 1 1 2 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 6 6 21 -1 1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 6 6 21 0 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 6 6 23 -1 1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 6 6 0 18 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 6 6 0 0 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 6 6 18 -1 1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 6 6 18 0 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 6 6 18 18 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 6 0 -1 1 1 2 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 6 21 -1 1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 6 21 0 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 6 23 -1 1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 6 0 18 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 6 0 0 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 6 18 -1 1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 6 18 0 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 6 18 18 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 6 6 0 -1 1 1 2 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 6 6 21 -1 1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 6 6 21 0 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 6 6 23 -1 1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 6 6 0 18 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 6 6 0 0 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 6 6 18 -1 1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 6 6 18 0 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 6 6 18 18 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 11 6 0 -1 1 1 2 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 11 6 21 -1 1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 11 6 21 0 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 11 6 23 -1 1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 11 6 0 18 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 11 6 0 0 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 11 6 18 -1 1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 11 6 18 0 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 11 6 18 18 -1 1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 11 6 6 0 -1 1 1 2 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 11 6 6 21 -1 1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 11 6 6 21 0 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 11 6 6 23 -1 1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 11 6 6 0 18 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 11 6 6 0 0 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 11 6 6 18 -1 1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 11 6 6 18 0 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 11 6 6 18 18 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 11 6 0 -1 1 1 2 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 11 6 21 -1 1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 11 6 21 0 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 11 6 23 -1 1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 11 6 0 18 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 11 6 0 0 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 11 6 18 -1 1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 11 6 18 0 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 11 6 18 18 -1 1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 11 6 6 0 -1 1 1 2 3 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 11 6 6 21 -1 1 1 2 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 11 6 6 21 0 -1 1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 11 6 6 23 -1 1 1 2 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 11 6 6 0 18 -1 1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 11 6 6 0 0 -1 1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 11 6 6 18 -1 1 1 2 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 11 6 6 18 0 -1 1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 3 11 6 6 18 18 -1 1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 0 -1 1 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('25 6 0 22 -1 1 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('25 6 21 -1 1 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 21 22 -1 1 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 21 0 -1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 21 0 22 -1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 23 -1 1 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 23 22 -1 1 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 0 18 -1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 0 18 22 -1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 0 0 -1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 0 0 22 -1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 18 -1 1 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 18 22 -1 1 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 18 0 -1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 18 0 22 -1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 18 18 -1 1 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 18 18 22 -1 1 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 6 0 -1 1 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('25 6 6 0 22 -1 1 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('25 6 6 21 -1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 6 21 22 -1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 6 21 0 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 6 21 0 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 6 23 -1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 6 23 22 -1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 6 0 18 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 6 0 18 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 6 0 0 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 6 0 0 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 6 18 -1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 6 18 22 -1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 6 18 0 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 6 18 0 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 6 18 18 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 6 6 18 18 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 0 -1 1 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 0 22 -1 1 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 21 -1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 21 22 -1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 21 0 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 21 0 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 23 -1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 23 22 -1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 0 18 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 0 18 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 0 0 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 0 0 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 18 -1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 18 22 -1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 18 0 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 18 0 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 18 18 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 18 18 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 6 0 -1 1 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 6 0 22 -1 1 3 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 6 21 -1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 6 21 22 -1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 6 21 0 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 6 21 0 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 6 23 -1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 6 23 22 -1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 6 0 18 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 6 0 18 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 6 0 0 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 6 0 0 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 6 18 -1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 6 18 22 -1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 6 18 0 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 6 18 0 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 6 18 18 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 6 6 18 18 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 0 -1 1 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 0 22 -1 1 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 21 -1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 21 22 -1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 21 0 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 21 0 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 23 -1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 23 22 -1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 0 18 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 0 18 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 0 0 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 0 0 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 18 -1 1 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 18 22 -1 1 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 18 0 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 18 0 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 18 18 -1 1 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 18 18 22 -1 1 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 6 0 -1 1 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 6 0 22 -1 1 3 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 6 21 -1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 6 21 22 -1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 6 21 0 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 6 21 0 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 6 23 -1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 6 23 22 -1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 6 0 18 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 6 0 18 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 6 0 0 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 6 0 0 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 6 18 -1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 6 18 22 -1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 6 18 0 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 6 18 0 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 6 18 18 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 11 6 6 18 18 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 0 -1 1 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 0 22 -1 1 3 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 21 -1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 21 22 -1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 21 0 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 21 0 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 23 -1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 23 22 -1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 0 18 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 0 18 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 0 0 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 0 0 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 18 -1 1 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 18 22 -1 1 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 18 0 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 18 0 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 18 18 -1 1 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 18 18 22 -1 1 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 6 0 -1 1 3 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 6 0 22 -1 1 3 3 3 4 5 7 -1 1 12');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 6 21 -1 1 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 6 21 22 -1 1 3 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 6 21 0 -1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 6 21 0 22 -1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 6 23 -1 1 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 6 23 22 -1 1 3 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 6 0 18 -1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 6 0 18 22 -1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 6 0 0 -1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 6 0 0 22 -1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 6 18 -1 1 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 6 18 22 -1 1 3 3 3 4 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 6 18 0 -1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 6 18 0 22 -1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 6 18 18 -1 1 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 3 11 6 6 18 18 22 -1 1 3 3 3 4 5 5 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 6 0 -1 1 2 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('25 22 6 21 -1 1 2 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 6 21 0 -1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 6 23 -1 1 2 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 6 0 18 -1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 6 0 0 -1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 6 18 -1 1 2 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 6 18 0 -1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 6 18 18 -1 1 2 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 6 6 0 -1 1 2 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('25 22 6 6 21 -1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 6 6 21 0 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 6 6 23 -1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 6 6 0 18 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 6 6 0 0 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 6 6 18 -1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 6 6 18 0 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 6 6 18 18 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 6 0 -1 1 2 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 6 21 -1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 6 21 0 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 6 23 -1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 6 0 18 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 6 0 0 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 6 18 -1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 6 18 0 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 6 18 18 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 6 6 0 -1 1 2 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 6 6 21 -1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 6 6 21 0 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 6 6 23 -1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 6 6 0 18 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 6 6 0 0 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 6 6 18 -1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 6 6 18 0 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 6 6 18 18 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 11 6 0 -1 1 2 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('25 22 11 6 21 -1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 11 6 21 0 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 11 6 23 -1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 11 6 0 18 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 11 6 0 0 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 11 6 18 -1 1 2 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 11 6 18 0 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 11 6 18 18 -1 1 2 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 11 6 6 0 -1 1 2 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('25 22 11 6 6 21 -1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 11 6 6 21 0 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 11 6 6 23 -1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 11 6 6 0 18 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 11 6 6 0 0 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 11 6 6 18 -1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 11 6 6 18 0 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 11 6 6 18 18 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 11 6 0 -1 1 2 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 11 6 21 -1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 11 6 21 0 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 11 6 23 -1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 11 6 0 18 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 11 6 0 0 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 11 6 18 -1 1 2 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 11 6 18 0 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 11 6 18 18 -1 1 2 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 11 6 6 0 -1 1 2 3 3 3 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 11 6 6 21 -1 1 2 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 11 6 6 21 0 -1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 11 6 6 23 -1 1 2 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 11 6 6 0 18 -1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 11 6 6 0 0 -1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 11 6 6 18 -1 1 2 3 3 3 4 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 11 6 6 18 0 -1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 3 11 6 6 18 18 -1 1 2 3 3 3 4 5 5 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 -1 1 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 22 -1 1 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 -1 1 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 22 -1 1 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 15 -1 1 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 15 22 -1 1 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 1 -1 1 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 1 22 -1 1 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 -1 1 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 22 -1 1 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 2 -1 1 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 2 22 -1 1 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 1 13 1 -1 1 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 1 13 1 22 -1 1 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 1 18 -1 1 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 1 18 22 -1 1 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 1 18 1 -1 1 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 1 18 1 22 -1 1 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 22 -1 1 2 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 22 22 -1 1 2 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 22 1 -1 1 2 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 22 1 22 -1 1 2 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 15 -1 1 2 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 15 22 -1 1 2 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 18 18 1 -1 1 2 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 18 18 1 22 -1 1 2 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 18 1 -1 1 2 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 18 1 22 -1 1 2 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 -1 1 2 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 22 -1 1 2 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 13 1 -1 1 2 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 13 1 22 -1 1 2 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 18 -1 1 2 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 18 22 -1 1 2 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 18 1 -1 1 2 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 18 1 22 -1 1 2 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 -1 1 1 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 22 -1 1 1 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 -1 1 1 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 22 -1 1 1 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 15 -1 1 1 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 15 22 -1 1 1 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 18 1 -1 1 1 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 18 1 22 -1 1 1 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 1 -1 1 1 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 1 22 -1 1 1 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 -1 1 1 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 22 -1 1 1 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 13 1 -1 1 1 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 13 1 22 -1 1 1 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 18 -1 1 1 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 18 22 -1 1 1 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 18 1 -1 1 1 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 18 1 22 -1 1 1 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 22 -1 1 1 2 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 22 22 -1 1 1 2 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 22 1 -1 1 1 2 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 22 1 22 -1 1 1 2 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 15 -1 1 1 2 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 15 22 -1 1 1 2 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 18 18 1 -1 1 1 2 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 18 18 1 22 -1 1 1 2 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 18 1 -1 1 1 2 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 18 1 22 -1 1 1 2 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 2 -1 1 1 2 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 2 22 -1 1 1 2 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 13 1 -1 1 1 2 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 13 1 22 -1 1 1 2 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 18 -1 1 1 2 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 18 22 -1 1 1 2 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 18 1 -1 1 1 2 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 18 1 22 -1 1 1 2 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 -1 1 1 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 22 -1 1 1 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 -1 1 1 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 22 -1 1 1 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 15 -1 1 1 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 15 22 -1 1 1 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 18 1 -1 1 1 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 18 1 22 -1 1 1 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 1 -1 1 1 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 1 22 -1 1 1 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 -1 1 1 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 22 -1 1 1 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 13 1 -1 1 1 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 13 1 22 -1 1 1 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 18 -1 1 1 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 18 22 -1 1 1 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 18 1 -1 1 1 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 18 1 22 -1 1 1 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 22 -1 1 1 2 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 22 22 -1 1 1 2 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 22 1 -1 1 1 2 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 22 1 22 -1 1 1 2 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 15 -1 1 1 2 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 15 22 -1 1 1 2 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 18 18 1 -1 1 1 2 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 18 18 1 22 -1 1 1 2 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 18 1 -1 1 1 2 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 18 1 22 -1 1 1 2 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 2 -1 1 1 2 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 2 22 -1 1 1 2 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 13 1 -1 1 1 2 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 13 1 22 -1 1 1 2 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 18 -1 1 1 2 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 18 22 -1 1 1 2 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 18 1 -1 1 1 2 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 18 1 22 -1 1 1 2 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 -1 1 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 22 -1 1 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 -1 1 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 22 -1 1 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 15 -1 1 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 15 22 -1 1 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 18 18 1 -1 1 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 18 18 1 22 -1 1 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 18 1 -1 1 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 18 1 22 -1 1 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 2 -1 1 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 2 22 -1 1 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 1 13 1 -1 1 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 1 13 1 22 -1 1 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 1 18 -1 1 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 1 18 22 -1 1 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 1 18 1 -1 1 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 1 18 1 22 -1 1 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 22 -1 1 2 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 22 22 -1 1 2 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 22 1 -1 1 2 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 22 1 22 -1 1 2 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 15 -1 1 2 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 15 22 -1 1 2 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 18 18 1 -1 1 2 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 18 18 1 22 -1 1 2 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 18 1 -1 1 2 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 18 1 22 -1 1 2 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 2 -1 1 2 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 2 22 -1 1 2 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 13 1 -1 1 2 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 13 1 22 -1 1 2 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 18 -1 1 2 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 18 22 -1 1 2 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 18 1 -1 1 2 5 5 5 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 18 1 22 -1 1 2 5 5 5 7 -1 1 5');
+INSERT INTO us_rules (rule) VALUES ('0 2 1 18 -1 1 4 5 5 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 2 1 18 22 -1 1 4 5 5 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 2 1 18 1 -1 1 4 5 5 5 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 2 1 18 1 22 -1 1 4 5 5 5 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 2 0 18 -1 1 4 5 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 2 0 18 22 -1 1 4 5 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 2 0 1 -1 1 4 5 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 2 0 1 22 -1 1 4 5 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 2 18 1 -1 1 4 5 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 2 18 1 22 -1 1 4 5 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 2 18 18 1 -1 1 4 5 5 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 2 18 18 1 22 -1 1 4 5 5 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 1 18 -1 1 1 4 5 5 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 1 18 22 -1 1 1 4 5 5 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 1 18 1 -1 1 1 4 5 5 5 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 1 18 1 22 -1 1 1 4 5 5 5 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 0 18 -1 1 1 4 5 5 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 0 18 22 -1 1 1 4 5 5 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 0 1 -1 1 1 4 5 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 0 1 22 -1 1 1 4 5 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 18 1 -1 1 1 4 5 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 18 1 22 -1 1 1 4 5 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 18 18 1 -1 1 1 4 5 5 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 18 18 1 22 -1 1 1 4 5 5 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 1 18 -1 1 1 4 5 5 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 1 18 22 -1 1 1 4 5 5 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 1 18 1 -1 1 1 4 5 5 5 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 1 18 1 22 -1 1 1 4 5 5 5 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 0 18 -1 1 1 4 5 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 0 18 22 -1 1 1 4 5 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 0 1 -1 1 1 4 5 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 0 1 22 -1 1 1 4 5 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 18 1 -1 1 1 4 5 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 18 1 22 -1 1 1 4 5 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 18 18 1 -1 1 1 4 5 5 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 18 18 1 22 -1 1 1 4 5 5 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('25 2 1 18 -1 1 4 5 5 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('25 2 1 18 22 -1 1 4 5 5 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('25 2 1 18 1 -1 1 4 5 5 5 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('25 2 1 18 1 22 -1 1 4 5 5 5 7 -1 1 11');
+INSERT INTO us_rules (rule) VALUES ('25 2 0 18 -1 1 4 5 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('25 2 0 18 22 -1 1 4 5 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('25 2 0 1 -1 1 4 5 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('25 2 0 1 22 -1 1 4 5 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('25 2 18 1 -1 1 4 5 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('25 2 18 1 22 -1 1 4 5 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('25 2 18 18 1 -1 1 4 5 5 5 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('25 2 18 18 1 22 -1 1 4 5 5 5 7 -1 1 8');
+INSERT INTO us_rules (rule) VALUES ('0 14 2 -1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 14 2 22 -1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 15 1 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 15 1 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 24 2 -1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 24 2 22 -1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 24 24 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 24 24 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 24 2 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 24 2 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 24 1 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 24 1 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 -1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 22 -1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 2 22 -1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 -1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 22 -1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 0 25 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 0 25 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 15 2 -1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 15 2 22 -1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 18 2 -1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 18 2 22 -1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 1 2 -1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 1 2 22 -1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 2 2 -1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 2 2 22 -1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 2 0 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 2 0 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 2 1 2 -1 1 5 5 6 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('0 2 1 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 16 0 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 16 0 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 13 1 2 -1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 13 1 2 22 -1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 15 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 15 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 24 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 24 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 24 24 2 -1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 24 24 2 22 -1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 24 1 2 -1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 24 1 2 22 -1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 22 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 22 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 22 1 2 -1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 22 1 2 22 -1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 25 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 25 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 0 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 0 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 18 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 18 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 18 2 2 -1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 18 2 2 22 -1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 18 1 2 -1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 18 1 2 22 -1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 2 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 2 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 2 2 2 -1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 1 2 2 2 22 -1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 21 2 -1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 21 2 22 -1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 14 2 -1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 14 2 22 -1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 15 1 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 15 1 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 24 2 -1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 24 2 22 -1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 24 24 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 24 24 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 24 2 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 24 2 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 24 1 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 24 1 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 22 2 -1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 22 2 22 -1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 22 1 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 22 1 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 25 2 -1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 25 2 22 -1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 0 25 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 0 25 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 15 2 -1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 15 2 22 -1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 18 18 18 2 -1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 18 18 18 2 22 -1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 18 18 1 2 -1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 18 18 1 2 22 -1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 18 2 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 18 2 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 18 1 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 18 1 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 2 -1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 2 22 -1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 0 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 0 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 1 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 1 2 22 -1 1 2 5 5 6 7 -1 1 15');
+INSERT INTO us_rules (rule) VALUES ('0 22 16 0 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 16 0 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 13 1 2 -1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 13 1 2 22 -1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 15 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 15 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 24 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 24 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 24 24 2 -1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 24 24 2 22 -1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 24 1 2 -1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 24 1 2 22 -1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 22 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 22 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 22 1 2 -1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 22 1 2 22 -1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 25 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 25 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 0 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 0 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 18 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 18 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 18 2 2 -1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 18 2 2 22 -1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 18 1 2 -1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 18 1 2 22 -1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 2 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 2 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 2 2 2 -1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 2 2 2 22 -1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 21 2 -1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 21 2 22 -1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 14 2 -1 1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 14 2 22 -1 1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 15 1 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 15 1 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 24 2 -1 1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 24 2 22 -1 1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 24 24 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 24 24 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 24 2 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 24 2 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 24 1 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 24 1 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 2 -1 1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 2 22 -1 1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 25 2 -1 1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 25 2 22 -1 1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 0 25 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 0 25 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 15 2 -1 1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 15 2 22 -1 1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 18 18 2 -1 1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 18 18 2 22 -1 1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 18 1 2 -1 1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 18 1 2 22 -1 1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 2 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 2 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 1 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 1 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 2 -1 1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 2 22 -1 1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 0 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 0 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 1 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 1 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 16 0 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 16 0 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 13 1 2 -1 1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 13 1 2 22 -1 1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 15 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 15 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 24 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 24 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 24 24 2 -1 1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 24 24 2 22 -1 1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 24 1 2 -1 1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 24 1 2 22 -1 1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 22 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 22 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 22 1 2 -1 1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 22 1 2 22 -1 1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 25 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 25 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 0 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 0 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 18 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 18 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 18 2 2 -1 1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 18 2 2 22 -1 1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 18 1 2 -1 1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 18 1 2 22 -1 1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 2 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 2 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 2 2 2 -1 1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 2 2 2 22 -1 1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 21 2 -1 1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 21 2 22 -1 1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 14 2 -1 1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 14 2 22 -1 1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 15 1 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 15 1 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 24 2 -1 1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 24 2 22 -1 1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 24 24 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 24 24 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 24 2 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 24 2 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 24 1 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 24 1 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 22 2 -1 1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 22 2 22 -1 1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 22 1 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 22 1 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 25 2 -1 1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 25 2 22 -1 1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 0 25 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 0 25 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 15 2 -1 1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 15 2 22 -1 1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 18 18 18 2 -1 1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 18 18 18 2 22 -1 1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 18 18 1 2 -1 1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 18 18 1 2 22 -1 1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 18 2 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 18 2 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 18 1 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 18 1 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 2 2 -1 1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 2 2 22 -1 1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 2 0 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 2 0 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 2 1 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 2 1 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 16 0 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 16 0 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 13 1 2 -1 1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 13 1 2 22 -1 1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 15 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 15 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 24 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 24 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 24 24 2 -1 1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 24 24 2 22 -1 1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 24 1 2 -1 1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 24 1 2 22 -1 1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 22 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 22 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 22 1 2 -1 1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 22 1 2 22 -1 1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 25 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 25 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 0 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 0 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 18 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 18 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 18 2 2 -1 1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 18 2 2 22 -1 1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 18 1 2 -1 1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 18 1 2 22 -1 1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 2 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 2 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 2 2 2 -1 1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 2 2 2 22 -1 1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 21 2 -1 1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 21 2 22 -1 1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 14 2 -1 1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 14 2 22 -1 1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 15 1 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 15 1 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 24 2 -1 1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 24 2 22 -1 1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 24 24 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 24 24 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 24 2 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 24 2 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 24 1 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 24 1 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 2 -1 1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 2 22 -1 1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 25 2 -1 1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 25 2 22 -1 1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 0 25 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 0 25 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 15 2 -1 1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 15 2 22 -1 1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 18 18 2 -1 1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 18 18 2 22 -1 1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 18 1 2 -1 1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 18 1 2 22 -1 1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 2 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 2 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 1 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 1 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 2 -1 1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 2 22 -1 1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 0 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 0 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 1 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 1 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 16 0 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 16 0 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 13 1 2 -1 1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 13 1 2 22 -1 1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 15 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 15 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 24 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 24 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 24 24 2 -1 1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 24 24 2 22 -1 1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 24 1 2 -1 1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 24 1 2 22 -1 1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 22 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 22 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 22 1 2 -1 1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 22 1 2 22 -1 1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 25 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 25 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 0 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 0 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 18 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 18 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 18 2 2 -1 1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 18 2 2 22 -1 1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 18 1 2 -1 1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 18 1 2 22 -1 1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 2 2 -1 1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 2 2 22 -1 1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 2 2 2 -1 1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 2 2 2 22 -1 1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 21 2 -1 1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 21 2 22 -1 1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 14 2 -1 1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 14 2 22 -1 1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 15 1 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 15 1 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 24 2 -1 1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 24 2 22 -1 1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 24 24 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 24 24 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 24 2 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 24 2 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 24 1 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 24 1 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 22 2 -1 1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 22 2 22 -1 1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 22 1 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 22 1 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 25 2 -1 1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 25 2 22 -1 1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 0 25 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 0 25 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 15 2 -1 1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 15 2 22 -1 1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 18 18 18 2 -1 1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 18 18 18 2 22 -1 1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 18 18 1 2 -1 1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 18 18 1 2 22 -1 1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 18 2 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 18 2 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 18 1 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 18 1 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 2 2 -1 1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 2 2 22 -1 1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 2 0 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 2 0 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 2 1 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 2 1 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 16 0 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 16 0 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 13 1 2 -1 1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 13 1 2 22 -1 1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 15 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 15 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 24 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 24 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 24 24 2 -1 1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 24 24 2 22 -1 1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 24 1 2 -1 1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 24 1 2 22 -1 1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 22 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 22 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 22 1 2 -1 1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 22 1 2 22 -1 1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 25 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 25 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 0 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 0 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 18 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 18 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 18 2 2 -1 1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 18 2 2 22 -1 1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 18 1 2 -1 1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 18 1 2 22 -1 1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 2 2 -1 1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 2 2 22 -1 1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 2 2 2 -1 1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 2 2 2 22 -1 1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 21 2 -1 1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 21 2 22 -1 1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 14 2 -1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 14 2 22 -1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 15 1 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 15 1 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 24 2 -1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 24 2 22 -1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 24 24 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 24 24 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 24 2 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 24 2 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 24 1 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 24 1 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 2 -1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 2 22 -1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 25 2 -1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 25 2 22 -1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 0 25 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 0 25 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 15 2 -1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 15 2 22 -1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 18 18 18 2 -1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 18 18 18 2 22 -1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 18 18 1 2 -1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 18 18 1 2 22 -1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 18 2 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 18 2 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 18 1 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 18 1 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 2 2 -1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 2 2 22 -1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 2 0 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 2 0 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 2 1 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 2 1 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 16 0 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 16 0 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 13 1 2 -1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 13 1 2 22 -1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 15 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 15 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 24 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 24 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 24 24 2 -1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 24 24 2 22 -1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 24 1 2 -1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 24 1 2 22 -1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 22 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 22 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 22 1 2 -1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 22 1 2 22 -1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 25 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 25 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 0 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 0 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 18 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 18 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 18 2 2 -1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 18 2 2 22 -1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 18 1 2 -1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 18 1 2 22 -1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 2 2 -1 1 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 2 2 22 -1 1 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 2 2 2 -1 1 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 1 2 2 2 22 -1 1 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 21 2 -1 1 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 21 2 22 -1 1 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 14 2 -1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 14 2 22 -1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 15 1 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 15 1 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 24 2 -1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 24 2 22 -1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 24 24 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 24 24 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 24 2 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 24 2 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 24 1 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 24 1 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 22 2 -1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 22 2 22 -1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 22 1 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 22 1 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 25 2 -1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 25 2 22 -1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 0 25 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 0 25 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 15 2 -1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 15 2 22 -1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 18 18 18 2 -1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 18 18 18 2 22 -1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 18 18 1 2 -1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 18 18 1 2 22 -1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 18 2 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 18 2 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 18 1 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 18 1 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 2 2 -1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 2 2 22 -1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 2 0 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 2 0 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 2 1 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 2 1 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 16 0 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 16 0 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 13 1 2 -1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 13 1 2 22 -1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 15 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 15 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 24 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 24 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 24 24 2 -1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 24 24 2 22 -1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 24 1 2 -1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 24 1 2 22 -1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 22 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 22 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 22 1 2 -1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 22 1 2 22 -1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 25 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 25 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 0 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 0 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 18 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 18 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 18 2 2 -1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 18 2 2 22 -1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 18 1 2 -1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 18 1 2 22 -1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 2 2 -1 1 2 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 2 2 22 -1 1 2 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 2 2 2 -1 1 2 5 5 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 1 2 2 2 22 -1 1 2 5 5 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 21 2 -1 1 2 5 6 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('25 22 21 2 22 -1 1 2 5 6 7 -1 1 16');
+INSERT INTO us_rules (rule) VALUES ('0 -1 1 -1 3 17');
+INSERT INTO us_rules (rule) VALUES ('0 18 -1 1 1 -1 3 16');
+INSERT INTO us_rules (rule) VALUES ('0 25 -1 1 1 -1 3 16');
+INSERT INTO us_rules (rule) VALUES ('0 22 -1 1 1 -1 3 9');
+INSERT INTO us_rules (rule) VALUES ('22 0 -1 1 1 -1 3 9');
+INSERT INTO us_rules (rule) VALUES ('1 0 -1 1 1 -1 3 6');
+INSERT INTO us_rules (rule) VALUES ('18 0 -1 1 1 -1 3 12');
+INSERT INTO us_rules (rule) VALUES ('25 -1 1 -1 3 12');
+INSERT INTO us_rules (rule) VALUES ('21 0 -1 1 1 -1 3 12');
+INSERT INTO us_rules (rule) VALUES ('0 21 -1 1 1 -1 3 9');
+INSERT INTO us_rules (rule) VALUES ('0 0 -1 1 1 -1 3 15');
+INSERT INTO us_rules (rule) VALUES ('21 0 0 -1 1 1 1 -1 3 9');
+INSERT INTO us_rules (rule) VALUES ('0 0 21 -1 1 1 1 -1 3 9');
+INSERT INTO us_rules (rule) VALUES ('0 0 18 -1 1 1 1 -1 3 9');
+INSERT INTO us_rules (rule) VALUES ('18 0 -1 1 1 -1 3 9');
+INSERT INTO us_rules (rule) VALUES ('18 0 0 -1 1 1 1 -1 3 9');
+INSERT INTO us_rules (rule) VALUES ('0 0 18 -1 1 1 1 -1 3 9');
+INSERT INTO us_rules (rule) VALUES ('8 -1 8 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('8 23 -1 8 8 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('8 0 -1 8 8 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('8 0 18 -1 8 8 8 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('8 18 -1 8 8 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('8 18 0 -1 8 8 8 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('8 1 -1 8 8 -1 4 2');
+INSERT INTO us_rules (rule) VALUES ('14 -1 14 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('14 21 -1 14 15 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('14 23 -1 14 15 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('14 0 -1 14 15 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('14 0 18 -1 14 15 15 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('14 0 18 0 -1 14 15 15 15 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('14 18 -1 14 15 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('14 18 0 -1 14 15 15 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('14 1 -1 14 15 -1 4 2');
+INSERT INTO us_rules (rule) VALUES ('1 24 -1 0 0 -1 4 15');
+INSERT INTO us_rules (rule) VALUES ('14 24 -1 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('24 24 -1 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('24 24 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('24 22 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('24 18 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('24 2 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('24 1 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('22 24 -1 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('22 24 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('22 24 24 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('22 24 1 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('22 22 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('22 2 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('22 1 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 24 -1 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 13 18 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 24 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 18 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 18 18 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 18 2 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 18 1 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 2 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 1 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 1 24 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('2 24 -1 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('2 22 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('2 0 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('2 18 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('2 2 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('2 1 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('1 13 1 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('1 24 24 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('1 24 22 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('1 24 2 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('1 24 1 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('1 22 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('1 22 24 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('1 0 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('1 0 24 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('1 0 1 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('1 18 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('1 18 1 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('1 2 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('1 2 1 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 1 24 -1 0 0 0 -1 4 15');
+INSERT INTO us_rules (rule) VALUES ('0 14 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 24 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 24 24 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 24 22 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 24 18 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 24 2 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 24 1 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 22 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 22 24 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 22 24 24 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 22 24 1 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 22 22 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 22 2 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 22 1 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 13 18 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 24 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 18 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 2 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 1 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 24 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 2 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 2 22 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 2 0 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 2 18 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 2 2 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 2 1 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 1 13 1 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 1 24 24 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 1 24 22 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 1 24 2 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 1 24 1 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 1 22 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 1 22 24 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 1 0 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 1 0 24 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 1 0 1 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 1 18 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 1 18 1 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 1 2 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 1 2 1 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 24 -1 0 0 0 0 -1 4 15');
+INSERT INTO us_rules (rule) VALUES ('0 18 14 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 24 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 24 24 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 24 22 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 24 18 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 24 2 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 24 1 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 24 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 24 24 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 24 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 22 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 2 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 22 1 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 13 18 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 24 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 18 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 18 18 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 18 2 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 18 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 2 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 1 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 18 1 24 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 22 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 0 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 18 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 2 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 2 1 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 13 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 24 24 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 24 22 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 24 2 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 24 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 22 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 22 24 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 0 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 0 24 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 0 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 18 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 18 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 2 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 1 2 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 24 -1 0 0 0 0 -1 4 15');
+INSERT INTO us_rules (rule) VALUES ('0 25 14 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 24 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 24 24 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 24 22 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 24 18 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 24 2 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 24 1 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 24 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 24 24 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 24 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 22 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 2 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 22 1 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 13 18 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 24 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 18 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 18 18 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 18 2 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 18 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 2 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 1 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 18 1 24 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 22 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 0 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 18 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 2 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 2 1 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 13 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 24 24 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 24 22 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 24 2 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 24 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 22 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 22 24 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 0 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 0 24 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 0 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 18 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 18 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 2 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 1 2 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 1 24 -1 0 0 0 0 -1 4 15');
+INSERT INTO us_rules (rule) VALUES ('18 0 14 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 24 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 24 24 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 24 22 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 24 18 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 24 2 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 24 1 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 22 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 22 24 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 22 24 24 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 22 24 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 22 22 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 22 2 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 22 1 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 18 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 18 13 18 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 18 24 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 18 18 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 18 18 18 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 18 18 2 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 18 18 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 18 2 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 18 1 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 18 1 24 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 2 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 2 22 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 2 0 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 2 18 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 2 2 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 2 1 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 1 13 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 1 24 24 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 1 24 22 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 1 24 2 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 1 24 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 1 22 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 1 22 24 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 1 0 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 1 0 24 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 1 0 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 1 18 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 1 18 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 1 2 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 1 2 1 24 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('19 -1 0 -1 4 2');
+INSERT INTO us_rules (rule) VALUES ('19 1 -1 0 0 -1 4 6');
+INSERT INTO us_rules (rule) VALUES ('19 24 1 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('19 24 1 0 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('19 23 -1 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('19 0 -1 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('19 0 24 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('19 0 1 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('19 18 -1 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('19 2 0 -1 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('19 1 0 -1 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 19 -1 0 0 -1 4 2');
+INSERT INTO us_rules (rule) VALUES ('0 19 1 -1 0 0 0 -1 4 6');
+INSERT INTO us_rules (rule) VALUES ('0 19 24 1 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 19 24 1 0 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 19 23 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 19 0 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 19 0 24 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 19 0 1 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 19 18 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 19 2 0 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 19 1 0 -1 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 19 -1 0 0 0 -1 4 2');
+INSERT INTO us_rules (rule) VALUES ('0 18 19 1 -1 0 0 0 0 -1 4 6');
+INSERT INTO us_rules (rule) VALUES ('0 18 19 24 1 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 19 24 1 0 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 19 23 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 19 0 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 19 0 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 19 0 1 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 19 18 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 19 2 0 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 18 19 1 0 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 19 -1 0 0 0 -1 4 2');
+INSERT INTO us_rules (rule) VALUES ('0 25 19 1 -1 0 0 0 0 -1 4 6');
+INSERT INTO us_rules (rule) VALUES ('0 25 19 24 1 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 19 24 1 0 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 19 23 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 19 0 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 19 0 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 19 0 1 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 19 18 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 19 2 0 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('0 25 19 1 0 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 19 -1 0 0 0 -1 4 2');
+INSERT INTO us_rules (rule) VALUES ('18 0 19 1 -1 0 0 0 0 -1 4 6');
+INSERT INTO us_rules (rule) VALUES ('18 0 19 24 1 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 19 24 1 0 -1 0 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 19 23 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 19 0 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 19 0 24 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 19 0 1 -1 0 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 19 18 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 19 2 0 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('18 0 19 1 0 -1 0 0 0 0 -1 4 10');
+INSERT INTO us_rules (rule) VALUES ('23 -1 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('0 -1 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('18 -1 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('18 0 -1 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('18 18 -1 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('18 0 18 -1 17 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('21 -1 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('21 0 -1 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('25 -1 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('0 21 -1 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('0 0 -1 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('0 18 -1 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('0 1 -1 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('1 -1 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 -1 16 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 23 -1 16 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('16 0 -1 16 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('16 18 -1 16 17 -1 4 11');
+INSERT INTO us_rules (rule) VALUES ('16 18 0 -1 16 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 18 18 -1 16 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 18 0 18 -1 16 17 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 21 -1 16 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 21 0 -1 16 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 25 -1 16 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 0 21 -1 16 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 0 0 -1 16 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 0 18 -1 16 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 0 1 -1 16 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 1 -1 16 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 16 -1 16 16 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 16 23 -1 16 16 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 -1 16 16 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('16 16 18 -1 16 16 17 -1 4 11');
+INSERT INTO us_rules (rule) VALUES ('16 16 18 0 -1 16 16 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 16 18 18 -1 16 16 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 16 18 0 18 -1 16 16 17 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 16 21 -1 16 16 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 16 21 0 -1 16 16 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 16 25 -1 16 16 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 21 -1 16 16 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 0 -1 16 16 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 18 -1 16 16 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 1 -1 16 16 17 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('16 16 1 -1 16 16 17 -1 4 7');
+INSERT INTO us_rules (rule) VALUES ('17 -1 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 23 -1 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 0 -1 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 18 -1 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 18 0 -1 17 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 18 18 -1 17 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 18 0 18 -1 17 17 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 21 -1 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 21 0 -1 17 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 25 -1 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 0 21 -1 17 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 0 0 -1 17 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 0 18 -1 17 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 0 1 -1 17 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 1 -1 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 -1 17 16 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 23 -1 17 16 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 0 -1 17 16 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 18 -1 17 16 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 18 0 -1 17 16 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 18 18 -1 17 16 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 18 0 18 -1 17 16 17 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 21 -1 17 16 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 21 0 -1 17 16 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 25 -1 17 16 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 0 21 -1 17 16 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 0 0 -1 17 16 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 0 18 -1 17 16 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 0 1 -1 17 16 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 1 -1 17 16 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 16 -1 17 16 16 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 16 23 -1 17 16 16 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 16 0 -1 17 16 16 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 16 18 -1 17 16 16 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 16 18 0 -1 17 16 16 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 16 18 18 -1 17 16 16 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 16 18 0 18 -1 17 16 16 17 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 16 21 -1 17 16 16 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 16 21 0 -1 17 16 16 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 16 25 -1 17 16 16 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 16 0 21 -1 17 16 16 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 16 0 0 -1 17 16 16 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 16 0 18 -1 17 16 16 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 16 0 1 -1 17 16 16 17 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('17 16 16 1 -1 17 16 16 17 -1 4 17');
+INSERT INTO us_rules (rule) VALUES ('15 17 -1 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 23 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 0 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 18 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 18 0 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 18 18 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 18 0 18 -1 17 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 21 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 21 0 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 25 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 0 21 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 0 0 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 0 18 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 0 1 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 1 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 -1 17 17 16 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 23 -1 17 17 16 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 0 -1 17 17 16 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 18 -1 17 17 16 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 18 0 -1 17 17 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 18 18 -1 17 17 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 18 0 18 -1 17 17 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 21 -1 17 17 16 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 21 0 -1 17 17 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 25 -1 17 17 16 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 0 21 -1 17 17 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 0 0 -1 17 17 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 0 18 -1 17 17 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 0 1 -1 17 17 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 1 -1 17 17 16 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 16 -1 17 17 16 16 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 16 23 -1 17 17 16 16 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 16 0 -1 17 17 16 16 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 16 18 -1 17 17 16 16 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 16 18 0 -1 17 17 16 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 16 18 18 -1 17 17 16 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 16 18 0 18 -1 17 17 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 16 21 -1 17 17 16 16 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 16 21 0 -1 17 17 16 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 16 25 -1 17 17 16 16 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 16 0 21 -1 17 17 16 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 16 0 0 -1 17 17 16 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 16 0 18 -1 17 17 16 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 16 0 1 -1 17 17 16 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 16 16 1 -1 17 17 16 16 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('17 17 -1 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 23 -1 17 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 0 -1 17 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 18 -1 17 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 18 0 -1 17 17 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 18 18 -1 17 17 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 18 0 18 -1 17 17 17 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 21 -1 17 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 21 0 -1 17 17 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 25 -1 17 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 0 21 -1 17 17 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 0 0 -1 17 17 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 0 18 -1 17 17 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 0 1 -1 17 17 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 1 -1 17 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 -1 17 17 16 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 23 -1 17 17 16 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 0 -1 17 17 16 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 18 -1 17 17 16 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 18 0 -1 17 17 16 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 18 18 -1 17 17 16 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 18 0 18 -1 17 17 16 17 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 21 -1 17 17 16 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 21 0 -1 17 17 16 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 25 -1 17 17 16 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 0 21 -1 17 17 16 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 0 0 -1 17 17 16 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 0 18 -1 17 17 16 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 0 1 -1 17 17 16 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 1 -1 17 17 16 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 16 -1 17 17 16 16 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 16 23 -1 17 17 16 16 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 16 0 -1 17 17 16 16 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 16 18 -1 17 17 16 16 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 16 18 0 -1 17 17 16 16 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 16 18 18 -1 17 17 16 16 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 16 18 0 18 -1 17 17 16 16 17 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 16 21 -1 17 17 16 16 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 16 21 0 -1 17 17 16 16 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 16 25 -1 17 17 16 16 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 16 0 21 -1 17 17 16 16 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 16 0 0 -1 17 17 16 16 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 16 0 18 -1 17 17 16 16 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 16 0 1 -1 17 17 16 16 17 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 17 16 16 1 -1 17 17 16 16 17 -1 4 16');
+INSERT INTO us_rules (rule) VALUES ('17 -1 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('15 17 -1 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('17 17 -1 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('23 17 -1 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('23 15 17 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('23 17 17 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('0 17 -1 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('0 15 17 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('0 17 17 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('18 17 -1 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('18 15 17 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('18 17 17 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('18 0 17 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('18 0 15 17 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('18 0 17 17 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('18 18 17 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('18 18 15 17 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('18 18 17 17 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('18 0 18 17 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('18 0 18 15 17 -1 17 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('18 0 18 17 17 -1 17 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('21 17 -1 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('21 15 17 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('21 17 17 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('21 0 17 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('21 0 15 17 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('21 0 17 17 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('25 17 -1 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('25 15 17 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('25 17 17 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('0 21 17 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('0 21 15 17 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('0 21 17 17 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('0 0 17 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('0 0 15 17 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('0 0 17 17 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('0 18 17 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('0 18 15 17 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('0 18 17 17 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('0 1 17 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('0 1 15 17 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('0 1 17 17 -1 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('1 17 -1 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('1 15 17 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('1 17 17 -1 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 17 -1 16 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 15 17 -1 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 17 17 -1 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 23 17 -1 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 23 15 17 -1 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 23 17 17 -1 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 0 17 -1 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 0 15 17 -1 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 0 17 17 -1 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 18 17 -1 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 18 15 17 -1 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 18 17 17 -1 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 18 0 17 -1 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 18 0 15 17 -1 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 18 0 17 17 -1 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 18 18 17 -1 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 18 18 15 17 -1 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 18 18 17 17 -1 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 18 0 18 17 -1 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 18 0 18 15 17 -1 16 17 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 18 0 18 17 17 -1 16 17 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 21 17 -1 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 21 15 17 -1 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 21 17 17 -1 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 21 0 17 -1 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 21 0 15 17 -1 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 21 0 17 17 -1 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 25 17 -1 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 25 15 17 -1 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 25 17 17 -1 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 0 21 17 -1 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 0 21 15 17 -1 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 0 21 17 17 -1 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 0 0 17 -1 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 0 0 15 17 -1 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 0 0 17 17 -1 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 0 18 17 -1 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 0 18 15 17 -1 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 0 18 17 17 -1 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 0 1 17 -1 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 0 1 15 17 -1 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 0 1 17 17 -1 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 1 17 -1 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 1 15 17 -1 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 1 17 17 -1 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 17 -1 16 16 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 15 17 -1 16 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 17 17 -1 16 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 23 17 -1 16 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 23 15 17 -1 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 23 17 17 -1 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 17 -1 16 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 15 17 -1 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 17 17 -1 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 18 17 -1 16 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 18 15 17 -1 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 18 17 17 -1 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 18 0 17 -1 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 18 0 15 17 -1 16 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 18 0 17 17 -1 16 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 18 18 17 -1 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 18 18 15 17 -1 16 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 18 18 17 17 -1 16 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 18 0 18 17 -1 16 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 18 0 18 15 17 -1 16 16 17 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 18 0 18 17 17 -1 16 16 17 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 21 17 -1 16 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 21 15 17 -1 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 21 17 17 -1 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 21 0 17 -1 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 21 0 15 17 -1 16 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 21 0 17 17 -1 16 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 25 17 -1 16 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 25 15 17 -1 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 25 17 17 -1 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 21 17 -1 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 21 15 17 -1 16 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 21 17 17 -1 16 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 0 17 -1 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 0 15 17 -1 16 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 0 17 17 -1 16 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 18 17 -1 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 18 15 17 -1 16 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 18 17 17 -1 16 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 1 17 -1 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 1 15 17 -1 16 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 0 1 17 17 -1 16 16 17 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 1 17 -1 16 16 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 1 15 17 -1 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('16 16 1 17 17 -1 16 16 17 17 17 -1 4 8');
+INSERT INTO us_rules (rule) VALUES ('12 -1 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('12 23 23 13 13 -1 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('12 0 -1 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('12 0 0 -1 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('12 27 -1 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('12 27 26 -1 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('12 28 -1 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('12 28 29 -1 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('23 23 13 13 -1 -1 0 14');
+INSERT INTO us_rules (rule) VALUES ('23 23 13 13 12 -1 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('0 -1 13 -1 0 14');
+INSERT INTO us_rules (rule) VALUES ('0 12 -1 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('0 0 -1 13 13 -1 0 14');
+INSERT INTO us_rules (rule) VALUES ('0 0 12 -1 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('27 -1 13 -1 0 14');
+INSERT INTO us_rules (rule) VALUES ('27 12 -1 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('27 26 -1 13 13 -1 0 14');
+INSERT INTO us_rules (rule) VALUES ('27 26 12 -1 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('28 -1 13 -1 0 14');
+INSERT INTO us_rules (rule) VALUES ('28 12 -1 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('28 29 -1 13 13 -1 0 14');
+INSERT INTO us_rules (rule) VALUES ('28 29 12 -1 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('11 -1 11 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('11 23 23 13 13 -1 11 -1 0 7');
+INSERT INTO us_rules (rule) VALUES ('11 0 -1 11 13 -1 0 7');
+INSERT INTO us_rules (rule) VALUES ('11 0 0 -1 11 13 13 -1 0 7');
+INSERT INTO us_rules (rule) VALUES ('11 27 -1 11 13 -1 0 7');
+INSERT INTO us_rules (rule) VALUES ('11 27 26 -1 11 13 13 -1 0 7');
+INSERT INTO us_rules (rule) VALUES ('11 28 -1 11 13 -1 0 7');
+INSERT INTO us_rules (rule) VALUES ('11 28 29 -1 11 13 13 -1 0 7');
+INSERT INTO us_rules (rule) VALUES ('10 -1 10 -1 0 5');
+INSERT INTO us_rules (rule) VALUES ('10 12 -1 10 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('10 12 23 23 13 13 -1 10 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('10 12 0 -1 10 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('10 12 0 0 -1 10 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('10 12 27 -1 10 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('10 12 27 26 -1 10 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('10 12 28 -1 10 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('10 12 28 29 -1 10 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('10 23 23 13 13 -1 10 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('10 23 23 13 13 12 -1 10 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('10 0 -1 10 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('10 0 12 -1 10 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('10 0 0 -1 10 13 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('10 0 0 12 -1 10 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('10 27 -1 10 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('10 27 12 -1 10 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('10 27 26 -1 10 13 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('10 27 26 12 -1 10 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('10 28 -1 10 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('10 28 12 -1 10 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('10 28 29 -1 10 13 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('10 28 29 12 -1 10 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('10 11 -1 10 11 -1 0 13');
+INSERT INTO us_rules (rule) VALUES ('10 11 12 -1 10 11 12 -1 0 15');
+INSERT INTO us_rules (rule) VALUES ('10 11 12 23 23 13 13 -1 10 11 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('10 11 12 0 -1 10 11 12 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('10 11 12 0 0 -1 10 11 12 13 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('10 11 12 27 -1 10 11 12 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('10 11 12 27 26 -1 10 11 12 13 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('10 11 12 28 -1 10 11 12 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('10 11 12 28 29 -1 10 11 12 13 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('10 11 23 23 13 13 -1 10 11 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('10 11 23 23 13 13 12 -1 10 11 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('10 11 0 -1 10 11 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('10 11 0 12 -1 10 11 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('10 11 0 0 -1 10 11 13 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('10 11 0 0 12 -1 10 11 13 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('10 11 27 -1 10 11 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('10 11 27 12 -1 10 11 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('10 11 27 26 -1 10 11 13 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('10 11 27 26 12 -1 10 11 13 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('10 11 28 -1 10 11 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('10 11 28 12 -1 10 11 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('10 11 28 29 -1 10 11 13 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('10 11 28 29 12 -1 10 11 13 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 -1 10 -1 0 5');
+INSERT INTO us_rules (rule) VALUES ('1 12 -1 10 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 12 23 23 13 13 -1 10 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 12 0 -1 10 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 12 0 0 -1 10 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 12 27 -1 10 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 12 27 26 -1 10 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 12 28 -1 10 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 12 28 29 -1 10 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 23 23 13 13 -1 10 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 23 23 13 13 12 -1 10 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 0 -1 10 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 0 12 -1 10 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 0 0 -1 10 13 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 0 0 12 -1 10 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 27 -1 10 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 27 12 -1 10 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 27 26 -1 10 13 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 27 26 12 -1 10 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 28 -1 10 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 28 12 -1 10 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 28 29 -1 10 13 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 28 29 12 -1 10 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 11 -1 10 11 -1 0 13');
+INSERT INTO us_rules (rule) VALUES ('1 11 12 -1 10 11 12 -1 0 15');
+INSERT INTO us_rules (rule) VALUES ('1 11 12 23 23 13 13 -1 10 11 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 11 12 0 -1 10 11 12 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 11 12 0 0 -1 10 11 12 13 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 11 12 27 -1 10 11 12 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 11 12 27 26 -1 10 11 12 13 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 11 12 28 -1 10 11 12 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 11 12 28 29 -1 10 11 12 13 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 11 23 23 13 13 -1 10 11 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 11 23 23 13 13 12 -1 10 11 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 11 0 -1 10 11 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 11 0 12 -1 10 11 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 11 0 0 -1 10 11 13 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 11 0 0 12 -1 10 11 13 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 11 27 -1 10 11 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 11 27 12 -1 10 11 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 11 27 26 -1 10 11 13 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 11 27 26 12 -1 10 11 13 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 11 28 -1 10 11 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 11 28 12 -1 10 11 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 11 28 29 -1 10 11 13 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 11 28 29 12 -1 10 11 13 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('22 1 -1 10 10 -1 0 5');
+INSERT INTO us_rules (rule) VALUES ('22 1 12 -1 10 10 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('22 1 12 23 23 13 13 -1 10 10 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('22 1 12 0 -1 10 10 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('22 1 12 0 0 -1 10 10 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('22 1 12 27 -1 10 10 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('22 1 12 27 26 -1 10 10 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('22 1 12 28 -1 10 10 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('22 1 12 28 29 -1 10 10 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('22 1 23 23 13 13 -1 10 10 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('22 1 23 23 13 13 12 -1 10 10 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('22 1 0 -1 10 10 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('22 1 0 12 -1 10 10 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('22 1 0 0 -1 10 10 13 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('22 1 0 0 12 -1 10 10 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('22 1 27 -1 10 10 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('22 1 27 12 -1 10 10 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('22 1 27 26 -1 10 10 13 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('22 1 27 26 12 -1 10 10 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('22 1 28 -1 10 10 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('22 1 28 12 -1 10 10 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('22 1 28 29 -1 10 10 13 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('22 1 28 29 12 -1 10 10 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 -1 10 10 11 -1 0 13');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 12 -1 10 10 11 12 -1 0 15');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 12 23 23 13 13 -1 10 10 11 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 12 0 -1 10 10 11 12 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 12 0 0 -1 10 10 11 12 13 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 12 27 -1 10 10 11 12 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 12 27 26 -1 10 10 11 12 13 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 12 28 -1 10 10 11 12 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 12 28 29 -1 10 10 11 12 13 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 23 23 13 13 -1 10 10 11 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 23 23 13 13 12 -1 10 10 11 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 0 -1 10 10 11 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 0 12 -1 10 10 11 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 0 0 -1 10 10 11 13 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 0 0 12 -1 10 10 11 13 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 27 -1 10 10 11 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 27 12 -1 10 10 11 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 27 26 -1 10 10 11 13 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 27 26 12 -1 10 10 11 13 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 28 -1 10 10 11 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 28 12 -1 10 10 11 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 28 29 -1 10 10 11 13 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('22 1 11 28 29 12 -1 10 10 11 13 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 22 -1 10 10 -1 0 5');
+INSERT INTO us_rules (rule) VALUES ('1 22 12 -1 10 10 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 22 12 23 23 13 13 -1 10 10 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 22 12 0 -1 10 10 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 22 12 0 0 -1 10 10 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 22 12 27 -1 10 10 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 22 12 27 26 -1 10 10 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 22 12 28 -1 10 10 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 22 12 28 29 -1 10 10 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 22 23 23 13 13 -1 10 10 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 22 23 23 13 13 12 -1 10 10 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 22 0 -1 10 10 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 22 0 12 -1 10 10 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 22 0 0 -1 10 10 13 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 22 0 0 12 -1 10 10 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 22 27 -1 10 10 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 22 27 12 -1 10 10 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 22 27 26 -1 10 10 13 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 22 27 26 12 -1 10 10 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 22 28 -1 10 10 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 22 28 12 -1 10 10 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 22 28 29 -1 10 10 13 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 22 28 29 12 -1 10 10 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 -1 10 10 11 -1 0 13');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 12 -1 10 10 11 12 -1 0 15');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 12 23 23 13 13 -1 10 10 11 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 12 0 -1 10 10 11 12 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 12 0 0 -1 10 10 11 12 13 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 12 27 -1 10 10 11 12 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 12 27 26 -1 10 10 11 12 13 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 12 28 -1 10 10 11 12 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 12 28 29 -1 10 10 11 12 13 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 23 23 13 13 -1 10 10 11 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 23 23 13 13 12 -1 10 10 11 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 0 -1 10 10 11 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 0 12 -1 10 10 11 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 0 0 -1 10 10 11 13 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 0 0 12 -1 10 10 11 13 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 27 -1 10 10 11 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 27 12 -1 10 10 11 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 27 26 -1 10 10 11 13 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 27 26 12 -1 10 10 11 13 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 28 -1 10 10 11 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 28 12 -1 10 10 11 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 28 29 -1 10 10 11 13 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 22 11 28 29 12 -1 10 10 11 13 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('2 1 -1 10 10 -1 0 5');
+INSERT INTO us_rules (rule) VALUES ('2 1 12 -1 10 10 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('2 1 12 23 23 13 13 -1 10 10 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('2 1 12 0 -1 10 10 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('2 1 12 0 0 -1 10 10 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('2 1 12 27 -1 10 10 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('2 1 12 27 26 -1 10 10 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('2 1 12 28 -1 10 10 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('2 1 12 28 29 -1 10 10 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('2 1 23 23 13 13 -1 10 10 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 23 23 13 13 12 -1 10 10 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('2 1 0 -1 10 10 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 0 12 -1 10 10 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('2 1 0 0 -1 10 10 13 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 0 0 12 -1 10 10 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('2 1 27 -1 10 10 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 27 12 -1 10 10 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('2 1 27 26 -1 10 10 13 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 27 26 12 -1 10 10 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('2 1 28 -1 10 10 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 28 12 -1 10 10 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('2 1 28 29 -1 10 10 13 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('2 1 28 29 12 -1 10 10 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 -1 10 10 11 -1 0 13');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 12 -1 10 10 11 12 -1 0 15');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 12 23 23 13 13 -1 10 10 11 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 12 0 -1 10 10 11 12 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 12 0 0 -1 10 10 11 12 13 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 12 27 -1 10 10 11 12 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 12 27 26 -1 10 10 11 12 13 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 12 28 -1 10 10 11 12 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 12 28 29 -1 10 10 11 12 13 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 23 23 13 13 -1 10 10 11 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 23 23 13 13 12 -1 10 10 11 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 0 -1 10 10 11 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 0 12 -1 10 10 11 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 0 0 -1 10 10 11 13 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 0 0 12 -1 10 10 11 13 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 27 -1 10 10 11 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 27 12 -1 10 10 11 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 27 26 -1 10 10 11 13 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 27 26 12 -1 10 10 11 13 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 28 -1 10 10 11 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 28 12 -1 10 10 11 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 28 29 -1 10 10 11 13 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('2 1 11 28 29 12 -1 10 10 11 13 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 2 -1 10 10 -1 0 5');
+INSERT INTO us_rules (rule) VALUES ('1 2 12 -1 10 10 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 2 12 23 23 13 13 -1 10 10 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 2 12 0 -1 10 10 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 2 12 0 0 -1 10 10 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 2 12 27 -1 10 10 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 2 12 27 26 -1 10 10 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 2 12 28 -1 10 10 12 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 2 12 28 29 -1 10 10 12 13 13 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 2 23 23 13 13 -1 10 10 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 2 23 23 13 13 12 -1 10 10 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 2 0 -1 10 10 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 2 0 12 -1 10 10 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 2 0 0 -1 10 10 13 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 2 0 0 12 -1 10 10 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 2 27 -1 10 10 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 2 27 12 -1 10 10 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 2 27 26 -1 10 10 13 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 2 27 26 12 -1 10 10 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 2 28 -1 10 10 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 2 28 12 -1 10 10 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 2 28 29 -1 10 10 13 13 -1 0 9');
+INSERT INTO us_rules (rule) VALUES ('1 2 28 29 12 -1 10 10 13 13 12 -1 0 3');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 -1 10 10 11 -1 0 13');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 12 -1 10 10 11 12 -1 0 15');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 12 23 23 13 13 -1 10 10 11 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 12 0 -1 10 10 11 12 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 12 0 0 -1 10 10 11 12 13 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 12 27 -1 10 10 11 12 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 12 27 26 -1 10 10 11 12 13 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 12 28 -1 10 10 11 12 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 12 28 29 -1 10 10 11 12 13 13 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 23 23 13 13 -1 10 10 11 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 23 23 13 13 12 -1 10 10 11 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 0 -1 10 10 11 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 0 12 -1 10 10 11 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 0 0 -1 10 10 11 13 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 0 0 12 -1 10 10 11 13 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 27 -1 10 10 11 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 27 12 -1 10 10 11 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 27 26 -1 10 10 11 13 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 27 26 12 -1 10 10 11 13 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 28 -1 10 10 11 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 28 12 -1 10 10 11 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 28 29 -1 10 10 11 13 13 -1 0 16');
+INSERT INTO us_rules (rule) VALUES ('1 2 11 28 29 12 -1 10 10 11 13 13 12 -1 0 17');
+INSERT INTO us_rules (rule) VALUES ('6 0 -1 4 5 -1 2 17');
+INSERT INTO us_rules (rule) VALUES ('6 0 3 -1 4 5 3 -1 2 17');
+INSERT INTO us_rules (rule) VALUES ('0 6 0 -1 1 4 5 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 6 0 3 -1 1 4 5 3 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('6 -1 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('6 3 -1 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 6 -1 2 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('22 6 3 -1 2 5 3 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('3 6 -1 3 5 -1 2 9');
+INSERT INTO us_rules (rule) VALUES ('0 6 -1 4 5 -1 1 9');
+INSERT INTO us_rules (rule) VALUES ('0 6 3 -1 4 5 3 -1 1 9');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 -1 4 2 5 -1 1 9');
+INSERT INTO us_rules (rule) VALUES ('0 22 6 3 -1 4 2 5 3 -1 1 9');
+INSERT INTO us_rules (rule) VALUES ('0 3 6 -1 4 3 5 -1 1 9');
+INSERT INTO us_rules (rule) VALUES ('0 3 1 2 -1 1 3 5 6 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 3 1 2 22 -1 1 3 5 6 7 -1 1 17');
+INSERT INTO us_rules (rule) VALUES ('0 1 6 -1 1 5 5 -1 1 9');
+INSERT INTO us_rules (rule) VALUES ('-1');
+
+-- needed so entries added by users will default to custom
+ALTER TABLE us_rules ALTER COLUMN is_custom SET DEFAULT true;
+SELECT pg_catalog.pg_extension_config_dump('us_lex', 'WHERE is_custom');
+SELECT pg_catalog.pg_extension_config_dump('us_rules', 'WHERE is_custom');
+SELECT pg_catalog.pg_extension_config_dump('us_gaz', 'WHERE is_custom');

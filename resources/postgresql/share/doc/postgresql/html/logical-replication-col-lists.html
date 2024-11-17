@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>29.5. Column Lists</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="logical-replication-row-filter.html" title="29.4. Row Filters" /><link rel="next" href="logical-replication-conflicts.html" title="29.6. Conflicts" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">29.5. Column Lists</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="logical-replication-row-filter.html" title="29.4. Row Filters">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="logical-replication.html" title="Chapter 29. Logical Replication">Up</a></td><th width="60%" align="center">Chapter 29. Logical Replication</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="logical-replication-conflicts.html" title="29.6. Conflicts">Next</a></td></tr></table><hr /></div><div class="sect1" id="LOGICAL-REPLICATION-COL-LISTS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">29.5. Column Lists <a href="#LOGICAL-REPLICATION-COL-LISTS" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="logical-replication-col-lists.html#LOGICAL-REPLICATION-COL-LIST-EXAMPLES">29.5.1. Examples</a></span></dt></dl></div><p>
+   Each publication can optionally specify which columns of each table are
+   replicated to subscribers. The table on the subscriber side must have at
+   least all the columns that are published. If no column list is specified,
+   then all columns on the publisher are replicated.
+   See <a class="xref" href="sql-createpublication.html" title="CREATE PUBLICATION"><span class="refentrytitle">CREATE PUBLICATION</span></a> for details on the syntax.
+  </p><p>
+   The choice of columns can be based on behavioral or performance reasons.
+   However, do not rely on this feature for security: a malicious subscriber
+   is able to obtain data from columns that are not specifically
+   published.  If security is a consideration, protections can be applied
+   at the publisher side.
+  </p><p>
+   If no column list is specified, any columns added to the table later are
+   automatically replicated. This means that having a column list which names
+   all columns is not the same as having no column list at all.
+  </p><p>
+   A column list can contain only simple column references.  The order
+   of columns in the list is not preserved.
+  </p><p>
+   Specifying a column list when the publication also publishes
+   <a class="link" href="sql-createpublication.html#SQL-CREATEPUBLICATION-PARAMS-FOR-TABLES-IN-SCHEMA"><code class="literal">FOR TABLES IN SCHEMA</code></a>
+   is not supported.
+  </p><p>
+   For partitioned tables, the publication parameter
+   <a class="link" href="sql-createpublication.html#SQL-CREATEPUBLICATION-PARAMS-WITH-PUBLISH-VIA-PARTITION-ROOT"><code class="literal">publish_via_partition_root</code></a>
+   determines which column list is used. If <code class="literal">publish_via_partition_root</code>
+   is <code class="literal">true</code>, the root partitioned table's column list is
+   used. Otherwise, if <code class="literal">publish_via_partition_root</code> is
+   <code class="literal">false</code> (the default), each partition's column list is used.
+  </p><p>
+   If a publication publishes <code class="command">UPDATE</code> or
+   <code class="command">DELETE</code> operations, any column list must include the
+   table's replica identity columns (see
+   <a class="xref" href="sql-altertable.html#SQL-ALTERTABLE-REPLICA-IDENTITY"><code class="literal">REPLICA IDENTITY</code></a>).
+   If a publication publishes only <code class="command">INSERT</code> operations, then
+   the column list may omit replica identity columns.
+  </p><p>
+   Column lists have no effect for the <code class="literal">TRUNCATE</code> command.
+  </p><p>
+   During initial data synchronization, only the published columns are
+   copied.  However, if the subscriber is from a release prior to 15, then
+   all the columns in the table are copied during initial data synchronization,
+   ignoring any column lists.
+  </p><div class="warning" id="LOGICAL-REPLICATION-COL-LIST-COMBINING"><h3 class="title">Warning: Combining Column Lists from Multiple Publications</h3><p>
+     There's currently no support for subscriptions comprising several
+     publications where the same table has been published with different
+     column lists.  <a class="xref" href="sql-createsubscription.html" title="CREATE SUBSCRIPTION"><span class="refentrytitle">CREATE SUBSCRIPTION</span></a> disallows
+     creating such subscriptions, but it is still possible to get into
+     that situation by adding or altering column lists on the publication
+     side after a subscription has been created.
+    </p><p>
+     This means changing the column lists of tables on publications that are
+     already subscribed could lead to errors being thrown on the subscriber
+     side.
+    </p><p>
+     If a subscription is affected by this problem, the only way to resume
+     replication is to adjust one of the column lists on the publication
+     side so that they all match; and then either recreate the subscription,
+     or use <a class="link" href="sql-altersubscription.html#SQL-ALTERSUBSCRIPTION-PARAMS-SETADDDROP-PUBLICATION">
+     <code class="literal">ALTER SUBSCRIPTION ... DROP PUBLICATION</code></a> to
+     remove one of the offending publications and add it again.
+    </p></div><div class="sect2" id="LOGICAL-REPLICATION-COL-LIST-EXAMPLES"><div class="titlepage"><div><div><h3 class="title">29.5.1. Examples <a href="#LOGICAL-REPLICATION-COL-LIST-EXAMPLES" class="id_link">#</a></h3></div></div></div><p>
+    Create a table <code class="literal">t1</code> to be used in the following example.
+</p><pre class="programlisting">
+test_pub=# CREATE TABLE t1(id int, a text, b text, c text, d text, e text, PRIMARY KEY(id));
+CREATE TABLE
+</pre><p>
+    Create a publication <code class="literal">p1</code>. A column list is defined for
+    table <code class="literal">t1</code> to reduce the number of columns that will be
+    replicated. Notice that the order of column names in the column list does
+    not matter.
+</p><pre class="programlisting">
+test_pub=# CREATE PUBLICATION p1 FOR TABLE t1 (id, b, a, d);
+CREATE PUBLICATION
+</pre><p>
+     <code class="literal">psql</code> can be used to show the column lists (if defined)
+     for each publication.
+</p><pre class="programlisting">
+test_pub=# \dRp+
+                               Publication p1
+  Owner   | All tables | Inserts | Updates | Deletes | Truncates | Via root
+----------+------------+---------+---------+---------+-----------+----------
+ postgres | f          | t       | t       | t       | t         | f
+Tables:
+    "public.t1" (id, a, b, d)
+</pre><p>
+     <code class="literal">psql</code> can be used to show the column lists (if defined)
+     for each table.
+</p><pre class="programlisting">
+test_pub=# \d t1
+                 Table "public.t1"
+ Column |  Type   | Collation | Nullable | Default
+--------+---------+-----------+----------+---------
+ id     | integer |           | not null |
+ a      | text    |           |          |
+ b      | text    |           |          |
+ c      | text    |           |          |
+ d      | text    |           |          |
+ e      | text    |           |          |
+Indexes:
+    "t1_pkey" PRIMARY KEY, btree (id)
+Publications:
+    "p1" (id, a, b, d)
+</pre><p>
+     On the subscriber node, create a table <code class="literal">t1</code> which now
+     only needs a subset of the columns that were on the publisher table
+     <code class="literal">t1</code>, and also create the subscription
+     <code class="literal">s1</code> that subscribes to the publication
+     <code class="literal">p1</code>.
+</p><pre class="programlisting">
+test_sub=# CREATE TABLE t1(id int, b text, a text, d text, PRIMARY KEY(id));
+CREATE TABLE
+test_sub=# CREATE SUBSCRIPTION s1
+test_sub-# CONNECTION 'host=localhost dbname=test_pub application_name=s1'
+test_sub-# PUBLICATION p1;
+CREATE SUBSCRIPTION
+</pre><p>
+     On the publisher node, insert some rows to table <code class="literal">t1</code>.
+</p><pre class="programlisting">
+test_pub=# INSERT INTO t1 VALUES(1, 'a-1', 'b-1', 'c-1', 'd-1', 'e-1');
+INSERT 0 1
+test_pub=# INSERT INTO t1 VALUES(2, 'a-2', 'b-2', 'c-2', 'd-2', 'e-2');
+INSERT 0 1
+test_pub=# INSERT INTO t1 VALUES(3, 'a-3', 'b-3', 'c-3', 'd-3', 'e-3');
+INSERT 0 1
+test_pub=# SELECT * FROM t1 ORDER BY id;
+ id |  a  |  b  |  c  |  d  |  e
+----+-----+-----+-----+-----+-----
+  1 | a-1 | b-1 | c-1 | d-1 | e-1
+  2 | a-2 | b-2 | c-2 | d-2 | e-2
+  3 | a-3 | b-3 | c-3 | d-3 | e-3
+(3 rows)
+</pre><p>
+     Only data from the column list of publication <code class="literal">p1</code> is
+     replicated.
+</p><pre class="programlisting">
+test_sub=# SELECT * FROM t1 ORDER BY id;
+ id |  b  |  a  |  d
+----+-----+-----+-----
+  1 | b-1 | a-1 | d-1
+  2 | b-2 | a-2 | d-2
+  3 | b-3 | a-3 | d-3
+(3 rows)
+</pre></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="logical-replication-row-filter.html" title="29.4. Row Filters">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="logical-replication.html" title="Chapter 29. Logical Replication">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="logical-replication-conflicts.html" title="29.6. Conflicts">Next</a></td></tr><tr><td width="40%" align="left" valign="top">29.4. Row Filters </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 29.6. Conflicts</td></tr></table></div></body></html>

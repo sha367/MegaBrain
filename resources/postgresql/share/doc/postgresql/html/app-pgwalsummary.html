@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>pg_walsummary</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="pgwaldump.html" title="pg_waldump" /><link rel="next" href="app-postgres.html" title="postgres" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center"><span class="application">pg_walsummary</span></th></tr><tr><td width="10%" align="left"><a accesskey="p" href="pgwaldump.html" title="pg_waldump">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="reference-server.html" title="PostgreSQL Server Applications">Up</a></td><th width="60%" align="center">PostgreSQL Server Applications</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="app-postgres.html" title="postgres">Next</a></td></tr></table><hr /></div><div class="refentry" id="APP-PGWALSUMMARY"><div class="titlepage"></div><a id="id-1.9.5.15.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle"><span class="application">pg_walsummary</span></span></h2><p>pg_walsummary — print contents of WAL summary files</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p id="id-1.9.5.15.4.1"><code class="command">pg_walsummary</code> [<em class="replaceable"><code>option</code></em>...] [<em class="replaceable"><code>file</code></em>...]</p></div></div><div class="refsect1" id="id-1.9.5.15.5"><h2>Description</h2><p>
+   <span class="application">pg_walsummary</span> is used to print the contents of
+   WAL summary files. These binary files are found with the
+   <code class="literal">pg_wal/summaries</code> subdirectory of the data directory,
+   and can be converted to text using this tool. This is not ordinarily
+   necessary, since WAL summary files primarily exist to support
+   <a class="link" href="continuous-archiving.html#BACKUP-INCREMENTAL-BACKUP" title="25.3.3. Making an Incremental Backup">incremental backup</a>,
+   but it may be useful for debugging purposes.
+  </p><p>
+   A WAL summary file is indexed by tablespace OID, relation OID, and relation
+   fork. For each relation fork, it stores the list of blocks that were
+   modified by WAL within the range summarized in the file. It can also
+   store a "limit block," which is 0 if the relation fork was created or
+   truncated within the relevant WAL range, and otherwise the shortest length
+   to which the relation fork was truncated. If the relation fork was not
+   created, deleted, or truncated within the relevant WAL range, the limit
+   block is undefined or infinite and will not be printed by this tool.
+  </p></div><div class="refsect1" id="id-1.9.5.15.6"><h2>Options</h2><p>
+    </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="option">-i</code><br /></span><span class="term"><code class="option">--individual</code></span></dt><dd><p>
+        By default, <code class="literal">pg_walsummary</code> prints one line of output
+        for each range of one or more consecutive modified blocks. This can
+        make the output a lot briefer, since a relation where all blocks from
+        0 through 999 were modified will produce only one line of output rather
+        than 1000 separate lines. This option requests a separate line of
+        output for every modified block.
+       </p></dd><dt><span class="term"><code class="option">-q</code><br /></span><span class="term"><code class="option">--quiet</code></span></dt><dd><p>
+        Do not print any output, except for errors. This can be useful
+        when you want to know whether a WAL summary file can be successfully
+        parsed but don't care about the contents.
+       </p></dd><dt><span class="term"><code class="option">-V</code><br /></span><span class="term"><code class="option">--version</code></span></dt><dd><p>
+        Display version information, then exit.
+       </p></dd><dt><span class="term"><code class="option">-?</code><br /></span><span class="term"><code class="option">--help</code></span></dt><dd><p>
+       Shows help about <span class="application">pg_walsummary</span> command line
+       arguments, and exits.
+       </p></dd></dl></div><p>
+   </p></div><div class="refsect1" id="id-1.9.5.15.7"><h2>Environment</h2><p>
+   The environment variable <code class="envar">PG_COLOR</code> specifies whether to use
+   color in diagnostic messages. Possible values are
+   <code class="literal">always</code>, <code class="literal">auto</code> and
+   <code class="literal">never</code>.
+  </p></div><div class="refsect1" id="id-1.9.5.15.8"><h2>See Also</h2><span class="simplelist"><a class="xref" href="app-pgbasebackup.html" title="pg_basebackup"><span class="refentrytitle"><span class="application">pg_basebackup</span></span></a>, <a class="xref" href="app-pgcombinebackup.html" title="pg_combinebackup"><span class="refentrytitle"><span class="application">pg_combinebackup</span></span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="pgwaldump.html" title="pg_waldump">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="reference-server.html" title="PostgreSQL Server Applications">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="app-postgres.html" title="postgres">Next</a></td></tr><tr><td width="40%" align="left" valign="top"><span class="application">pg_waldump</span> </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> <span class="application">postgres</span></td></tr></table></div></body></html>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>49.1. Initialization Functions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="archive-modules.html" title="Chapter 49. Archive Modules" /><link rel="next" href="archive-module-callbacks.html" title="49.2. Archive Module Callbacks" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">49.1. Initialization Functions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="archive-modules.html" title="Chapter 49. Archive Modules">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="archive-modules.html" title="Chapter 49. Archive Modules">Up</a></td><th width="60%" align="center">Chapter 49. Archive Modules</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="archive-module-callbacks.html" title="49.2. Archive Module Callbacks">Next</a></td></tr></table><hr /></div><div class="sect1" id="ARCHIVE-MODULE-INIT"><div class="titlepage"><div><div><h2 class="title" style="clear: both">49.1. Initialization Functions <a href="#ARCHIVE-MODULE-INIT" class="id_link">#</a></h2></div></div></div><a id="id-1.8.16.7.2" class="indexterm"></a><p>
+   An archive library is loaded by dynamically loading a shared library with the
+   <a class="xref" href="runtime-config-wal.html#GUC-ARCHIVE-LIBRARY">archive_library</a>'s name as the library base name.  The
+   normal library search path is used to locate the library.  To provide the
+   required archive module callbacks and to indicate that the library is
+   actually an archive module, it needs to provide a function named
+   <code class="function">_PG_archive_module_init</code>.  The result of the function
+   must be a pointer to a struct of type
+   <code class="structname">ArchiveModuleCallbacks</code>, which contains everything
+   that the core code needs to know to make use of the archive module.  The
+   return value needs to be of server lifetime, which is typically achieved by
+   defining it as a <code class="literal">static const</code> variable in global scope.
+
+</p><pre class="programlisting">
+typedef struct ArchiveModuleCallbacks
+{
+    ArchiveStartupCB startup_cb;
+    ArchiveCheckConfiguredCB check_configured_cb;
+    ArchiveFileCB archive_file_cb;
+    ArchiveShutdownCB shutdown_cb;
+} ArchiveModuleCallbacks;
+typedef const ArchiveModuleCallbacks *(*ArchiveModuleInit) (void);
+</pre><p>
+
+   Only the <code class="function">archive_file_cb</code> callback is required.  The
+   others are optional.
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="archive-modules.html" title="Chapter 49. Archive Modules">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="archive-modules.html" title="Chapter 49. Archive Modules">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="archive-module-callbacks.html" title="49.2. Archive Module Callbacks">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 49. Archive Modules </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 49.2. Archive Module Callbacks</td></tr></table></div></body></html>

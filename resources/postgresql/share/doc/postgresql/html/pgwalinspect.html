@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>F.35. pg_walinspect — low-level WAL inspection</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="pgvisibility.html" title="F.34. pg_visibility — visibility map information and utilities" /><link rel="next" href="postgres-fdw.html" title="F.36. postgres_fdw — access data stored in external PostgreSQL servers" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">F.35. pg_walinspect — low-level WAL inspection</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="pgvisibility.html" title="F.34. pg_visibility — visibility map information and utilities">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules and Extensions">Up</a></td><th width="60%" align="center">Appendix F. Additional Supplied Modules and Extensions</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="postgres-fdw.html" title="F.36. postgres_fdw —&#10;   access data stored in external PostgreSQL&#10;   servers">Next</a></td></tr></table><hr /></div><div class="sect1" id="PGWALINSPECT"><div class="titlepage"><div><div><h2 class="title" style="clear: both">F.35. pg_walinspect — low-level WAL inspection <a href="#PGWALINSPECT" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="pgwalinspect.html#PGWALINSPECT-FUNCS">F.35.1. General Functions</a></span></dt><dt><span class="sect2"><a href="pgwalinspect.html#PGWALINSPECT-AUTHOR">F.35.2. Author</a></span></dt></dl></div><a id="id-1.11.7.45.2" class="indexterm"></a><p>
+  The <code class="filename">pg_walinspect</code> module provides SQL functions that
+  allow you to inspect the contents of write-ahead log of
+  a running <span class="productname">PostgreSQL</span> database cluster at a low
+  level, which is useful for debugging, analytical, reporting or
+  educational purposes. It is similar to <a class="xref" href="pgwaldump.html" title="pg_waldump"><span class="refentrytitle"><span class="application">pg_waldump</span></span></a>, but
+  accessible through SQL rather than a separate utility.
+ </p><p>
+  All the functions of this module will provide the WAL information using the
+  server's current timeline ID.
+ </p><div class="note"><h3 class="title">Note</h3><p>
+   The <code class="filename">pg_walinspect</code> functions are often called
+   using an LSN argument that specifies the location at which a known
+   WAL record of interest <span class="emphasis"><em>begins</em></span>.  However, some
+   functions, such as
+   <code class="function"><a class="link" href="functions-admin.html#PG-LOGICAL-EMIT-MESSAGE">pg_logical_emit_message</a></code>,
+   return the LSN <span class="emphasis"><em>after</em></span> the record that was just
+   inserted.
+  </p></div><div class="tip"><h3 class="title">Tip</h3><p>
+   All of the <code class="filename">pg_walinspect</code> functions that show
+   information about records that fall within a certain LSN range are
+   permissive about accepting <em class="replaceable"><code>end_lsn</code></em>
+   arguments that are after the server's current LSN.  Using an
+   <em class="replaceable"><code>end_lsn</code></em> <span class="quote">“<span class="quote">from the future</span>”</span>
+   will not raise an error.
+  </p><p>
+   It may be convenient to provide the value
+   <code class="literal">FFFFFFFF/FFFFFFFF</code> (the maximum valid
+   <code class="type">pg_lsn</code> value) as an <em class="replaceable"><code>end_lsn</code></em>
+   argument.  This is equivalent to providing an
+   <em class="replaceable"><code>end_lsn</code></em> argument matching the server's
+   current LSN.
+  </p></div><p>
+  By default, use of these functions is restricted to superusers and members of
+  the <code class="literal">pg_read_server_files</code> role. Access may be granted by
+  superusers to others using <code class="command">GRANT</code>.
+ </p><div class="sect2" id="PGWALINSPECT-FUNCS"><div class="titlepage"><div><div><h3 class="title">F.35.1. General Functions <a href="#PGWALINSPECT-FUNCS" class="id_link">#</a></h3></div></div></div><div class="variablelist"><dl class="variablelist"><dt id="PGWALINSPECT-FUNCS-PG-GET-WAL-RECORD-INFO"><span class="term">
+     <code class="function">pg_get_wal_record_info(in_lsn pg_lsn) returns record</code>
+    </span> <a href="#PGWALINSPECT-FUNCS-PG-GET-WAL-RECORD-INFO" class="id_link">#</a></dt><dd><p>
+      Gets WAL record information about a record that is located at or
+      after the <em class="replaceable"><code>in_lsn</code></em> argument.  For
+      example:
+</p><pre class="screen">
+postgres=# SELECT * FROM pg_get_wal_record_info('0/E419E28');
+-[ RECORD 1 ]----+-------------------------------------------------
+start_lsn        | 0/E419E28
+end_lsn          | 0/E419E68
+prev_lsn         | 0/E419D78
+xid              | 0
+resource_manager | Heap2
+record_type      | VACUUM
+record_length    | 58
+main_data_length | 2
+fpi_length       | 0
+description      | nunused: 5, unused: [1, 2, 3, 4, 5]
+block_ref        | blkref #0: rel 1663/16385/1249 fork main blk 364
+</pre><p>
+     </p><p>
+      If <em class="replaceable"><code>in_lsn</code></em> isn't at the start of a WAL
+      record, information about the next valid WAL record is shown
+      instead.  If there is no next valid WAL record, the function
+      raises an error.
+     </p></dd><dt id="PGWALINSPECT-FUNCS-PG-GET-WAL-RECORDS-INFO"><span class="term">
+     <code class="function">
+      pg_get_wal_records_info(start_lsn pg_lsn, end_lsn pg_lsn)
+      returns setof record
+     </code>
+    </span> <a href="#PGWALINSPECT-FUNCS-PG-GET-WAL-RECORDS-INFO" class="id_link">#</a></dt><dd><p>
+      Gets information of all the valid WAL records between
+      <em class="replaceable"><code>start_lsn</code></em> and <em class="replaceable"><code>end_lsn</code></em>.
+      Returns one row per WAL record.  For example:
+</p><pre class="screen">
+postgres=# SELECT * FROM pg_get_wal_records_info('0/1E913618', '0/1E913740') LIMIT 1;
+-[ RECORD 1 ]----+--------------------------------------------------------------
+start_lsn        | 0/1E913618
+end_lsn          | 0/1E913650
+prev_lsn         | 0/1E9135A0
+xid              | 0
+resource_manager | Standby
+record_type      | RUNNING_XACTS
+record_length    | 50
+main_data_length | 24
+fpi_length       | 0
+description      | nextXid 33775 latestCompletedXid 33774 oldestRunningXid 33775
+block_ref        |
+</pre><p>
+     </p><p>
+      The function raises an error if
+      <em class="replaceable"><code>start_lsn</code></em> is not available.
+     </p></dd><dt id="PGWALINSPECT-FUNCS-PG-GET-WAL-BLOCK-INFO"><span class="term">
+     <code class="function">pg_get_wal_block_info(start_lsn pg_lsn, end_lsn pg_lsn, show_data boolean DEFAULT true) returns setof record</code>
+    </span> <a href="#PGWALINSPECT-FUNCS-PG-GET-WAL-BLOCK-INFO" class="id_link">#</a></dt><dd><p>
+      Gets information about each block reference from all the valid
+      WAL records between <em class="replaceable"><code>start_lsn</code></em> and
+      <em class="replaceable"><code>end_lsn</code></em> with one or more block
+      references.  Returns one row per block reference per WAL record.
+      For example:
+</p><pre class="screen">
+postgres=# SELECT * FROM pg_get_wal_block_info('0/1230278', '0/12302B8');
+-[ RECORD 1 ]-----+-----------------------------------
+start_lsn         | 0/1230278
+end_lsn           | 0/12302B8
+prev_lsn          | 0/122FD40
+block_id          | 0
+reltablespace     | 1663
+reldatabase       | 1
+relfilenode       | 2658
+relforknumber     | 0
+relblocknumber    | 11
+xid               | 341
+resource_manager  | Btree
+record_type       | INSERT_LEAF
+record_length     | 64
+main_data_length  | 2
+block_data_length | 16
+block_fpi_length  | 0
+block_fpi_info    |
+description       | off: 46
+block_data        | \x00002a00070010402630000070696400
+block_fpi_data    |
+</pre><p>
+     </p><p>
+      This example involves a WAL record that only contains one block
+      reference, but many WAL records contain several block
+      references.  Rows output by
+      <code class="function">pg_get_wal_block_info</code> are guaranteed to
+      have a unique combination of
+      <em class="replaceable"><code>start_lsn</code></em> and
+      <em class="replaceable"><code>block_id</code></em> values.
+     </p><p>
+      Much of the information shown here matches the output that
+      <code class="function">pg_get_wal_records_info</code> would show, given
+      the same arguments.  However,
+      <code class="function">pg_get_wal_block_info</code> unnests the
+      information from each WAL record into an expanded form by
+      outputting one row per block reference, so certain details are
+      tracked at the block reference level rather than at the
+      whole-record level.  This structure is useful with queries that
+      track how individual blocks changed over time.  Note that
+      records with no block references (e.g.,
+      <code class="literal">COMMIT</code> WAL records) will have no rows
+      returned, so <code class="function">pg_get_wal_block_info</code> may
+      actually return <span class="emphasis"><em>fewer</em></span> rows than
+      <code class="function">pg_get_wal_records_info</code>.
+     </p><p>
+      The <code class="structfield">reltablespace</code>,
+      <code class="structfield">reldatabase</code>, and
+      <code class="structfield">relfilenode</code> parameters reference
+      <a class="link" href="catalog-pg-tablespace.html" title="51.56. pg_tablespace"><code class="structname">pg_tablespace</code></a>.<code class="structfield">oid</code>,
+      <a class="link" href="catalog-pg-database.html" title="51.15. pg_database"><code class="structname">pg_database</code></a>.<code class="structfield">oid</code>, and
+      <a class="link" href="catalog-pg-class.html" title="51.11. pg_class"><code class="structname">pg_class</code></a>.<code class="structfield">relfilenode</code>
+      respectively.  The <code class="structfield">relforknumber</code>
+      field is the fork number within the relation for the block
+      reference; see <code class="filename">common/relpath.h</code> for
+      details.
+     </p><div class="tip"><h3 class="title">Tip</h3><p>
+       The <code class="function">pg_filenode_relation</code> function (see
+       <a class="xref" href="functions-admin.html#FUNCTIONS-ADMIN-DBLOCATION" title="Table 9.101. Database Object Location Functions">Table 9.101</a>) can help you to
+       determine which relation was modified during original execution.
+      </p></div><p>
+      It is possible for clients to avoid the overhead of
+      materializing block data.  This may make function execution
+      significantly faster.  When <em class="replaceable"><code>show_data</code></em>
+      is set to <code class="literal">false</code>, <code class="structfield">block_data</code>
+      and <code class="structfield">block_fpi_data</code> values are omitted
+      (that is, the <code class="structfield">block_data</code> and
+      <code class="structfield">block_fpi_data</code> <code class="literal">OUT</code>
+      arguments are <code class="literal">NULL</code> for all rows returned).
+      Obviously, this optimization is only feasible with queries where
+      block data isn't truly required.
+     </p><p>
+      The function raises an error if
+      <em class="replaceable"><code>start_lsn</code></em> is not available.
+     </p></dd><dt id="PGWALINSPECT-FUNCS-PG-GET-WAL-STATS"><span class="term">
+     <code class="function">
+      pg_get_wal_stats(start_lsn pg_lsn, end_lsn pg_lsn, per_record boolean DEFAULT false)
+      returns setof record
+     </code>
+    </span> <a href="#PGWALINSPECT-FUNCS-PG-GET-WAL-STATS" class="id_link">#</a></dt><dd><p>
+      Gets statistics of all the valid WAL records between
+      <em class="replaceable"><code>start_lsn</code></em> and
+      <em class="replaceable"><code>end_lsn</code></em>. By default, it returns one row per
+      <em class="replaceable"><code>resource_manager</code></em> type. When
+      <em class="replaceable"><code>per_record</code></em> is set to <code class="literal">true</code>,
+      it returns one row per <em class="replaceable"><code>record_type</code></em>.
+      For example:
+</p><pre class="screen">
+postgres=# SELECT * FROM pg_get_wal_stats('0/1E847D00', '0/1E84F500')
+           WHERE count &gt; 0 AND
+                 "resource_manager/record_type" = 'Transaction'
+           LIMIT 1;
+-[ RECORD 1 ]----------------+-------------------
+resource_manager/record_type | Transaction
+count                        | 2
+count_percentage             | 8
+record_size                  | 875
+record_size_percentage       | 41.23468426013195
+fpi_size                     | 0
+fpi_size_percentage          | 0
+combined_size                | 875
+combined_size_percentage     | 2.8634072910530795
+</pre><p>
+     </p><p>
+      The function raises an error if
+      <em class="replaceable"><code>start_lsn</code></em> is not available.
+     </p></dd></dl></div></div><div class="sect2" id="PGWALINSPECT-AUTHOR"><div class="titlepage"><div><div><h3 class="title">F.35.2. Author <a href="#PGWALINSPECT-AUTHOR" class="id_link">#</a></h3></div></div></div><p>
+   Bharath Rupireddy <code class="email">&lt;<a class="email" href="mailto:bharath.rupireddyforpostgres@gmail.com">bharath.rupireddyforpostgres@gmail.com</a>&gt;</code>
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="pgvisibility.html" title="F.34. pg_visibility — visibility map information and utilities">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules and Extensions">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="postgres-fdw.html" title="F.36. postgres_fdw —&#10;   access data stored in external PostgreSQL&#10;   servers">Next</a></td></tr><tr><td width="40%" align="left" valign="top">F.34. pg_visibility — visibility map information and utilities </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> F.36. postgres_fdw —
+   access data stored in external <span class="productname">PostgreSQL</span>
+   servers</td></tr></table></div></body></html>

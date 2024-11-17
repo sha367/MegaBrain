@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>51.36. pg_parameter_acl</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="catalog-pg-opfamily.html" title="51.35. pg_opfamily" /><link rel="next" href="catalog-pg-partitioned-table.html" title="51.37. pg_partitioned_table" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">51.36. <code class="structname">pg_parameter_acl</code></th></tr><tr><td width="10%" align="left"><a accesskey="p" href="catalog-pg-opfamily.html" title="51.35. pg_opfamily">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="catalogs.html" title="Chapter 51. System Catalogs">Up</a></td><th width="60%" align="center">Chapter 51. System Catalogs</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="catalog-pg-partitioned-table.html" title="51.37. pg_partitioned_table">Next</a></td></tr></table><hr /></div><div class="sect1" id="CATALOG-PG-PARAMETER-ACL"><div class="titlepage"><div><div><h2 class="title" style="clear: both">51.36. <code class="structname">pg_parameter_acl</code> <a href="#CATALOG-PG-PARAMETER-ACL" class="id_link">#</a></h2></div></div></div><a id="id-1.10.4.38.2" class="indexterm"></a><p>
+   The catalog <code class="structname">pg_parameter_acl</code> records configuration
+   parameters for which privileges have been granted to one or more roles.
+   No entry is made for parameters that have default privileges.
+  </p><p>
+   Unlike most system catalogs, <code class="structname">pg_parameter_acl</code>
+   is shared across all databases of a cluster: there is only one
+   copy of <code class="structname">pg_parameter_acl</code> per cluster, not
+   one per database.
+  </p><div class="table" id="id-1.10.4.38.5"><p class="title"><strong>Table 51.36. <code class="structname">pg_parameter_acl</code> Columns</strong></p><div class="table-contents"><table class="table" summary="pg_parameter_acl Columns" border="1"><colgroup><col /></colgroup><thead><tr><th class="catalog_table_entry"><p class="column_definition">
+       Column Type
+      </p>
+      <p>
+       Description
+      </p></th></tr></thead><tbody><tr><td class="catalog_table_entry"><p class="column_definition">
+       <code class="structfield">oid</code> <code class="type">oid</code>
+      </p>
+      <p>
+       Row identifier
+      </p></td></tr><tr><td class="catalog_table_entry"><p class="column_definition">
+       <code class="structfield">parname</code> <code class="type">text</code>
+      </p>
+      <p>
+       The name of a configuration parameter for which privileges are granted
+      </p></td></tr><tr><td class="catalog_table_entry"><p class="column_definition">
+       <code class="structfield">paracl</code> <code class="type">aclitem[]</code>
+      </p>
+      <p>
+       Access privileges; see <a class="xref" href="ddl-priv.html" title="5.8. Privileges">Section 5.8</a> for details
+      </p></td></tr></tbody></table></div></div><br class="table-break" /></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="catalog-pg-opfamily.html" title="51.35. pg_opfamily">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="catalogs.html" title="Chapter 51. System Catalogs">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="catalog-pg-partitioned-table.html" title="51.37. pg_partitioned_table">Next</a></td></tr><tr><td width="40%" align="left" valign="top">51.35. <code class="structname">pg_opfamily</code> </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 17.1 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 51.37. <code class="structname">pg_partitioned_table</code></td></tr></table></div></body></html>

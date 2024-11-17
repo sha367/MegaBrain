@@ -1,0 +1,104 @@
+'\" t
+.\"     Title: SPI_cursor_parse_open
+.\"    Author: The PostgreSQL Global Development Group
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 17.1 Documentation
+.\"    Source: PostgreSQL 17.1
+.\"  Language: English
+.\"
+.TH "SPI_CURSOR_PARSE_OPEN" "3" "2024" "PostgreSQL 17.1" "PostgreSQL 17.1 Documentation"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+SPI_cursor_parse_open \- set up a cursor using a query string and parameters
+.SH "SYNOPSIS"
+.sp
+.nf
+Portal SPI_cursor_parse_open(const char *\fIname\fR,
+                             const char *\fIcommand\fR,
+                             const SPIParseOpenOptions * \fIoptions\fR)
+.fi
+.SH "DESCRIPTION"
+.PP
+\fBSPI_cursor_parse_open\fR
+sets up a cursor (internally, a portal) that will execute the specified query string\&. This is comparable to
+\fBSPI_prepare_cursor\fR
+followed by
+\fBSPI_cursor_open_with_paramlist\fR, except that parameter references within the query string are handled entirely by supplying a
+ParamListInfo
+object\&.
+.PP
+For one\-time query execution, this function should be preferred over
+\fBSPI_prepare_cursor\fR
+followed by
+\fBSPI_cursor_open_with_paramlist\fR\&. If the same command is to be executed with many different parameters, either method might be faster, depending on the cost of re\-planning versus the benefit of custom plans\&.
+.PP
+The
+\fIoptions\->params\fR
+object should normally mark each parameter with the
+PARAM_FLAG_CONST
+flag, since a one\-shot plan is always used for the query\&.
+.PP
+The passed\-in parameter data will be copied into the cursor\*(Aqs portal, so it can be freed while the cursor still exists\&.
+.SH "ARGUMENTS"
+.PP
+const char * \fIname\fR
+.RS 4
+name for portal, or
+NULL
+to let the system select a name
+.RE
+.PP
+const char * \fIcommand\fR
+.RS 4
+command string
+.RE
+.PP
+const SPIParseOpenOptions * \fIoptions\fR
+.RS 4
+struct containing optional arguments
+.RE
+.PP
+Callers should always zero out the entire
+\fIoptions\fR
+struct, then fill whichever fields they want to set\&. This ensures forward compatibility of code, since any fields that are added to the struct in future will be defined to behave backwards\-compatibly if they are zero\&. The currently available
+\fIoptions\fR
+fields are:
+.PP
+ParamListInfo \fIparams\fR
+.RS 4
+data structure containing query parameter types and values; NULL if none
+.RE
+.PP
+int \fIcursorOptions\fR
+.RS 4
+integer bit mask of cursor options; zero produces default behavior
+.RE
+.PP
+bool \fIread_only\fR
+.RS 4
+true
+for read\-only execution
+.RE
+.SH "RETURN VALUE"
+.PP
+Pointer to portal containing the cursor\&. Note there is no error return convention; any error will be reported via
+\fBelog\fR\&.
