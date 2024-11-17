@@ -8924,11 +8924,10 @@ function requireNative() {
 var libExports = lib$2.exports;
 async function initDB() {
   try {
-    const dataPath = ConfigProvider.configs.DATA_PATH;
-    const pgVersionPath = path$1.join(dataPath, "PG_VERSION");
+    const pgVersionPath = path$1.join(ConfigProvider.configs.DATA_PATH, "PG_VERSION");
     if (!fs$1.existsSync(pgVersionPath)) {
       LOG.info("Database not initialized. Initializing now...");
-      execSync(`${ConfigProvider.configs.POSTGRES_PATH}/bin/initdb -D ${dataPath} --locale=en_US.UTF-8`);
+      execSync(`${ConfigProvider.configs.POSTGRES_PATH}/bin/initdb -D ${ConfigProvider.configs.DATA_PATH} --locale=en_US.UTF-8`);
       LOG.info("Database initialized.");
     } else {
       LOG.info("Database already initialized.");
@@ -8941,8 +8940,7 @@ async function initDB() {
 }
 async function startDB() {
   try {
-    const dataPath = ConfigProvider.configs.DATA_PATH;
-    const startCommand = `${ConfigProvider.configs.POSTGRES_PATH}/bin/pg_ctl -D ${dataPath} -l logfile start`;
+    const startCommand = `${ConfigProvider.configs.POSTGRES_PATH}/bin/pg_ctl -D ${ConfigProvider.configs.DATA_PATH} -l logfile start`;
     execSync(startCommand);
     LOG.info("PostgreSQL started");
   } catch (err) {
@@ -8962,8 +8960,44 @@ async function stopDB() {
     LOG.error(`Error stopping PostgreSQL: ${message}`);
   }
 }
+async function createDatabaseIfNeeded() {
+  const client2 = new libExports.Client({
+    host: "localhost",
+    port: 5432,
+    user: "postgres",
+    password: "",
+    // Без пароля
+    database: "postgres"
+    // Используем базу данных по умолчанию
+  });
+  try {
+    LOG.info('Connecting to PostgreSQL server to check for database "mydb"...');
+    await client2.connect();
+    LOG.info("Successfully connected to PostgreSQL server");
+    const res = await client2.query("SELECT 1 FROM pg_database WHERE datname = $1", ["mydb"]);
+    if (res.rowCount === 0) {
+      LOG.info('Creating database "mydb"...');
+      await client2.query("CREATE DATABASE mydb");
+      LOG.info('Database "mydb" created.');
+    } else {
+      LOG.info('Database "mydb" already exists.');
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    LOG.error(`Error in createDatabaseIfNeeded: ${message}`);
+    throw err;
+  } finally {
+    try {
+      await client2.end();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      LOG.error(`Error closing connection: ${message}`);
+    }
+  }
+}
 async function applyMigrations() {
   try {
+    await createDatabaseIfNeeded();
     const client2 = new libExports.Client({
       host: "localhost",
       port: 5432,
@@ -8973,26 +9007,9 @@ async function applyMigrations() {
       database: "mydb"
       // имя базы данных
     });
-    console.log("Подключение к базе данных...");
-    client2.connect().catch((err) => {
-      console.warn("Ошибка при подключении к базе данных:", err);
-    }).then(() => {
-      console.log("Подключение к базе данных успешно!");
-      return client2.query("SELECT * FROM models LIMIT 1");
-    }).then((result2) => {
-      console.log("Данные из таблицы models:", result2.rows);
-      return client2.query("SELECT * FROM chats LIMIT 1");
-    }).then((result2) => {
-      console.log("Данные из таблицы chats:", result2.rows);
-      return client2.query("SELECT * FROM messages LIMIT 1");
-    }).then((result2) => {
-      console.log("Данные из таблицы messages:", result2.rows);
-    }).catch((err) => {
-      console.error("Ошибка при запросе:", err);
-    }).finally(() => {
-      console.log("Завершение работы с базой данных");
-      client2.end();
-    });
+    LOG.info('Applying migrations to "mydb"...');
+    await client2.connect();
+    LOG.info('Connected to "mydb" for migrations');
     const migrations = [
       `CREATE TABLE IF NOT EXISTS models (
         id SERIAL PRIMARY KEY,
@@ -9014,12 +9031,10 @@ async function applyMigrations() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );`
     ];
-    migrations.forEach(async (migration) => {
+    for (const migration of migrations) {
       await client2.query(migration);
-    });
-    LOG.info("Migrations applied");
-    client2.end();
-    LOG.info("Client end");
+    }
+    LOG.info("Migrations applied successfully");
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     LOG.error(`Error applying migrations: ${message}`);
