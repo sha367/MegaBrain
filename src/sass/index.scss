@@ -1,0 +1,10 @@
+/** UnoCSS reset styles */
+@use '@unocss/reset/tailwind.css';
+
+/** Element Plus */
+@use 'element-plus/dist/index.css';
+/** Element Plus Dark Theme */
+@use 'element-plus/theme-chalk/dark/css-vars.css';
+
+/** Custom styles */
+@use './fonts.scss';
