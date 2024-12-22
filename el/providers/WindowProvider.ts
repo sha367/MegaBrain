@@ -1,6 +1,7 @@
 import { app, BrowserWindow } from "electron"
 import path from "node:path"
 import { ConfigProvider } from "./ConfigProvider"
+import { LLMProvider } from "./LLMProvider"
 
 export class WindowProvider {
   /** The BrowserWindow instance */
@@ -23,7 +24,7 @@ export class WindowProvider {
       minWidth: 800,
       minHeight: 600,
       webPreferences: {
-        preload: path.join(ConfigProvider.$props.APP_ROOT, 'el/preload.mjs'),
+        preload: path.join(ConfigProvider.$props.MAIN_DIST, 'preload.mjs'),
       },
     })
 
@@ -33,7 +34,8 @@ export class WindowProvider {
 
     // Test active push message to Renderer-process.
     WindowProvider._win.webContents.on('did-finish-load', () => {
-      WindowProvider._win?.webContents.send('main-process-message', (new Date).toLocaleString())
+      console.log('did-finish-load');
+      WindowProvider._win?.webContents.send('main-process-message', 'Hello from main process!');
     })
 
     if (ConfigProvider.$props.VITE_DEV_SERVER_URL) {
@@ -70,8 +72,18 @@ export class WindowProvider {
     WindowProvider.createWindow();
   }
 
+  /** Before the app quits */
+  public static onBeforeQuit() {
+    LLMProvider.stopLLM();
+  }
+
   /** Send a message to the main process */
   public static sendMainProcessMessage(channel: string, ...args: unknown[]) {
+    // BrowserWindow.getAllWindows().forEach(window => {
+    //   window.webContents.send(channel, ...args);
+    // });
+    WindowProvider._win?.webContents.send('main-process-message', `${channel} is trying to send message to render process!`);
+
     WindowProvider._win?.webContents.send(channel, ...args)
   }
 }

@@ -1,21 +1,20 @@
 import { LoadingProvider } from "./providers/LoadingProvider";
 import { LogProvider } from "./providers/LogProvider";
+import { LLMService } from "./services/LLMService";
 import { PostgresService } from "./services/PostgresService";
-import { RendererService } from "./services/RendererService";
+import { MainService } from "./services/MainService";
 import { ServerService } from "./services/ServerService";
 
 export const startElectron = async () => {
   try {
     LoadingProvider.value = true;
 
-    RendererService.launch();
-
-    ServerService.launch();
-    PostgresService.launch();
+    MainService.launch();
 
     Promise.all([
-      ServerService.waitForReady(),
-      PostgresService.waitForReady(),
+      ServerService.launch(),
+      PostgresService.launch(),
+      LLMService.launch(),
     ]).then(() => {
       LoadingProvider.value = false;
     });

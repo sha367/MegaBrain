@@ -25,7 +25,10 @@
     "target": [
       "dmg"
     ],
-    "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
+    "artifactName": "${productName}-Mac-${version}-Installer.${ext}",
+    "signIgnore": [
+      ".*postgres.*"
+    ]
   },
   "win": {
     "target": [
