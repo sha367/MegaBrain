@@ -3,7 +3,6 @@ import fs from 'node:fs';
 import http from 'node:http';
 import { promisify } from 'node:util';
 
-import { ConfigProvider } from './ConfigProvider';
 import { LogProvider } from './LogProvider';
 
 import { runCommand } from './../lib/utils/runCommand';
@@ -18,7 +17,7 @@ export class LLMProvider {
   private static async isOllamaRunning(): Promise<boolean> {
     return new Promise((resolve) => {
       http
-        .get(ConfigProvider.$props.LLM_LOCAL_ADDRESS, (res) => {
+        .get(process.env.LLM_LOCAL_ADDRESS, (res) => {
           if (res.statusCode === 200) {
             resolve(true);
           } else {
@@ -39,7 +38,7 @@ export class LLMProvider {
       return;
     }
 
-    const llmFile = ConfigProvider.$props.LLM_EXEC_PATH;
+    const llmFile = process.env.LLM_EXEC_PATH;
 
     // Check if the LLM executable exists
     if (!fs.existsSync(llmFile)) {
@@ -71,7 +70,7 @@ export class LLMProvider {
 
   /** Stop LLM. */
   public static async stopLLM() {
-    const llmPath = ConfigProvider.$props.LLM_EXEC_PATH;
+    const llmPath = process.env.LLM_EXEC_PATH;
     const { stderr } = await execAsync(`pkill -f ${llmPath}`);
 
     if (stderr) {

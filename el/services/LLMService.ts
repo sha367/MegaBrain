@@ -1,3 +1,4 @@
+import { LogProvider } from "../providers/LogProvider";
 import { LLMProvider } from "../providers/LLMProvider";
 
 export class LLMService {
@@ -6,8 +7,9 @@ export class LLMService {
     try {
       await LLMProvider.runLLM();
       await LLMProvider.waitForLLMServer();
-    } catch {
-      console.error('Failed to launch LLM');
+      LogProvider.log("LLM started");
+    } catch (err) {
+      LogProvider.error("Failed to launch LLM server", err);
     }
   }
 }

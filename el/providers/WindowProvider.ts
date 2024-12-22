@@ -1,6 +1,5 @@
 import { app, BrowserWindow } from "electron"
 import path from "node:path"
-import { ConfigProvider } from "./ConfigProvider"
 import { LLMProvider } from "./LLMProvider"
 
 export class WindowProvider {
@@ -18,18 +17,18 @@ export class WindowProvider {
   /** Create a new window */
   public static async createWindow() {
     WindowProvider._win = new BrowserWindow({
-      icon: path.join(ConfigProvider.$props.VITE_PUBLIC, 'electron-vite.svg'),
+      icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
       width: 800,
       height: 600,
       minWidth: 800,
       minHeight: 600,
       webPreferences: {
-        preload: path.join(ConfigProvider.$props.MAIN_DIST, 'preload.mjs'),
+        preload: path.join(process.env.MAIN_DIST, 'preload.mjs'),
       },
     })
 
     // Open the DevTools.
-    // if (ConfigProvider.$props.VITE_DEV_SERVER_URL) {
+    // if (process.env.VITE_DEV_SERVER_URL) {
     WindowProvider._win.webContents.openDevTools()
 
     // Test active push message to Renderer-process.
@@ -38,11 +37,11 @@ export class WindowProvider {
       WindowProvider._win?.webContents.send('main-process-message', 'Hello from main process!');
     })
 
-    if (ConfigProvider.$props.VITE_DEV_SERVER_URL) {
-      await WindowProvider._win.loadURL(ConfigProvider.$props.VITE_DEV_SERVER_URL)
+    if (process.env.VITE_DEV_SERVER_URL) {
+      await WindowProvider._win.loadURL(process.env.VITE_DEV_SERVER_URL)
     } else {
       // win.loadFile('dist/index.html')
-      await WindowProvider._win.loadFile(path.join(ConfigProvider.$props.RENDERER_DIST, 'index.html'))
+      await WindowProvider._win.loadFile(path.join(process.env.RENDERER_DIST, 'index.html'))
     }
   }
 
@@ -82,8 +81,6 @@ export class WindowProvider {
     // BrowserWindow.getAllWindows().forEach(window => {
     //   window.webContents.send(channel, ...args);
     // });
-    WindowProvider._win?.webContents.send('main-process-message', `${channel} is trying to send message to render process!`);
-
     WindowProvider._win?.webContents.send(channel, ...args)
   }
 }

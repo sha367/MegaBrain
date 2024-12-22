@@ -6,7 +6,7 @@ export class PostgresService {
   public static async launch() {
     try {
       await PostgresProvider.launch();
-      await PostgresProvider.waitForReady();
+      LogProvider.log('Postgres server launched');
     } catch (err) {
       LogProvider.error('Failed to launch Postgres server', err);
     }
