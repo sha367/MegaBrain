@@ -18,8 +18,8 @@ export class WindowProvider {
   public static async createWindow() {
     WindowProvider._win = new BrowserWindow({
       icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
-      width: 800,
-      height: 600,
+      width: 1280,
+      height: 800,
       minWidth: 800,
       minHeight: 600,
       webPreferences: {

@@ -17,10 +17,10 @@ export interface IGetModelsParams {
 }
 /** Get models */
 export const GET_MODELS = async (params: IGetModelsParams) => {
-  return apiClient.get<IModel[]>('/api/models', { params });
+  return apiClient.get<{ models: IModel[] }>('/api/models', { params });
 };
 export const GET_RECOMMENDED_MODELS = async (params: IGetModelsParams) => {
-  return apiClient.get<IModel[]>('/api/models/recommended', { params });
+  return apiClient.get<{ models: IModel[] }>('/api/models/recommended', { params });
 }
 
 export interface IPullModelParams {

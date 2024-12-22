@@ -1,12 +1,39 @@
 import { Request, Response } from "express";
+import { apiClient } from "./../lib/utils/apiClient";
+
+export interface IModel {
+  name: string;
+  modified_at?: string;
+  size?: number;
+  digest?: string;
+  details?: {
+    format: string;
+    family: string;
+  }
+}
 
 export class ModelsController {
-  public static async getModels(req: Request, res: Response) {
-    console.log(req, res);
+  public static async getModels(_: Request, res: Response) {
+    const response = await apiClient.get<IModel[]>('/api/tags');
+
+    if (!response.data) {
+      res.status(500).json({ message: 'No data' });
+      return;
+    }
+
+    res.status(200).json(response.data);
   }
 
-  public static async getRecommmendedModels(req: Request, res: Response) {
-    console.log(req, res);
+  public static async getRecommendedModels(_: Request, res: Response) {
+    const recommendedModels: IModel[] = [{
+      name: 'llama3.2:1b',
+      details: {
+        format: 'gguf',
+        family: 'llama'
+      }
+    }];
+
+    res.status(200).json({ models: recommendedModels });
   }
 
   public static async pullModel(req: Request, res: Response) {

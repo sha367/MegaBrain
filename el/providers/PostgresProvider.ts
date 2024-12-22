@@ -180,13 +180,17 @@ export class PostgresProvider {
   public static async createTables(): Promise<void> {
     LogProvider.log('Creating tables...');
 
-    const dropTablesQuery = `
-      DROP TABLE IF EXISTS messages CASCADE;
-      DROP TABLE IF EXISTS chats CASCADE;
-    `;
+    /**
+     * FIXME: This is a temporary solution to drop tables before creating them.
+     * !!!ONLY FOR SOME DEVELOPMENT PURPOSES. DO NOT USE IN PRODUCTION!!!
+     */
+    // const dropTablesQuery = `
+    //   DROP TABLE IF EXISTS messages CASCADE;
+    //   DROP TABLE IF EXISTS chats CASCADE;
+    // `;
 
     const queries = [
-      { description: "Dropping tables", query: dropTablesQuery },
+      // { description: "Dropping tables", query: dropTablesQuery },
       { description: "Creating chats table", query: createChatsQuery },
       { description: "Creating messages table", query: createMessagesQuery },
     ];

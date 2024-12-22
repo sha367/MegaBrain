@@ -21,6 +21,6 @@ export const startRouter = (app: Express) => {
 
   // MODELS
   app.get('/api/models', ModelsController.getModels);
-  app.get('/api/models/recommended', ModelsController.getRecommmendedModels);
+  app.get('/api/models/recommended', ModelsController.getRecommendedModels);
   app.post('/api/model/pull', ModelsController.pullModel);
 };
