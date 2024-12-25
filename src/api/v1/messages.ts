@@ -2,21 +2,21 @@ import { apiClient } from "@/lib/utils/apiClient";
 import { IUser } from "./users";
 
 export interface IMessage {
-  id: number;
+  id: string;
   content: string;
   role: IUser['role'];
-  chat_id: number;
+  chat_id: string;
   created_at: string;
   updated_at: string;
 }
 export interface IGetMessagesParams {
   limit?: number;
   offset?: number;
-  chat_id: number;
+  chat_id: string;
 }
 /** Get messages from chat */
 export const GET_MESSAGES = async (params: IGetMessagesParams) => {
-  return apiClient.get<IMessage[]>('/api/messages', { params });
+  return apiClient.get<{ items: IMessage[], total: number }>('/api/messages', { params });
 };
 
 export interface IPostMessageParams {
@@ -25,5 +25,5 @@ export interface IPostMessageParams {
 }
 /** Post message to a chat */
 export const POST_MESSAGE = async (params: IPostMessageParams) => {
-  return apiClient.post<IMessage[]>('/api/message', params);
+  return apiClient.post<IMessage>('/api/message', params);
 };

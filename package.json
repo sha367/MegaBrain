@@ -15,7 +15,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@fontsource/roboto": "^5.1.0",
-    "@iconify/json": "^2.2.287",
+    "@mui/icons-material": "^6.3.0",
     "@mui/material": "^6.2.1",
     "@unocss/reset": "^0.65.2",
     "axios": "^1.7.9",
@@ -23,7 +23,8 @@
     "express": "^4.21.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^7.1.0"
+    "react-router-dom": "^7.1.0",
+    "zustand": "^5.0.2"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

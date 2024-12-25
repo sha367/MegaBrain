@@ -1,14 +1,12 @@
 import { apiClient } from "@/lib/utils/apiClient";
-import { IMessage } from "./messages";
 
 /** Chat entity */
 export interface IChat {
-  id: number;
-  name?: string;
-  lastMessage?: IMessage;
-  model?: string;
+  id: string;
+  name: string;
+  model: string;
   created_at: string;
-  updated_at: string;
+  updated_at: string | null;
 }
 
 export interface IGetChatsParams {
@@ -17,12 +15,12 @@ export interface IGetChatsParams {
 }
 /** Get chats */
 export const GET_CHATS = async (params: IGetChatsParams) => {
-  return apiClient.get<IChat[]>('/api/chats', { params });
+  return apiClient.get<{ items: IChat[], total: number }>('/api/chats', { params });
 };
 
 export interface IPostChatParams {
-  name?: string;
-  model?: string;
+  name: string;
+  model: string;
 }
 /** Create chat */
 export const CREATE_CHAT = async (params: IPostChatParams) => {

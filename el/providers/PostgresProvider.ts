@@ -25,7 +25,7 @@ export class PostgresProvider {
           '-D', process.env.DATABASE_DIR,
           '-m', 'fast'
         ], (error, _, stderr) => error
-          ? reject(new Error(`Error stopping PostgreSQL server: ${stderr}`))
+          ? PostgresProvider.freePortIfInUse('5432').then(() => resolve()).catch(() => reject(new Error(`Error stopping PostgreSQL server: ${stderr}`)))
           : resolve(undefined)
       );
     });
@@ -223,7 +223,6 @@ export class PostgresProvider {
     await PostgresProvider.stopPostgresIfRunning();
     await PostgresProvider.initializeDatabaseCluster();
 
-    await PostgresProvider.freePortIfInUse('5432');
     PostgresProvider.startPostgresServer();
     await PostgresProvider.waitForPostgresServer();
 

@@ -1,0 +1,17 @@
+.Card {
+  @apply p-2 gap-1 relative flex-shrink-0 select-none;
+
+  &.CardActive {
+    @apply bg-indigo-100;
+  }
+
+  &:hover {
+    & .Actions {
+      @apply opacity-100;
+    }
+  }
+}
+
+.Actions {
+  @apply absolute bottom-0 right-0 h-full opacity-0 p-2 bg-white transition;
+}

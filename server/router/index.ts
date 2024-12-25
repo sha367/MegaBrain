@@ -10,7 +10,7 @@ export const startRouter = (app: Express) => {
 
   // MESSAGES
   app.get('/api/messages', MessagesController.getMessages);
-  app.post('/api/message', MessagesController.createMessage);
+  app.post('/api/message', MessagesController.postMessage);
 
   // CHATS
   app.get('/api/chats', ChatsController.getChats);

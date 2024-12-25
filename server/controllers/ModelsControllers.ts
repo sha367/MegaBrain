@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { apiClient } from "./../lib/utils/apiClient";
+import { llmClient } from "../lib/utils/llmClient";
 
 export interface IModel {
   name: string;
@@ -14,7 +14,7 @@ export interface IModel {
 
 export class ModelsController {
   public static async getModels(_: Request, res: Response) {
-    const response = await apiClient.get<IModel[]>('/api/tags');
+    const response = await llmClient.get<IModel[]>('/api/tags');
 
     if (!response.data) {
       res.status(500).json({ message: 'No data' });

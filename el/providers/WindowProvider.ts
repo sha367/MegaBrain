@@ -33,7 +33,6 @@ export class WindowProvider {
 
     // Test active push message to Renderer-process.
     WindowProvider._win.webContents.on('did-finish-load', () => {
-      console.log('did-finish-load');
       WindowProvider._win?.webContents.send('main-process-message', 'Hello from main process!');
     })
 

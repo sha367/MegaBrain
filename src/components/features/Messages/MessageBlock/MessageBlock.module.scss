@@ -1,0 +1,15 @@
+.MessageWrapper {
+  @apply flex flex-col items-start;
+
+  &.MessageWrapperActive {
+    @apply items-end;
+
+    & .MessageBlock {
+      @apply bg-blue-100;
+    }
+  }
+}
+
+.MessageBlock {
+  @apply max-w-[90%] p-2 bg-gray-100 rounded-lg;
+}

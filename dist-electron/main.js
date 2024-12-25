@@ -22,6 +22,7 @@ import require$$8 from "querystring";
 import require$$0$7 from "url";
 import require$$0$8 from "http";
 import require$$0$9 from "crypto";
+import { execFile as execFile$1 } from "child_process";
 import require$$4$2 from "https";
 import require$$4$3 from "assert";
 import require$$0$a from "os";
@@ -178,7 +179,6 @@ const _WindowProvider = class _WindowProvider {
     _WindowProvider._win.webContents.openDevTools();
     _WindowProvider._win.webContents.on("did-finish-load", () => {
       var _a;
-      console.log("did-finish-load");
       (_a = _WindowProvider._win) == null ? void 0 : _a.webContents.send("main-process-message", "Hello from main process!");
     });
     if (process.env.VITE_DEV_SERVER_URL) {
@@ -271,13 +271,12 @@ const createChatsQuery = `
 const createMessagesQuery = `
   CREATE TABLE IF NOT EXISTS messages (
     id SERIAL PRIMARY KEY,
-    content VARCHAR(255),
+    content TEXT NOT NULL,
     role VARCHAR(255),
     chat_id INTEGER REFERENCES chats(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP
   );
-
 `;
 class PostgresProvider {
   /** Initialize the LLMProvider */
@@ -298,7 +297,7 @@ class PostgresProvider {
           "-m",
           "fast"
         ],
-        (error2, _, stderr) => error2 ? reject(new Error(`Error stopping PostgreSQL server: ${stderr}`)) : resolve3(void 0)
+        (error2, _, stderr) => error2 ? PostgresProvider.freePortIfInUse("5432").then(() => resolve3()).catch(() => reject(new Error(`Error stopping PostgreSQL server: ${stderr}`))) : resolve3(void 0)
       );
     });
   }
@@ -484,7 +483,6 @@ class PostgresProvider {
   static async launch() {
     await PostgresProvider.stopPostgresIfRunning();
     await PostgresProvider.initializeDatabaseCluster();
-    await PostgresProvider.freePortIfInUse("5432");
     PostgresProvider.startPostgresServer();
     await PostgresProvider.waitForPostgresServer();
     await PostgresProvider.createRoleIfNotExists();
@@ -24408,7 +24406,7 @@ var objectInspect = function inspect_(obj, options, depth, seen) {
     var ys = arrObjKeys(obj, inspect2);
     var isPlainObject2 = gPO ? gPO(obj) === Object.prototype : obj instanceof Object || obj.constructor === Object;
     var protoTag = obj instanceof Object ? "" : "null prototype";
-    var stringTag = !isPlainObject2 && toStringTag && Object(obj) === obj && toStringTag in obj ? $slice.call(toStr$1(obj), 8, -1) : protoTag ? "Object" : "";
+    var stringTag = !isPlainObject2 && toStringTag && Object(obj) === obj && toStringTag in obj ? $slice.call(toStr(obj), 8, -1) : protoTag ? "Object" : "";
     var constructorTag = isPlainObject2 || typeof obj.constructor !== "function" ? "" : obj.constructor.name ? obj.constructor.name + " " : "";
     var tag = constructorTag + (stringTag || protoTag ? "[" + $join.call($concat$1.call([], stringTag || [], protoTag || []), ": ") + "] " : "");
     if (ys.length === 0) {
@@ -24430,25 +24428,25 @@ function quote(s2) {
   return $replace$1.call(String(s2), /"/g, "&quot;");
 }
 function isArray$4(obj) {
-  return toStr$1(obj) === "[object Array]" && (!toStringTag || !(typeof obj === "object" && toStringTag in obj));
+  return toStr(obj) === "[object Array]" && (!toStringTag || !(typeof obj === "object" && toStringTag in obj));
 }
 function isDate$2(obj) {
-  return toStr$1(obj) === "[object Date]" && (!toStringTag || !(typeof obj === "object" && toStringTag in obj));
+  return toStr(obj) === "[object Date]" && (!toStringTag || !(typeof obj === "object" && toStringTag in obj));
 }
 function isRegExp$2(obj) {
-  return toStr$1(obj) === "[object RegExp]" && (!toStringTag || !(typeof obj === "object" && toStringTag in obj));
+  return toStr(obj) === "[object RegExp]" && (!toStringTag || !(typeof obj === "object" && toStringTag in obj));
 }
 function isError(obj) {
-  return toStr$1(obj) === "[object Error]" && (!toStringTag || !(typeof obj === "object" && toStringTag in obj));
+  return toStr(obj) === "[object Error]" && (!toStringTag || !(typeof obj === "object" && toStringTag in obj));
 }
 function isString$2(obj) {
-  return toStr$1(obj) === "[object String]" && (!toStringTag || !(typeof obj === "object" && toStringTag in obj));
+  return toStr(obj) === "[object String]" && (!toStringTag || !(typeof obj === "object" && toStringTag in obj));
 }
 function isNumber$1(obj) {
-  return toStr$1(obj) === "[object Number]" && (!toStringTag || !(typeof obj === "object" && toStringTag in obj));
+  return toStr(obj) === "[object Number]" && (!toStringTag || !(typeof obj === "object" && toStringTag in obj));
 }
 function isBoolean$1(obj) {
-  return toStr$1(obj) === "[object Boolean]" && (!toStringTag || !(typeof obj === "object" && toStringTag in obj));
+  return toStr(obj) === "[object Boolean]" && (!toStringTag || !(typeof obj === "object" && toStringTag in obj));
 }
 function isSymbol(obj) {
   if (hasShammedSymbols) {
@@ -24484,7 +24482,7 @@ var hasOwn$1 = Object.prototype.hasOwnProperty || function(key) {
 function has$3(obj, key) {
   return hasOwn$1.call(obj, key);
 }
-function toStr$1(obj) {
+function toStr(obj) {
   return objectToString.call(obj);
 }
 function nameOf(f) {
@@ -24793,7 +24791,7 @@ var syntax = SyntaxError;
 var uri = URIError;
 var abs$1 = Math.abs;
 var floor$1 = Math.floor;
-var max$2 = Math.max;
+var max$1 = Math.max;
 var min$1 = Math.min;
 var pow$1 = Math.pow;
 var gOPD = Object.getOwnPropertyDescriptor;
@@ -24894,76 +24892,83 @@ function requireHasSymbols() {
   };
   return hasSymbols$1;
 }
-var ERROR_MESSAGE = "Function.prototype.bind called on incompatible ";
-var toStr = Object.prototype.toString;
-var max$1 = Math.max;
-var funcType = "[object Function]";
-var concatty = function concatty2(a, b) {
-  var arr = [];
-  for (var i = 0; i < a.length; i += 1) {
-    arr[i] = a[i];
-  }
-  for (var j = 0; j < b.length; j += 1) {
-    arr[j + a.length] = b[j];
-  }
-  return arr;
-};
-var slicy = function slicy2(arrLike, offset) {
-  var arr = [];
-  for (var i = offset, j = 0; i < arrLike.length; i += 1, j += 1) {
-    arr[j] = arrLike[i];
-  }
-  return arr;
-};
-var joiny = function(arr, joiner) {
-  var str = "";
-  for (var i = 0; i < arr.length; i += 1) {
-    str += arr[i];
-    if (i + 1 < arr.length) {
-      str += joiner;
+var implementation$1;
+var hasRequiredImplementation;
+function requireImplementation() {
+  if (hasRequiredImplementation) return implementation$1;
+  hasRequiredImplementation = 1;
+  var ERROR_MESSAGE = "Function.prototype.bind called on incompatible ";
+  var toStr2 = Object.prototype.toString;
+  var max2 = Math.max;
+  var funcType = "[object Function]";
+  var concatty = function concatty2(a, b) {
+    var arr = [];
+    for (var i = 0; i < a.length; i += 1) {
+      arr[i] = a[i];
     }
-  }
-  return str;
-};
-var implementation$1 = function bind(that) {
-  var target = this;
-  if (typeof target !== "function" || toStr.apply(target) !== funcType) {
-    throw new TypeError(ERROR_MESSAGE + target);
-  }
-  var args = slicy(arguments, 1);
-  var bound;
-  var binder = function() {
-    if (this instanceof bound) {
-      var result = target.apply(
-        this,
+    for (var j = 0; j < b.length; j += 1) {
+      arr[j + a.length] = b[j];
+    }
+    return arr;
+  };
+  var slicy = function slicy2(arrLike, offset) {
+    var arr = [];
+    for (var i = offset, j = 0; i < arrLike.length; i += 1, j += 1) {
+      arr[j] = arrLike[i];
+    }
+    return arr;
+  };
+  var joiny = function(arr, joiner) {
+    var str = "";
+    for (var i = 0; i < arr.length; i += 1) {
+      str += arr[i];
+      if (i + 1 < arr.length) {
+        str += joiner;
+      }
+    }
+    return str;
+  };
+  implementation$1 = function bind2(that) {
+    var target = this;
+    if (typeof target !== "function" || toStr2.apply(target) !== funcType) {
+      throw new TypeError(ERROR_MESSAGE + target);
+    }
+    var args = slicy(arguments, 1);
+    var bound;
+    var binder = function() {
+      if (this instanceof bound) {
+        var result = target.apply(
+          this,
+          concatty(args, arguments)
+        );
+        if (Object(result) === result) {
+          return result;
+        }
+        return this;
+      }
+      return target.apply(
+        that,
         concatty(args, arguments)
       );
-      if (Object(result) === result) {
-        return result;
-      }
-      return this;
-    }
-    return target.apply(
-      that,
-      concatty(args, arguments)
-    );
-  };
-  var boundLength = max$1(0, target.length - args.length);
-  var boundArgs = [];
-  for (var i = 0; i < boundLength; i++) {
-    boundArgs[i] = "$" + i;
-  }
-  bound = Function("binder", "return function (" + joiny(boundArgs, ",") + "){ return binder.apply(this,arguments); }")(binder);
-  if (target.prototype) {
-    var Empty = function Empty2() {
     };
-    Empty.prototype = target.prototype;
-    bound.prototype = new Empty();
-    Empty.prototype = null;
-  }
-  return bound;
-};
-var implementation = implementation$1;
+    var boundLength = max2(0, target.length - args.length);
+    var boundArgs = [];
+    for (var i = 0; i < boundLength; i++) {
+      boundArgs[i] = "$" + i;
+    }
+    bound = Function("binder", "return function (" + joiny(boundArgs, ",") + "){ return binder.apply(this,arguments); }")(binder);
+    if (target.prototype) {
+      var Empty = function Empty2() {
+      };
+      Empty.prototype = target.prototype;
+      bound.prototype = new Empty();
+      Empty.prototype = null;
+    }
+    return bound;
+  };
+  return implementation$1;
+}
+var implementation = requireImplementation();
 var functionBind = Function.prototype.bind || implementation;
 var functionCall;
 var hasRequiredFunctionCall;
@@ -25035,8 +25040,8 @@ function requireHasown() {
   hasRequiredHasown = 1;
   var call = Function.prototype.call;
   var $hasOwn = Object.prototype.hasOwnProperty;
-  var bind3 = functionBind;
-  hasown = bind3.call(call, $hasOwn);
+  var bind2 = functionBind;
+  hasown = bind2.call(call, $hasOwn);
   return hasown;
 }
 var undefined$1;
@@ -25050,7 +25055,7 @@ var $TypeError$3 = type;
 var $URIError = uri;
 var abs = abs$1;
 var floor = floor$1;
-var max = max$2;
+var max = max$1;
 var min = min$1;
 var pow = pow$1;
 var $Function = Function;
@@ -34800,30 +34805,289 @@ var objectAssign = shouldUseNative() ? Object.assign : function(target, source) 
 })();
 var libExports = lib.exports;
 const cors = /* @__PURE__ */ getDefaultExportFromCjs(libExports);
+const _PostgresClient = class _PostgresClient {
+  /**
+   * Executes a raw SQL query using psql.
+   * @param query - The SQL query string.
+   * @param values - The values to be inserted into the query.
+   * @returns A promise that resolves with the query result as a string.
+   */
+  static executeQuery(query3, values = []) {
+    return new Promise((resolve3, reject) => {
+      const sanitizedValues = values.map((value) => {
+        if (typeof value === "string") {
+          return value.replace(/'/g, "''");
+        }
+        return value;
+      });
+      execFile$1(_PostgresClient.connectionOptions.psqlPath, [
+        "-h",
+        _PostgresClient.connectionOptions.host,
+        "-p",
+        `${_PostgresClient.connectionOptions.port}`,
+        "-d",
+        _PostgresClient.connectionOptions.database,
+        "-U",
+        _PostgresClient.connectionOptions.user,
+        "-c",
+        query3.replace(/\$(\d+)/g, (_, index2) => `'${sanitizedValues[Number(index2) - 1]}'`)
+        // Подстановка экранированных значений
+      ], (error2, stdout, stderr) => {
+        if (error2) {
+          reject(`Error executing query: ${stderr || error2.message}`);
+        } else {
+          resolve3(stdout);
+        }
+      });
+    });
+  }
+  /**
+   * Parses the result of a psql query.
+   * @param data - The output from the psql command.
+   * @returns The parsed result.
+   */
+  static parsePostgresResponse(data) {
+    const lines = data.split("\n").map((line) => line.trim());
+    const dataLines = lines.filter(
+      (line) => line && !line.match(/^\(.*\srows?\)$/) && // Строки вида "(1 row)"
+      !line.startsWith("----")
+      // Разделители
+    );
+    if (dataLines.length === 0) {
+      return [];
+    }
+    const headerIndex = dataLines.findIndex((line) => !!line.trim());
+    if (headerIndex === -1) {
+      return [];
+    }
+    const headers = dataLines[0].split("|").map((header3) => header3.trim());
+    const rows = dataLines.slice(headerIndex + 1);
+    const mergedRows = [];
+    let currentRow = [];
+    rows.forEach((line) => {
+      const cells = line.split("|").map((cell) => cell.trim());
+      if (currentRow.length === 0) {
+        currentRow = cells;
+      } else {
+        currentRow = currentRow.map(
+          (cell, index2) => {
+            var _a;
+            return cell.endsWith("+") ? cell.slice(0, -1) + "\n" + (((_a = cells[index2]) == null ? void 0 : _a.trim()) || "") : cell.trim();
+          }
+        );
+      }
+      if (!cells.some((cell) => cell.endsWith("+"))) {
+        mergedRows.push(currentRow);
+        currentRow = [];
+      }
+    });
+    return mergedRows.map((row) => {
+      return headers.reduce((record, header3, index2) => {
+        record[header3] = row[index2] || null;
+        return record;
+      }, {});
+    });
+  }
+  /**
+   * Creates a new record in the specified table.
+   * @param tableName - The name of the table.
+   * @param data - An object containing the data to insert.
+   * @returns A promise that resolves with the created record.
+   */
+  static async createRecord(tableName, data) {
+    const keys = Object.keys(data);
+    const values = Object.values(data);
+    const query3 = `
+      INSERT INTO ${tableName} (${keys.join(", ")})
+      VALUES (${keys.map((_, i) => `$${i + 1}`).join(", ")})
+      RETURNING *;
+    `;
+    const result = await _PostgresClient.executeQuery(query3, values);
+    const record = _PostgresClient.parsePostgresResponse(result)[0];
+    return record;
+  }
+  /**
+   * Updates an existing record in the specified table.
+   * @param tableName - The name of the table.
+   * @param data - An object containing the data to update, including the record ID.
+   * @returns A promise that resolves with the updated record.
+   */
+  static async updateRecord(tableName, data) {
+    const { id, ...fields } = data;
+    const keys = Object.keys(fields);
+    const values = Object.values(fields);
+    const setClause = keys.map((key, i) => `"${key}" = $${i + 1}`).join(", ");
+    const query3 = `UPDATE ${tableName} SET ${setClause} WHERE id = $${keys.length + 1} RETURNING *;`;
+    const result = await _PostgresClient.executeQuery(query3, [...values, id]);
+    return _PostgresClient.parsePostgresResponse(result)[0];
+  }
+  /**
+   * Reads records from the specified table with optional filtering and pagination.
+   * @param tableName - The name of the table.
+   * @param options - Options for filtering, limiting, and offsetting the query.
+   * @returns A promise that resolves with the items and total count.
+   */
+  static async readRecords(tableName, options = {}) {
+    const whereClauses = options.where ? Object.entries(options.where).map(([key], index2) => `"${key}" = $${index2 + 1}`).join(" AND ") : "";
+    const query3 = `
+      SELECT * FROM ${tableName}
+      ${whereClauses ? `WHERE ${whereClauses}` : ""}
+      LIMIT $${Object.keys(options.where || {}).length + 1} OFFSET $${Object.keys(options.where || {}).length + 2};
+    `;
+    const values = [...Object.values(options.where || {}), options.limit || 10, options.offset || 0];
+    const itemsResult = await _PostgresClient.executeQuery(query3, values);
+    const items = _PostgresClient.parsePostgresResponse(itemsResult);
+    const countQuery = `SELECT COUNT(*) AS total FROM ${tableName} ${whereClauses ? `WHERE ${whereClauses}` : ""};`;
+    const countResult = await _PostgresClient.executeQuery(countQuery, Object.values(options.where || {}));
+    const [{ total }] = _PostgresClient.parsePostgresResponse(countResult);
+    return { items, total };
+  }
+  /**
+   * Reads a single record by ID from the specified table.
+   * @param tableName - The name of the table.
+   * @param id - The ID of the record to fetch.
+   * @returns A promise that resolves with the fetched record.
+   */
+  static async readRecord(tableName, id) {
+    const query3 = `SELECT * FROM ${tableName} WHERE id = $1;`;
+    const result = await _PostgresClient.executeQuery(query3, [id]);
+    const record = _PostgresClient.parsePostgresResponse(result)[0];
+    if (!record) throw new Error(`Record with id ${id} not found in ${tableName}`);
+    return record;
+  }
+  /**
+   * Deletes a record by ID from the specified table.
+   * @param tableName - The name of the table.
+   * @param id - The ID of the record to delete.
+   * @returns A promise that resolves with a boolean indicating success or failure.
+   */
+  static async deleteRecord(tableName, id) {
+    const query3 = `DELETE FROM ${tableName} WHERE id = $1;`;
+    const result = await _PostgresClient.executeQuery(query3, [id]);
+    return result.includes("DELETE");
+  }
+};
+__publicField(_PostgresClient, "connectionOptions", {
+  host: "localhost",
+  port: 5432,
+  user: "default_role",
+  password: "",
+  database: "mygpx_pgsdb",
+  socketDir: process.env.SOCKET_DIR,
+  psqlPath: process.env.PSQL_PATH
+});
+let PostgresClient = _PostgresClient;
 class ChatsController {
+  /**
+   * Retrieves all chats with optional pagination.
+   */
   static async getChats(req2, res2) {
-    console.log(req2, res2);
+    try {
+      const { limit: limit2 = 10, offset = 0 } = req2.query;
+      const { items, total } = await PostgresClient.readRecords("chats", {
+        limit: Number(limit2),
+        offset: Number(offset)
+      });
+      res2.status(200).json({ items, total });
+    } catch (e) {
+      console.error(e);
+      const error2 = e instanceof Error ? e.message : e;
+      res2.status(500).json({ message: "Error retrieving chats", error: error2 });
+    }
   }
+  /**
+   * Creates a new chat.
+   */
   static async createChat(req2, res2) {
-    console.log(req2, res2);
+    try {
+      const { name, model } = req2.body;
+      if (!name || !model) {
+        res2.status(400).json({ message: "Name and model are required" });
+        return;
+      }
+      const chat = await PostgresClient.createRecord("chats", { name, model });
+      res2.status(201).json(chat);
+    } catch (error2) {
+      res2.status(500).json({ message: "Error creating chat", error: error2 });
+    }
   }
-  // public static async readChat(req: Request, res: Response) {
-  // }
-  // public static async updateChat(req: Request, res: Response) {
-  // }
+  /**
+   * Deletes a chat by ID.
+   */
   static async deleteChat(req2, res2) {
-    console.log(req2, res2);
+    try {
+      const { id } = req2.query;
+      if (!id) {
+        res2.status(400).json({ message: "Chat ID is required" });
+        return;
+      }
+      const success = await PostgresClient.deleteRecord("chats", Number(id));
+      if (success) {
+        res2.status(200).json({ message: "Chat deleted successfully" });
+      } else {
+        res2.status(404).json({ message: "Chat not found" });
+      }
+    } catch (error2) {
+      res2.status(500).json({ message: "Error deleting chat", error: error2 });
+    }
   }
 }
 class MessagesController {
+  /**
+   * Retrieves all messages for a specific chat.
+   */
   static async getMessages(req2, res2) {
-    console.log(req2, res2);
+    try {
+      const { chat_id, limit: limit2 = 10, offset = 0 } = req2.query;
+      if (!chat_id) {
+        res2.status(400).json({ message: "Chat ID is required" });
+        return;
+      }
+      const { items, total } = await PostgresClient.readRecords("messages", {
+        limit: Number(limit2),
+        offset: Number(offset),
+        where: { chat_id: Number(chat_id) }
+      });
+      res2.status(200).json({ items, total });
+    } catch (error2) {
+      res2.status(500).json({ message: "Error retrieving messages", error: error2 });
+    }
   }
+  /**
+   * Creates a new message in a chat.
+   */
   static async createMessage(req2, res2) {
-    console.log(req2, res2);
+    try {
+      const { content, role, chat_id } = req2.body;
+      if (!content || !role || !chat_id) {
+        res2.status(400).json({ message: "Content, role, and chat ID are required" });
+        return;
+      }
+      const message = await PostgresClient.createRecord("messages", { content, role, chat_id });
+      res2.status(201).json(message);
+    } catch (error2) {
+      res2.status(500).json({ message: "Error creating message", error: error2 });
+    }
+  }
+  /**
+   * Creates a new message in a chat.
+   */
+  static async postMessage(req2, res2) {
+    try {
+      const { content, chat_id } = req2.body;
+      if (!content || !chat_id) {
+        res2.status(400).json({ message: "Content and chat ID are required" });
+        return;
+      }
+      const role = "user";
+      const message = await PostgresClient.createRecord("messages", { content, role, chat_id });
+      res2.status(201).json(message);
+    } catch (error2) {
+      res2.status(500).json({ message: "Error creating message", error: error2 });
+    }
   }
 }
-function bind2(fn, thisArg) {
+function bind(fn, thisArg) {
   return function wrap2() {
     return fn.apply(thisArg, arguments);
   };
@@ -34943,7 +35207,7 @@ function merge2() {
 const extend = (a, b, thisArg, { allOwnKeys } = {}) => {
   forEach(b, (val, key) => {
     if (thisArg && isFunction$1(val)) {
-      a[key] = bind2(val, thisArg);
+      a[key] = bind(val, thisArg);
     } else {
       a[key] = val;
     }
@@ -39837,7 +40101,7 @@ Object.entries(HttpStatusCode).forEach(([key, value]) => {
 });
 function createInstance(defaultConfig) {
   const context = new Axios(defaultConfig);
-  const instance = bind2(Axios.prototype.request, context);
+  const instance = bind(Axios.prototype.request, context);
   utils$1.extend(instance, Axios.prototype, context, { allOwnKeys: true });
   utils$1.extend(instance, context, null, { allOwnKeys: true });
   instance.create = function create(instanceConfig) {
@@ -39865,7 +40129,7 @@ axios.formToJSON = (thing) => formDataToJSON(utils$1.isHTMLForm(thing) ? new For
 axios.getAdapter = adapters.getAdapter;
 axios.HttpStatusCode = HttpStatusCode;
 axios.default = axios;
-const apiClient = axios.create({
+const llmClient = axios.create({
   baseURL: "http://127.0.0.1:11434",
   headers: {
     "Content-Type": "application/json"
@@ -39873,7 +40137,7 @@ const apiClient = axios.create({
 });
 class ModelsController {
   static async getModels(_, res2) {
-    const response2 = await apiClient.get("/api/tags");
+    const response2 = await llmClient.get("/api/tags");
     if (!response2.data) {
       res2.status(500).json({ message: "No data" });
       return;
@@ -39903,7 +40167,7 @@ class TestController {
 const startRouter = (app2) => {
   app2.get("/api/test", TestController.test);
   app2.get("/api/messages", MessagesController.getMessages);
-  app2.post("/api/message", MessagesController.createMessage);
+  app2.post("/api/message", MessagesController.postMessage);
   app2.get("/api/chats", ChatsController.getChats);
   app2.post("/api/chat", ChatsController.createChat);
   app2.delete("/api/chat", ChatsController.deleteChat);
