@@ -93,6 +93,14 @@ export class MessagesController {
         content: item.content,
       }));
 
+      // Тут получаем чат по его id и отправляем его в Ollama
+      const chat = await PostgresClient.readRecord<{ id: number; model: string }>("chats", Number(chat_id));
+
+      if (!chat.model) {
+        res.status(400).json({ message: "Model name is not associated with the chat" });
+        return;
+      }
+
       // Отправляем запрос к серверу Ollama
       const ollamaResponse = await fetch('http://127.0.0.1:11434/api/chat', {
         method: 'POST',
@@ -100,8 +108,8 @@ export class MessagesController {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'defaultModel:latest',
-          messages: messages,
+          model: chat.model,
+          messages: messages.reverse(),
         }),
       });
 
@@ -128,8 +136,8 @@ export class MessagesController {
           totalLength += chunk.length;
 
           // Если длина уже превышает 5000 символов, прекращаем отправку данных
-          if (totalLength > 5000) {
-            res.write(JSON.stringify({ message: 'Response truncated after 5000 characters' }));
+          if (totalLength > 500000) {
+            res.write(JSON.stringify({ message: 'Response truncated after 500000 characters' }));
             break;
           }
 

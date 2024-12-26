@@ -8,7 +8,7 @@ export const AppHeader = () => {
       direction='row'
       alignItems='center'
       justifyContent='space-between'
-      className="p-4 bg-indigo-500 w-full h-12 text-white"
+      className="p-4 bg-blue-500 w-full h-12 text-white"
     >
       <h1 className="text-2xl font-bold">
         <Link to="/">MyGPX</Link>

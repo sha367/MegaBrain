@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Stack } from "@mui/material";
+import { Button, Stack } from "@mui/material";
 
 import { IChat } from "@/api/v1";
 import { useChatsStore } from "@/store";
@@ -33,6 +33,7 @@ export const ChatsList = () => {
 
   return (
     <Stack className="flex flex-col w-48 h-full bg-gray-200 p-2 gap-2 overflow-auto flex-shrink-0">
+      <Button variant="contained" color="primary" onClick={() => navigate("/")}>New chat</Button>
       {chats.map((chat) => (
         <ChatsListItem
           key={chat.id}
