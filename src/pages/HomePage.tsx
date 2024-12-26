@@ -23,7 +23,7 @@ export const HomePage = () => {
   };
 
   return (
-    <Stack gap='.5rem'>
+    <Stack gap='.5rem' className="p-2">
       <Typography variant="h2">Home Page</Typography>
       <Input value={newChatName} onChange={(e) => setNewChatName(e.target.value)} />
       <Button variant="contained" color="primary" onClick={() => createNewChat()}>Create new Chat</Button>

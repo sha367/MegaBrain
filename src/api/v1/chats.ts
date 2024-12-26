@@ -28,7 +28,7 @@ export const CREATE_CHAT = async (params: IPostChatParams) => {
 };
 
 export interface IDeleteChatParams {
-  id: number;
+  id: string;
 }
 /** Delete chat */
 export const DELETE_CHAT = async (params: IDeleteChatParams) => {

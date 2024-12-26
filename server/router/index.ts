@@ -11,6 +11,7 @@ export const startRouter = (app: Express) => {
   // MESSAGES
   app.get('/api/messages', MessagesController.getMessages);
   app.post('/api/message', MessagesController.postMessage);
+  app.post('/api/llmChat', MessagesController.llmChat);
 
   // CHATS
   app.get('/api/chats', ChatsController.getChats);

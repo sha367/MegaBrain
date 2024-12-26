@@ -5,11 +5,11 @@
     @apply items-end;
 
     & .MessageBlock {
-      @apply bg-blue-100;
+      @apply bg-indigo-200;
     }
   }
 }
 
 .MessageBlock {
-  @apply max-w-[90%] p-2 bg-gray-100 rounded-lg;
+  @apply max-w-[90%] p-2 bg-gray-300 rounded-lg;
 }

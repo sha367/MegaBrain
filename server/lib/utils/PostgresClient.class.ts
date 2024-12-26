@@ -155,16 +155,16 @@ export class PostgresClient {
     const query = `
       SELECT * FROM ${tableName}
       ${whereClauses ? `WHERE ${whereClauses}` : ''}
+      ORDER BY "created_at" DESC
       LIMIT $${Object.keys(options.where || {}).length + 1} OFFSET $${Object.keys(options.where || {}).length + 2};
     `;
 
-    const values = [...Object.values(options.where || {}), options.limit || 10, options.offset || 0];
+    const values = [...Object.values(options.where || {}), options.limit || 20, options.offset || 0];
     const itemsResult = await PostgresClient.executeQuery(query, values);
     const items = PostgresClient.parsePostgresResponse(itemsResult) as T[];
 
     const countQuery = `SELECT COUNT(*) AS total FROM ${tableName} ${whereClauses ? `WHERE ${whereClauses}` : ''};`;
     const countResult = await PostgresClient.executeQuery(countQuery, Object.values(options.where || {}));
-
     const [{ total }] = PostgresClient.parsePostgresResponse(countResult) as { total: number }[];
 
     return { items, total };

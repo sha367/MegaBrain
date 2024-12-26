@@ -2,7 +2,7 @@
   @apply p-2 gap-1 relative flex-shrink-0 select-none;
 
   &.CardActive {
-    @apply bg-indigo-100;
+    @apply bg-indigo-200;
   }
 
   &:hover {

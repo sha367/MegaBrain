@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@mui/material";
 
+/** ALERT: deprecated */
 export const NewChatPage = () => {
   const API_URL = "http://localhost:11434/api/chat";
   const MODEL = "defaultModel:latest";

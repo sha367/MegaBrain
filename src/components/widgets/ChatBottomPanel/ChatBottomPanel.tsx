@@ -3,11 +3,12 @@ import { IconButton, Stack, TextField } from "@mui/material";
 import { useState } from "react";
 
 interface IChatBottomPanelProps {
+  disabled?: boolean;
   onSendMessage: (message: string) => void;
 }
 
 export const ChatBottomPanel = (props: IChatBottomPanelProps) => {
-  const { onSendMessage } = props;
+  const { disabled, onSendMessage } = props;
 
   const [message, setMessage] = useState<string>("");
 
@@ -30,6 +31,7 @@ export const ChatBottomPanel = (props: IChatBottomPanelProps) => {
     <Stack className="flex flex-row items-center justify-center w-full max-w-[48rem]">
       <TextField
         className="w-full"
+        disabled={disabled}
         placeholder="Ask something..."
         multiline
         rows={4}
@@ -39,7 +41,7 @@ export const ChatBottomPanel = (props: IChatBottomPanelProps) => {
         slotProps={{
           input: {
             endAdornment: (
-              <IconButton onClick={sendMessage}>
+              <IconButton onClick={sendMessage} disabled={disabled}>
                 <Send />
               </IconButton>
             ),
