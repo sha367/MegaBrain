@@ -18,6 +18,7 @@ export const ChatsListItem = (props: IChatsListItemProps) => {
 
   const onDeleteHandler = (e: MouseEvent<HTMLButtonElement>, chat: IChat) => {
     e.preventDefault();
+    e.stopPropagation();
     onDelete(chat);
   }
 

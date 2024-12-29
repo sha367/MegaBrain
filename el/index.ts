@@ -5,10 +5,13 @@ import { LLMService } from "./services/LLMService";
 import { PostgresService } from "./services/PostgresService";
 import { MainService } from "./services/MainService";
 import { ServerService } from "./services/ServerService";
+import { startElRouter } from "./router";
 
 ConfigProvider.touchProvider();
 
 export const startElectron = async () => {
+  startElRouter();
+
   try {
     LoadingProvider.value = true;
 
@@ -18,7 +21,7 @@ export const startElectron = async () => {
       ServerService.launch(),
       PostgresService.launch(),
       LLMService.launch(),
-    ]).then(() => {
+    ]).finally(() => {
       LoadingProvider.value = false;
     });
   } catch (error) {

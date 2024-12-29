@@ -17,7 +17,8 @@ export class WindowProvider {
   /** Create a new window */
   public static async createWindow() {
     WindowProvider._win = new BrowserWindow({
-      icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
+      // icon: process.platform === 'linux' ? 'assets/icons/icon.png' : undefined,
+      icon: path.join(process.env.VITE_PUBLIC, 'assets/icons/icon.icns'),
       width: 1280,
       height: 800,
       minWidth: 800,
@@ -28,8 +29,9 @@ export class WindowProvider {
     })
 
     // Open the DevTools.
-    // if (process.env.VITE_DEV_SERVER_URL) {
-    WindowProvider._win.webContents.openDevTools()
+    if (process.env.VITE_DEV_SERVER_URL) {
+      WindowProvider._win.webContents.openDevTools()
+    }
 
     // Test active push message to Renderer-process.
     WindowProvider._win.webContents.on('did-finish-load', () => {

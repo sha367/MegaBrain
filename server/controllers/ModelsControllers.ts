@@ -25,13 +25,12 @@ export class ModelsController {
   }
 
   public static async getRecommendedModels(_: Request, res: Response) {
-    const recommendedModels: IModel[] = [{
-      name: 'llama3.2:1b',
-      details: {
-        format: 'gguf',
-        family: 'llama'
-      }
-    }];
+    const recommendedModels: IModel[] = [
+      { name: 'llama3.2:3b' },
+      { name: 'phi3:3.8b' },
+      { name: 'mistral:7b' },
+      { name: 'gemma:2b' },
+    ];
 
     res.status(200).json({ models: recommendedModels });
   }

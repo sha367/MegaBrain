@@ -1,3 +1,5 @@
+import { WindowProvider } from "./WindowProvider";
+
 export interface ILoading {
   value: boolean;
 }
@@ -12,6 +14,8 @@ export class LoadingProvider {
   /** Set the loading value */
   public static set value(value: boolean) {
     LoadingProvider._value = value;
+
+    WindowProvider.win?.webContents.send('set-loading', LoadingProvider.loading);
   }
 
   /** Get the loading value */
