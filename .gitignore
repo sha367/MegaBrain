@@ -17,6 +17,10 @@ database/
 resources/
 release/
 
+mac/*.p12
+mac/*.sh
+!mac/*.example.sh
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

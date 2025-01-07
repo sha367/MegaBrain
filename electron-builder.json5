@@ -1,9 +1,11 @@
 // @see - https://www.electron.build/configuration/configuration
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
-  "appId": "YourAppID",
+  "appId": "com.sha367.mygpx",
   "asar": true,
   "productName": "MyGPX",
+  // TODO: Update this for other platforms
+  "afterSign": "mac/notarize.cjs",
   "directories": {
     "output": "release/${version}"
   },
@@ -12,7 +14,7 @@
     "dist-electron",
     "!resources${/*}"
   ],
-  extraResources: [
+  "extraResources": [
     {
       from: 'resources',
       to: '.',
@@ -22,6 +24,7 @@
     },
   ],
   "mac": {
+    "forceCodeSigning": true,
     "icon": "assets/icons/icon.icns",
     "target": [
       "dmg"
@@ -29,7 +32,9 @@
     "artifactName": "${productName}-Mac-${version}-Installer.${ext}",
     "signIgnore": [
       ".*postgres.*"
-    ]
+    ],
+    "entitlements": "./mac/entitlements.mac.plist",
+    "entitlementsInherit": "./mac/entitlements.mac.plist"
   },
   "win": {
     "icon": "assets/icons/icon.icns",
