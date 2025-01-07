@@ -12,6 +12,7 @@ export const useChatsStore = create<AppState>((set) => ({
 
   refetchChats: async () => {
     try {
+      console.log('Fetching chats');
       const response = await GET_CHATS({ limit: 1000 });
 
       const data = response?.data

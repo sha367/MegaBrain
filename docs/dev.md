@@ -5,7 +5,7 @@
 ## MacOS
 
 - Download [postgres.app](https://postgresapp.com/) open it's contents and place files from `versions/latest/*` into `resources/postgres`
-- Download [ollama](https://ollama.com/) and place `ollama` binary file from content into `resources/postgres`
+- Download [ollama](https://ollama.com/) and place `ollama` binary file from content into `resources/ollama/llm`
 
 ```bash
 pnpm install
