@@ -12,7 +12,13 @@
   "files": [
     "dist",
     "dist-electron",
-    "!resources${/*}"
+    "!resources${/*}",
+       "!**/*.map",  // Exclude source maps
+    "!**/*.ts",   // Exclude TypeScript files
+    "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+    "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+    "!**/node_modules/*.d.ts",
+    "!**/node_modules/.bin"
   ],
   "extraResources": [
     {
@@ -26,15 +32,20 @@
   "mac": {
     "forceCodeSigning": true,
     "icon": "assets/icons/icon.icns",
-    "target": [
-      "dmg"
-    ],
+    "target": "default",
+    "arch": ["x64", "arm64"],
+    "hardenedRuntime": true,
+    "gatekeeperAssess": false,
     "artifactName": "${productName}-Mac-${version}-Installer.${ext}",
     "signIgnore": [
       ".*postgres.*"
     ],
-    "entitlements": "./mac/entitlements.mac.plist",
-    "entitlementsInherit": "./mac/entitlements.mac.plist"
+    "entitlements": "mac/entitlements.mas.plist",
+    "entitlementsInherit": "mac/entitlements.mas.inherit.plist",
+    "electronTeamId": "75TVAP9U45",
+    "teamId": "75TVAP9U45",
+    "provisioningProfile": "mac/GPX_prov_profile_manjot.provisionprofile"
+   
   },
   "win": {
     "icon": "assets/icons/icon.icns",
@@ -60,5 +71,13 @@
       "AppImage"
     ],
     "artifactName": "${productName}-Linux-${version}.${ext}"
+  },
+  "mas": {
+    "entitlements": "mac/entitlements.mas.plist",
+    "entitlementsInherit": "mac/entitlements.mas.inherit.plist",
+    "hardenedRuntime": false,
+    "provisioningProfile": "mac/GPX_prov_profile_manjot.provisionprofile",
+    "electronTeamId": "75TVAP9U45",
+    "teamId": "75TVAP9U45" 
   }
 }

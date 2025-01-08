@@ -2,7 +2,7 @@
   "name": "mygpx",
   "private": false,
   "license": "MIT",
-  "version": "0.0.0-alpha.1",
+  "version": "1.0.6",
   "type": "module",
   "description": "Uncensored and private AI for everybody",
   "author": {
@@ -13,8 +13,30 @@
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
     "build:debug": "tsc && vite build && DEBUG=* electron-builder",
+    "build:mas": "tsc && vite build && electron-builder -m mas --x64 --arm64",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "patch-package"
+  },
+  "build": {
+    "mac": {
+      "hardenedRuntime": false,
+      "target": [
+        "mas"
+      ],
+      "identity": "Vasily Lukin (75TVAP9U45)",
+      "appId": "com.gpt.chatgpt.secure.ondevice",
+      "gatekeeperAssess": false,
+      "entitlements": "mac/entitlements.mac.plist",
+      "entitlementsInherit": "mac/entitlements.mac.inherit.plist",
+      "notarize": true,
+      "bundleVersion": "10",
+      "type": "distribution",
+      "provisioningProfile": "mac/GPX_prov_profile_manjot.provisionprofile"
+    },
+    "mas": {
+      "type": "distribution"
+    }
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -33,6 +55,7 @@
   },
   "devDependencies": {
     "@electron/notarize": "^2.5.0",
+    "@electron/osx-sign": "1.0.5",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.2",
@@ -48,6 +71,8 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "nodemon": "^3.1.9",
+    "patch-package": "^8.0.0",
+    "postinstall-postinstall": "^2.1.0",
     "sass-embedded": "^1.83.0",
     "scss": "^0.2.4",
     "ts-node": "^10.9.2",
@@ -57,5 +82,18 @@
     "vite-plugin-electron": "^0.28.6",
     "vite-plugin-electron-renderer": "^0.14.5"
   },
-  "main": "dist-electron/main.js"
+  "main": "dist-electron/main.js",
+  "config": {
+    "forge": {
+      "electronPackagerConfig": {
+        "arch": [
+          "x64",
+          "arm64"
+        ],
+        "platform": [
+          "darwin"
+        ]
+      }
+    }
+  }
 }

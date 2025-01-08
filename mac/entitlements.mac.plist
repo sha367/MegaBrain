@@ -4,7 +4,7 @@
 <dict>
     <!-- Отключение песочницы, чтобы приложение имело доступ к системным ресурсам -->
     <key>com.apple.security.app-sandbox</key>
-    <false/>
+    <true/>
 
     <!-- Разрешение на установление исходящих сетевых подключений -->
     <key>com.apple.security.network.client</key>
