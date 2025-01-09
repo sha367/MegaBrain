@@ -13,7 +13,7 @@
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
     "build:debug": "tsc && vite build && DEBUG=* electron-builder",
-    "build:mas": "tsc && vite build && electron-builder -m mas --x64 --arm64",
+    "build:mas": "tsc && vite build && electron-builder -m mas --x64 --arm64 --universal",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "postinstall": "patch-package"
@@ -24,14 +24,16 @@
       "target": [
         "mas"
       ],
+      
       "identity": "Vasily Lukin (75TVAP9U45)",
       "appId": "com.gpt.chatgpt.secure.ondevice",
       "gatekeeperAssess": false,
       "entitlements": "mac/entitlements.mac.plist",
       "entitlementsInherit": "mac/entitlements.mac.inherit.plist",
       "notarize": true,
-      "bundleVersion": "10",
+      "bundleVersion": "11",
       "type": "distribution",
+      "minimumSystemVersion": "12.0",
       "provisioningProfile": "mac/GPX_prov_profile_manjot.provisionprofile"
     },
     "mas": {
@@ -88,7 +90,8 @@
       "electronPackagerConfig": {
         "arch": [
           "x64",
-          "arm64"
+          "arm64",
+          "universal"
         ],
         "platform": [
           "darwin"
