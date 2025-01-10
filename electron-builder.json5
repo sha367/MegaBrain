@@ -5,20 +5,13 @@
   "asar": true,
   "productName": "MyGPX",
   // TODO: Update this for other platforms
-  "afterSign": "mac/notarize.cjs",
+  "afterSign": null,
   "directories": {
     "output": "release/${version}"
   },
   "files": [
-    "dist",
-    "dist-electron",
-    "!resources${/*}",
-       "!**/*.map",  // Exclude source maps
-    "!**/*.ts",   // Exclude TypeScript files
-    "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
-    "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
-    "!**/node_modules/*.d.ts",
-    "!**/node_modules/.bin"
+    "dist/**/*",
+    "dist-electron/**/*",
   ],
   "extraResources": [
     {
@@ -32,18 +25,15 @@
   "mac": {
     "forceCodeSigning": true,
     "icon": "assets/icons/icon.icns",
-    "target": "default",
-    "arch": ["x64", "arm64"],
+    "target": [
+      "pkg"
+    ],
     "hardenedRuntime": true,
     "gatekeeperAssess": false,
+    "bundleVersion": "14",
     "artifactName": "${productName}-Mac-${version}-Installer.${ext}",
-    "signIgnore": [
-      ".*postgres.*"
-    ],
-    "entitlements": "mac/entitlements.mas.plist",
-    "entitlementsInherit": "mac/entitlements.mas.inherit.plist",
-    "electronTeamId": "75TVAP9U45",
-    "teamId": "75TVAP9U45",
+    "entitlements": "./mac/entitlements.mac.plist",
+    "entitlementsInherit": "./mac/entitlements.mac.inherit.plist",
     "provisioningProfile": "mac/GPX_prov_profile_manjot.provisionprofile"
    
   },
@@ -72,12 +62,13 @@
     ],
     "artifactName": "${productName}-Linux-${version}.${ext}"
   },
-  "mas": {
-    "entitlements": "mac/entitlements.mas.plist",
-    "entitlementsInherit": "mac/entitlements.mas.inherit.plist",
-    "hardenedRuntime": false,
+  "mas":{
+    "type": "distribution",
+    "entitlements": "./mac/entitlements.mac.plist",
+    "entitlementsInherit": "./mac/entitlements.mac.inherit.plist",
     "provisioningProfile": "mac/GPX_prov_profile_manjot.provisionprofile",
-    "electronTeamId": "75TVAP9U45",
-    "teamId": "75TVAP9U45" 
+    "notarize": false
+  
   }
+  
 }

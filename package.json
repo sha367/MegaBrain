@@ -1,5 +1,5 @@
 {
-  "name": "mygpx",
+  "name": "MyGenAI",
   "private": false,
   "license": "MIT",
   "version": "1.0.6",
@@ -13,32 +13,10 @@
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
     "build:debug": "tsc && vite build && DEBUG=* electron-builder",
-    "build:mas": "tsc && vite build && electron-builder -m mas --x64 --arm64 --universal",
+    "build:mas": "tsc && vite build && electron-builder -m mas --x64",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "postinstall": "patch-package"
-  },
-  "build": {
-    "mac": {
-      "hardenedRuntime": false,
-      "target": [
-        "mas"
-      ],
-      
-      "identity": "Vasily Lukin (75TVAP9U45)",
-      "appId": "com.gpt.chatgpt.secure.ondevice",
-      "gatekeeperAssess": false,
-      "entitlements": "mac/entitlements.mac.plist",
-      "entitlementsInherit": "mac/entitlements.mac.inherit.plist",
-      "notarize": true,
-      "bundleVersion": "11",
-      "type": "distribution",
-      "minimumSystemVersion": "12.0",
-      "provisioningProfile": "mac/GPX_prov_profile_manjot.provisionprofile"
-    },
-    "mas": {
-      "type": "distribution"
-    }
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -56,6 +34,7 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@electron/asar": "^3.2.18",
     "@electron/notarize": "^2.5.0",
     "@electron/osx-sign": "1.0.5",
     "@types/cors": "^2.8.17",
