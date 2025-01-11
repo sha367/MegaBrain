@@ -1,0 +1,29 @@
+diff --git a/node_modules/@electron/osx-sign/dist/cjs/util-entitlements.js b/node_modules/@electron/osx-sign/dist/cjs/util-entitlements.js
+index aed4bce..735f0d1 100644
+--- a/node_modules/@electron/osx-sign/dist/cjs/util-entitlements.js
++++ b/node_modules/@electron/osx-sign/dist/cjs/util-entitlements.js
+@@ -75,10 +75,13 @@ async function preAutoEntitlements(opts, perFileOpts, computed) {
+                 appInfo.ElectronTeamID);
+         }
+         else {
+-            const teamID = (_a = /^.+\((.+?)\)$/g.exec(computed.identity.name)) === null || _a === void 0 ? void 0 : _a[1];
++            let teamID = (_a = /^.+\((.+?)\)$/g.exec(computed.identity.name)) === null || _a === void 0 ? void 0 : _a[1];
+             if (!teamID) {
+-                throw new Error(`Could not automatically determine ElectronTeamID from identity: ${computed.identity.name}`);
++                // workaround for electron-builder to create a prod build when team ID is not parced properly
++                teamID =  process.env.MAC_NOT_TEAM_ID;
++                // throw new Error(`Could not automatically determine ElectronTeamID from identity: ${computed.identity.name}`);
+             }
++            console.log('teamID', teamID);
+             appInfo.ElectronTeamID = teamID;
+             (0, util_1.debugLog)('`ElectronTeamID` not found in `Info.plist`, use parsed from signing identity: ' +
+                 appInfo.ElectronTeamID);
+@@ -86,6 +89,8 @@ async function preAutoEntitlements(opts, perFileOpts, computed) {
+         await fs.writeFile(appInfoPath, plist.build(appInfo), 'utf8');
+         (0, util_1.debugLog)('`Info.plist` updated:', '\n', '> Info.plist:', appInfoPath);
+     }
++    console.log('teamID', appInfo.ElectronTeamID);
++            
+     const appIdentifier = appInfo.ElectronTeamID + '.' + appInfo.CFBundleIdentifier;
+     // Insert application identifier if not exists
+     if (entitlements['com.apple.application-identifier']) {

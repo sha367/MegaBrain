@@ -3,16 +3,15 @@
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "com.gpt.chatgpt.secure.ondevice",
   "asar": true,
-  "productName": "MyGPX",
+  "productName": "MyGenAI",
   // TODO: Update this for other platforms
-  "afterSign": "mac/notarize.cjs",
+  "afterSign": "./mac/notarize.cjs",
   "directories": {
     "output": "release/${version}"
   },
   "files": [
-    "dist",
-    "dist-electron",
-    "!resources${/*}"
+    "dist/**/*",
+    "dist-electron/**/*",
   ],
   "extraResources": [
     {
@@ -24,18 +23,20 @@
     },
   ],
   "mac": {
-    "forceCodeSigning": true,
     "icon": "assets/icons/icon.icns",
-    "target": [
-      "dmg"
+      "target": [
+      "dmg",
+      "zip"
     ],
+    "hardenedRuntime": true,
+    "bundleVersion": "18",
     "artifactName": "${productName}-Mac-${version}-Installer.${ext}",
     "signIgnore": [
       ".*postgres.*"
     ],
     "entitlements": "./mac/entitlements.mac.plist",
-    "entitlementsInherit": "./mac/entitlements.mac.plist"
-  },
+    "entitlementsInherit": "./mac/entitlements.mac.inherit.plist",
+    },
   "win": {
     "icon": "assets/icons/icon.icns",
     "target": [
@@ -60,5 +61,19 @@
       "AppImage"
     ],
     "artifactName": "${productName}-Linux-${version}.${ext}"
-  }
+  },
+  "mas":{
+    "target": "mas",
+     type: "distribution",
+    "entitlements": "./mac/entitlements.mas.plist",
+    "entitlementsInherit": "./mac/entitlements.mac.inherit.plist",
+    "identity": null,
+    "provisioningProfile": "mac/GPX_prov_profile_manjot.provisionprofile",
+    "notarize": false,
+    "hardenedRuntime": false,
+    "signIgnore": [
+    ],
+     
+  },
+  
 }

@@ -33,3 +33,4 @@ mac/*.sh
 *.njsproj
 *.sln
 *.sw?
+mac/GPX_prov_profile_manjot.provisionprofile
