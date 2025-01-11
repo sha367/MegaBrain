@@ -5,7 +5,7 @@
   "asar": true,
   "productName": "MyGenAI",
   // TODO: Update this for other platforms
-  "afterSign": null,
+  "afterSign": "./mac/notarize.cjs",
   "directories": {
     "output": "release/${version}"
   },
@@ -24,17 +24,19 @@
   ],
   "mac": {
     "icon": "assets/icons/icon.icns",
-    "target": "mas",
-    "type": "distribution",
-    "hardenedRuntime": false,
-    "bundleVersion": "17",
+      "target": [
+      "dmg",
+      "zip"
+    ],
+    "hardenedRuntime": true,
+    "bundleVersion": "18",
     "artifactName": "${productName}-Mac-${version}-Installer.${ext}",
-    
+    "signIgnore": [
+      ".*postgres.*"
+    ],
     "entitlements": "./mac/entitlements.mac.plist",
     "entitlementsInherit": "./mac/entitlements.mac.inherit.plist",
-    "provisioningProfile": "mac/GPX_prov_profile_manjot.provisionprofile"
-   
-  },
+    },
   "win": {
     "icon": "assets/icons/icon.icns",
     "target": [
@@ -61,12 +63,17 @@
     "artifactName": "${productName}-Linux-${version}.${ext}"
   },
   "mas":{
+    "target": "mas",
      type: "distribution",
-    "entitlements": "./mac/entitlements.mac.plist",
+    "entitlements": "./mac/entitlements.mas.plist",
     "entitlementsInherit": "./mac/entitlements.mac.inherit.plist",
+    "identity": null,
     "provisioningProfile": "mac/GPX_prov_profile_manjot.provisionprofile",
-    "notarize": false
-  
-  }
+    "notarize": false,
+    "hardenedRuntime": false,
+    "signIgnore": [
+    ],
+     
+  },
   
 }

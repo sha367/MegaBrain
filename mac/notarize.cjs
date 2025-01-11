@@ -6,6 +6,13 @@ module.exports = async function (context) {
     console.warn('Skipping notarization because MAC_NOT_APPLE_ID is not set');
     process.exit(0);
   }
+  console.log("context.target",process.env.BUILD_TYPE);
+ // Skip notarization for MAS builds
+ // Skip for MAS builds
+ if (process.env.BUILD_TYPE === 'mas') {
+  console.log('Skipping notarization for MAS build');
+  return;
+}
 
   const { appOutDir, packager } = context;
   const appName = packager.appInfo.productFilename;

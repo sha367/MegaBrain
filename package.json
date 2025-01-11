@@ -13,7 +13,8 @@
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
     "build:debug": "tsc && vite build && DEBUG=* electron-builder",
-    "build:mas": "tsc && vite build && electron-builder -m mas --x64",
+    "build:mas": "export BUILD_TYPE=mas tsc && vite build && electron-builder -m mas --x64",
+    "build:github": "export BUILD_TYPE=github tsc && vite build && electron-builder --mac zip dmg",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "postinstall": "patch-package"

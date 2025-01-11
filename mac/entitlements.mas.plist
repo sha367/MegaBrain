@@ -28,5 +28,23 @@
     </array>
     <key>com.apple.security.personal-information.location</key>
     <true/>
+    <key>com.apple.security.temporary-exception.mach-lookup.global-name</key>
+    <array>
+        <string>com.apple.locationd.desktop.registration</string>
+        <string>com.apple.locationd.desktop.proxy</string>
+        <string>com.apple.locationd.registration</string>
+        <string>com.apple.locationd</string>
+        <string>com.apple.CoreLocation.agent</string>
+    </array>
+    <key>com.apple.security.temporary-exception.mach-register</key>
+    <true/>
+    <key>com.apple.security.temporary-exception.mach-lookup.global-name</key>
+    <array>
+        <string>com.apple.storekit.daemon</string>
+    </array>
+    <key>com.apple.security.cs.debugger</key>
+    <true/>
+    <key>com.apple.security.cs.privileged-task-management</key>
+    <true/>
 </dict>
 </plist> 

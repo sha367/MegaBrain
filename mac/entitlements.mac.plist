@@ -2,52 +2,23 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <!-- Отключение песочницы, чтобы приложение имело доступ к системным ресурсам -->
-    <key>com.apple.security.app-sandbox</key>
-    <true/>
-
-    <!-- Разрешение на установление исходящих сетевых подключений -->
-    <key>com.apple.security.network.client</key>
-    <true/>
-
-    <!-- Разрешение на создание серверных сокетов -->
-    <key>com.apple.security.network.server</key>
-    <true/>
-
-    <!-- Разрешение на использование JIT-компиляции -->
     <key>com.apple.security.cs.allow-jit</key>
     <true/>
-
-    <!-- Разрешение на использование переменных среды для загрузки динамических библиотек -->
-    <key>com.apple.security.cs.allow-dyld-environment-variables</key>
-    <true/>
-
-    <!-- Разрешение на использование памяти для исполнения кода без подписи -->
     <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
     <true/>
-
-    <!-- Отключение проверки библиотек при загрузке -->
+    <key>com.apple.security.cs.allow-dyld-environment-variables</key>
+    <true/>
     <key>com.apple.security.cs.disable-library-validation</key>
     <true/>
-
-    <!-- Разрешение на использование звукового ввода -->
-    <!-- <key>com.apple.security.device.audio-input</key> -->
-    <!-- <true/> -->
-
-    <!-- Разрешение на использование микрофона -->
-    <!-- <key>com.apple.security.device.microphone</key> -->
-    <!-- <true/> -->
-
-    <!-- Разрешение на использование камеры -->
-    <!-- <key>com.apple.security.device.camera</key> -->
-    <!-- <true/> -->
-
-    <!-- Разрешение на автоматизацию и отправку событий в другие приложения -->
-    <key>com.apple.security.automation.apple-events</key>
+    <key>com.apple.security.cs.disable-executable-page-protection</key>
+    <true/>
+    <key>com.apple.security.cs.debugger</key>
+    <true/>
+    <key>com.apple.security.network.client</key>
+    <true/>
+    <key>com.apple.security.network.server</key>
     <true/>
     <key>com.apple.security.files.user-selected.read-write</key>
-    <true/>
-    <key>com.apple.security.files.downloads.read-write</key>
     <true/>
 </dict>
 </plist>
