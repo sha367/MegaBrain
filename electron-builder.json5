@@ -3,7 +3,7 @@
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "com.gpt.chatgpt.secure.ondevice",
   "asar": true,
-  "productName": "MyGPX",
+  "productName": "MyGenAI",
   // TODO: Update this for other platforms
   "afterSign": null,
   "directories": {
@@ -23,15 +23,13 @@
     },
   ],
   "mac": {
-    "forceCodeSigning": true,
     "icon": "assets/icons/icon.icns",
-    "target": [
-      "pkg"
-    ],
-    "hardenedRuntime": true,
-    "gatekeeperAssess": false,
-    "bundleVersion": "14",
+    "target": "mas",
+    "type": "distribution",
+    "hardenedRuntime": false,
+    "bundleVersion": "17",
     "artifactName": "${productName}-Mac-${version}-Installer.${ext}",
+    
     "entitlements": "./mac/entitlements.mac.plist",
     "entitlementsInherit": "./mac/entitlements.mac.inherit.plist",
     "provisioningProfile": "mac/GPX_prov_profile_manjot.provisionprofile"
@@ -63,7 +61,7 @@
     "artifactName": "${productName}-Linux-${version}.${ext}"
   },
   "mas":{
-    "type": "distribution",
+     type: "distribution",
     "entitlements": "./mac/entitlements.mac.plist",
     "entitlementsInherit": "./mac/entitlements.mac.inherit.plist",
     "provisioningProfile": "mac/GPX_prov_profile_manjot.provisionprofile",
