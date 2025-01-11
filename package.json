@@ -14,7 +14,7 @@
     "build": "tsc && vite build && electron-builder",
     "build:debug": "tsc && vite build && DEBUG=* electron-builder",
     "build:mas": "export BUILD_TYPE=mas tsc && vite build && electron-builder -m mas --x64",
-    "build:github": "export BUILD_TYPE=github tsc && vite build && electron-builder --mac zip dmg",
+    "build:github": "export BUILD_TYPE=github tsc && vite build && DEBUG=electron-builder electron-builder --mac zip dmg",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "postinstall": "patch-package"
@@ -27,11 +27,14 @@
     "@mui/material": "^6.2.1",
     "@unocss/reset": "^0.65.2",
     "axios": "^1.7.9",
+    "better-sqlite3": "^11.7.2",
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.1.0",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7",
     "zustand": "^5.0.2"
   },
   "devDependencies": {
