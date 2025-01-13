@@ -1,23 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IconButton, Stack, Tooltip, Typography } from "@mui/material";
-import EditNoteIcon from "@mui/icons-material/CreateOutlined";  
-import MenuIcon from "@mui/icons-material/FlipOutlined";
+import { FiSidebar as MenuIcon} from "react-icons/fi";
+import { BiSolidEdit as EditNoteIcon } from "react-icons/bi";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { IChat } from "@/api/v1";
 import { useChatsStore } from "@/store";
 import { ChatsListItem } from "./ui";
-import { lightTheme } from "@/theme/colors";
-
+import { SearchBar } from "@/components/widgets/SearchBar/SearchBar";
+import { useTheme } from "@/context/ThemeContext";
 /**
  * Chats list component
  */
 export const ChatsList = () => {
-  const { colors } = lightTheme;
+  const { theme } = useTheme();
+  const { colors } = theme;
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredChats, setFilteredChats] = useState<IChat[]>([]);
 
   const match = location.pathname.match(/\/chat\/(\d+)/);
   const currentChatId = match ? match[1] : null;
@@ -28,7 +31,18 @@ export const ChatsList = () => {
     refetchChats();
   }, [refetchChats]);
 
- 
+  useEffect(() => {
+    setFilteredChats(chats);
+  }, [chats]);
+
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+    const filtered = chats.filter(chat => 
+      chat.name.toLowerCase().includes(query.toLowerCase())
+    );
+    setFilteredChats(filtered);
+  }, [chats]);
+
   const onChatClick = (chat: IChat) => {
     navigate(`/chat/${chat.id}`);
   };
@@ -75,7 +89,7 @@ export const ChatsList = () => {
               }
             }}
           >
-            <MenuIcon sx={{ fontSize: 20 }} />
+            <MenuIcon />
           </IconButton>
         </Tooltip>
 
@@ -91,7 +105,7 @@ export const ChatsList = () => {
               }
             }}
           >
-            <EditNoteIcon sx={{ fontSize: 20 }} />
+            <EditNoteIcon sx={{ fontSize: 25 }} />
           </IconButton>
         </Tooltip>
         
@@ -140,6 +154,7 @@ export const ChatsList = () => {
       sx={{ 
         backgroundColor: colors.background.secondary,
         width: isSidebarOpen ? "260px" : "0px",
+        minWidth: isSidebarOpen?"260px": "0px",
         transition: "width 0.2s ease-in-out",
         borderRight: `1px solid ${colors.border.divider}`,
       }}
@@ -156,14 +171,17 @@ export const ChatsList = () => {
           <Stack 
             className="overflow-auto"
             sx={{ 
-              
               flexGrow: 1,
               p: 2,
               gap: 1,
               marginTop: 5,
             }}
           >
-            {chats.map((chat) => (
+            <SearchBar 
+              onSearch={handleSearch}
+              placeholder="Search"
+            />
+            {filteredChats.map((chat) => (
               <ChatsListItem
                 key={chat.id}
                 chat={chat}
@@ -172,6 +190,18 @@ export const ChatsList = () => {
                 onClick={() => onChatClick(chat)}
               />
             ))}
+            {searchQuery && filteredChats.length === 0 && (
+              <Typography
+                variant="body2"
+                sx={{
+                  color: colors.text.secondary,
+                  textAlign: "center",
+                  py: 2
+                }}
+              >
+                No chats found
+              </Typography>
+            )}
           </Stack>
         </Stack>
       )}

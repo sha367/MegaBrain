@@ -29,7 +29,7 @@ export const ChatsListItem = (props: IChatsListItemProps) => {
       onClick={() => onClick(chat)}
       sx={{
         px: 1,
-        py: 1.5,
+        py: 1,
         cursor: "pointer",
         backgroundColor: active ? colors.background.secondary : "transparent",
         "&:hover": {
@@ -39,8 +39,9 @@ export const ChatsListItem = (props: IChatsListItemProps) => {
           }
         },
         transition: "background-color 0.2s ease",
-        borderRadius: "8px",
-        margin: "0 8px",
+        borderRadius: "4px",
+        margin: "0 1px",
+        borderBottom: "1px solid #a0a0a0",
       }}
     >
     

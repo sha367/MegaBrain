@@ -22,6 +22,38 @@ export const lightTheme = {
     border: {
       divider: "#E0E0E0",   // Divider/Border
       input: "#DADCE0"      // Input Field Border
-    }
+    },
+    error: "#f44336"
   }
-}; 
+};
+
+export const darkTheme = {
+  colors: {
+    background: {
+      primary: "#343541",
+      secondary: "#40414f",
+      input: "#40414f",
+      userBubble: "#343541",
+      botBubble: "#444654"
+    },
+    text: {
+      primary: "#ECECF1",
+      secondary: "#9EA1B1",
+      placeholder: "#8E8EA0",
+      buttonText: "#FFFFFF"
+    },
+    accent: {
+      main: "#19C37D",
+      button: "#19C37D",
+      success: "#34A853",
+      error: "#EA4335"
+    },
+    border: {
+      divider: "#4E4F60",
+      input: "#4E4F60"
+    },
+    error: "#ef5350"
+  }
+};
+
+export type Theme = typeof lightTheme; 

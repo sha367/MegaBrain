@@ -4,10 +4,11 @@ import { useModelsStore } from "@/store/useModelsStore";
 import { Autocomplete, Button, Stack, TextField, Typography } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { lightTheme } from "../theme/colors";
+import { useTheme } from "@/context/ThemeContext";
 
 export const CreateChatPage = () => {
-  const { colors } = lightTheme;
+  const { theme } = useTheme();
+  const { colors } = theme;
   const { refetchChats } = useChatsStore();
   const [newChatName, setNewChatName] = useState("");
   const { models, refetchModels } = useModelsStore();
