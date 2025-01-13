@@ -1,4 +1,3 @@
-// MessagesController.ts
 import { Request, Response } from "express";
 import { openDb } from "./../database";
 
@@ -24,18 +23,16 @@ export class MessagesController {
         return;
       }
 
-      const db = await openDb();
-      const messages = await db.all<IMessage[]>(
-        "SELECT * FROM messages WHERE chat_id = ? LIMIT ? OFFSET ?",
-        Number(chat_id),
-        Number(limit),
-        Number(offset)
-      );
+      const db = openDb();
+      const messages = db
+        .prepare(
+          "SELECT * FROM messages WHERE chat_id = ? LIMIT ? OFFSET ?"
+        )
+        .all(Number(chat_id), Number(limit), Number(offset));
 
-      const total = await db.get<{ total: number }>(
-        "SELECT COUNT(*) AS total FROM messages WHERE chat_id = ?",
-        Number(chat_id)
-      );
+      const total = db
+        .prepare("SELECT COUNT(*) AS total FROM messages WHERE chat_id = ?")
+        .get(Number(chat_id)) as { total: number };
 
       res.status(200).json({ items: messages, total: total?.total || 0 });
     } catch (error) {
@@ -43,10 +40,7 @@ export class MessagesController {
     }
   }
 
-  /**
-   * Creates a new message in a chat.
-   */
-  public static async createMessage(req: Request, res: Response): Promise<void> {
+  public static createMessage(req: Request, res: Response): void {
     try {
       const { content, role, chat_id } = req.body;
       if (!content || !role || !chat_id) {
@@ -54,16 +48,15 @@ export class MessagesController {
         return;
       }
 
-      const db = await openDb();
-      const result = await db.run(
-        "INSERT INTO messages (content, role, chat_id, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
-        content,
-        role,
-        chat_id
-      );
+      const db = openDb();
+      const result = db
+        .prepare(
+          "INSERT INTO messages (content, role, chat_id, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)"
+        )
+        .run(content, role, chat_id);
 
       const message: IMessage = {
-        id: result.lastID!,
+        id: result.lastInsertRowid as number,
         content,
         role,
         chat_id,
@@ -90,16 +83,15 @@ export class MessagesController {
 
       const role = "user";
 
-      const db = await openDb();
-      const result = await db.run(
-        "INSERT INTO messages (content, role, chat_id, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
-        content,
-        role,
-        chat_id
-      );
+      const db = openDb();
+      const result = db
+        .prepare(
+          "INSERT INTO messages (content, role, chat_id, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)"
+        )
+        .run(content, role, chat_id);
 
       const message: IMessage = {
-        id: result.lastID!,
+        id: result.lastInsertRowid as number,
         content,
         role,
         chat_id,
@@ -125,16 +117,17 @@ export class MessagesController {
         return;
       }
 
-      const db = await openDb();
-      const messages = await db.all<IMessage[]>(
-        "SELECT * FROM messages WHERE chat_id = ? ORDER BY created_at DESC LIMIT 20",
-        Number(chat_id)
-      );
+      const db = openDb(); // `openDb()` теперь возвращает синхронный объект better-sqlite3.Database
 
-      const chat = await db.get<{ id: number; model: string }>(
-        "SELECT id, model FROM chats WHERE id = ?",
-        Number(chat_id)
-      );
+      // Получение последних 20 сообщений
+      const messages = db
+        .prepare("SELECT * FROM messages WHERE chat_id = ? ORDER BY created_at DESC LIMIT 20")
+        .all(Number(chat_id)) as IMessage[];
+
+      // Получение информации о чате
+      const chat = db
+        .prepare("SELECT id, model FROM chats WHERE id = ?")
+        .get(Number(chat_id)) as { id: number; model: string };
 
       if (!chat?.model) {
         res.status(400).json({ message: "Model name is not associated with the chat" });
@@ -148,9 +141,7 @@ export class MessagesController {
         },
         body: JSON.stringify({
           model: chat.model,
-          messages: messages
-            .reverse()
-            .map((m) => ({ role: m.role, content: m.content })),
+          messages: messages.reverse().map((m) => ({ role: m.role, content: m.content })),
         }),
       });
 
@@ -191,12 +182,9 @@ export class MessagesController {
       }
 
       if (messageContent) {
-        await db.run(
-          "INSERT INTO messages (content, role, chat_id, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
-          messageContent,
-          "assistant",
-          chat_id
-        );
+        db.prepare(
+          "INSERT INTO messages (content, role, chat_id, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)"
+        ).run(messageContent, "assistant", chat_id);
       }
 
       res.end();

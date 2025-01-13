@@ -2,7 +2,7 @@
   "name": "MyGenAI",
   "private": false,
   "license": "MIT",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "type": "module",
   "description": "Uncensored and private AI for everybody",
   "author": {
@@ -33,14 +33,13 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.1.0",
-    "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7",
     "zustand": "^5.0.2"
   },
   "devDependencies": {
     "@electron/asar": "^3.2.18",
     "@electron/notarize": "^2.5.0",
     "@electron/osx-sign": "1.0.5",
+    "@types/better-sqlite3": "^7.6.12",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.2",

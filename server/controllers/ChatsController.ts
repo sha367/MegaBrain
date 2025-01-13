@@ -1,20 +1,18 @@
-// ChatsController.ts
 import { Request, Response } from "express";
 import { openDb } from "./../database";
 
 export class ChatsController {
-  public static async getChats(req: Request, res: Response): Promise<void> {
+  public static getChats(req: Request, res: Response): void {
     try {
       const { limit = 10, offset = 0 } = req.query;
-      const db = await openDb();
+      const db = openDb();
 
-      const chats = await db.all(
-        "SELECT * FROM chats LIMIT ? OFFSET ?",
+      const chats = db.prepare("SELECT * FROM chats LIMIT ? OFFSET ?").all(
         Number(limit),
         Number(offset)
       );
 
-      const total = await db.get("SELECT COUNT(*) AS total FROM chats");
+      const total = db.prepare("SELECT COUNT(*) AS total FROM chats").get() as { total: number };
 
       res.status(200).json({ items: chats, total: total?.total || 0 });
     } catch (error) {
@@ -23,7 +21,7 @@ export class ChatsController {
     }
   }
 
-  public static async createChat(req: Request, res: Response): Promise<void> {
+  public static createChat(req: Request, res: Response): void {
     try {
       const { name, model } = req.body;
       if (!name || !model) {
@@ -31,15 +29,15 @@ export class ChatsController {
         return;
       }
 
-      const db = await openDb();
-      const result = await db.run(
-        "INSERT INTO chats (name, model, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)",
-        name,
-        model
-      );
+      const db = openDb();
+      const result = db
+        .prepare(
+          "INSERT INTO chats (name, model, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)"
+        )
+        .run(name, model);
 
       const chat = {
-        id: result.lastID,
+        id: result.lastInsertRowid,
         name,
         model,
         created_at: new Date().toISOString(),
@@ -53,7 +51,7 @@ export class ChatsController {
     }
   }
 
-  public static async deleteChat(req: Request, res: Response): Promise<void> {
+  public static deleteChat(req: Request, res: Response): void {
     try {
       const { id } = req.query;
       if (!id) {
@@ -61,10 +59,10 @@ export class ChatsController {
         return;
       }
 
-      const db = await openDb();
-      const result = await db.run("DELETE FROM chats WHERE id = ?", Number(id));
+      const db = openDb();
+      const result = db.prepare("DELETE FROM chats WHERE id = ?").run(Number(id));
 
-      if ((result?.changes || 0) > 0) {
+      if (result.changes > 0) {
         res.status(200).json({ message: "Chat deleted successfully" });
       } else {
         res.status(404).json({ message: "Chat not found" });

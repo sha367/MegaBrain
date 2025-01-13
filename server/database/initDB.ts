@@ -1,10 +1,10 @@
-import { openDb } from "./openDB";
+import { openDb } from './openDB';
 
-export const initDB = async () => {
-  const db = await openDb();
+export const initDB = () => {
+  const db = openDb();
 
-  // Сreate Chats table
-  await db.exec(`
+  // Создаем таблицу Chats
+  db.exec(`
     CREATE TABLE IF NOT EXISTS chats (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name VARCHAR(255) NOT NULL,
@@ -14,8 +14,8 @@ export const initDB = async () => {
     );
   `);
 
-  // Create Messages table
-  await db.exec(`
+  // Создаем таблицу Messages
+  db.exec(`
     CREATE TABLE IF NOT EXISTS messages (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       content TEXT NOT NULL,
@@ -27,5 +27,5 @@ export const initDB = async () => {
     );
   `);
 
-  console.log("Database initialized successfully!");
+  console.log('Database initialized successfully!');
 };
