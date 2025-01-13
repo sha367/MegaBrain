@@ -1,7 +1,14 @@
+const { execSync } = require('child_process');
+const path = require('path');
 const dotenv = require('dotenv');
 dotenv.config();
 
 module.exports = async function (context) {
+  // Staple the notarized app
+  // const { appOutDir, packager } = context;
+  // const appName = packager.appInfo.productFilename;
+  // execSync(`xcrun stapler staple "${path.join(appOutDir, `${appName}.app`)}"`, { stdio: 'inherit' });
+
   if (!process.env.MAC_NOT_APPLE_ID) {
     console.warn('Skipping notarization because MAC_NOT_APPLE_ID is not set');
     process.exit(0);
