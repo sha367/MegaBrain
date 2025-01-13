@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { PostgresClient } from "../lib/utils/PostgresClient.class";
+import { openDb } from "./../database";
 
 export interface IMessage {
   id: number;
@@ -23,21 +23,24 @@ export class MessagesController {
         return;
       }
 
-      const { items, total } = await PostgresClient.readRecords<IMessage>("messages", {
-        limit: Number(limit),
-        offset: Number(offset),
-        where: { chat_id: Number(chat_id) },
-      });
-      res.status(200).json({ items, total });
+      const db = openDb();
+      const messages = db
+        .prepare(
+          "SELECT * FROM messages WHERE chat_id = ? LIMIT ? OFFSET ?"
+        )
+        .all(Number(chat_id), Number(limit), Number(offset));
+
+      const total = db
+        .prepare("SELECT COUNT(*) AS total FROM messages WHERE chat_id = ?")
+        .get(Number(chat_id)) as { total: number };
+
+      res.status(200).json({ items: messages, total: total?.total || 0 });
     } catch (error) {
       res.status(500).json({ message: "Error retrieving messages", error });
     }
   }
 
-  /**
-   * Creates a new message in a chat.
-   */
-  public static async createMessage(req: Request, res: Response): Promise<void> {
+  public static createMessage(req: Request, res: Response): void {
     try {
       const { content, role, chat_id } = req.body;
       if (!content || !role || !chat_id) {
@@ -45,7 +48,22 @@ export class MessagesController {
         return;
       }
 
-      const message = await PostgresClient.createRecord<IMessage>("messages", { content, role, chat_id });
+      const db = openDb();
+      const result = db
+        .prepare(
+          "INSERT INTO messages (content, role, chat_id, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)"
+        )
+        .run(content, role, chat_id);
+
+      const message: IMessage = {
+        id: result.lastInsertRowid as number,
+        content,
+        role,
+        chat_id,
+        created_at: new Date().toISOString(),
+        updated_at: null,
+      };
+
       res.status(201).json(message);
     } catch (error) {
       res.status(500).json({ message: "Error creating message", error });
@@ -53,7 +71,7 @@ export class MessagesController {
   }
 
   /**
-   * Creates a new message in a chat.
+   * Creates a new user message in a chat.
    */
   public static async postMessage(req: Request, res: Response): Promise<void> {
     try {
@@ -65,14 +83,32 @@ export class MessagesController {
 
       const role = "user";
 
-      const message = await PostgresClient.createRecord<IMessage>("messages", { content, role, chat_id });
+      const db = openDb();
+      const result = db
+        .prepare(
+          "INSERT INTO messages (content, role, chat_id, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)"
+        )
+        .run(content, role, chat_id);
+
+      const message: IMessage = {
+        id: result.lastInsertRowid as number,
+        content,
+        role,
+        chat_id,
+        created_at: new Date().toISOString(),
+        updated_at: null,
+      };
+
       res.status(201).json(message);
     } catch (error) {
       res.status(500).json({ message: "Error creating message", error });
     }
   }
 
-  public static async llmChat(req: Request, res: Response) {
+  /**
+   * Handles chat interaction with LLM and stores assistant's response.
+   */
+  public static async llmChat(req: Request, res: Response): Promise<void> {
     try {
       const { chat_id } = req.body;
 
@@ -81,51 +117,46 @@ export class MessagesController {
         return;
       }
 
-      // Получаем последние 20 сообщений из базы данных
-      const { items } = await PostgresClient.readRecords<IMessage>("messages", {
-        limit: 20,
-        where: { chat_id: Number(chat_id) },
-      });
+      const db = openDb(); // `openDb()` теперь возвращает синхронный объект better-sqlite3.Database
 
-      // Формируем массив сообщений для отправки в Ollama
-      const messages = items.map((item) => ({
-        role: item.role, // user, assistant, etc.
-        content: item.content,
-      }));
+      // Получение последних 20 сообщений
+      const messages = db
+        .prepare("SELECT * FROM messages WHERE chat_id = ? ORDER BY created_at DESC LIMIT 20")
+        .all(Number(chat_id)) as IMessage[];
 
-      // Тут получаем чат по его id и отправляем его в Ollama
-      const chat = await PostgresClient.readRecord<{ id: number; model: string }>("chats", Number(chat_id));
+      // Получение информации о чате
+      const chat = db
+        .prepare("SELECT id, model FROM chats WHERE id = ?")
+        .get(Number(chat_id)) as { id: number; model: string };
 
-      if (!chat.model) {
+      if (!chat?.model) {
         res.status(400).json({ message: "Model name is not associated with the chat" });
         return;
       }
 
-      // Отправляем запрос к серверу Ollama
-      const ollamaResponse = await fetch('http://127.0.0.1:11434/api/chat', {
-        method: 'POST',
+      const ollamaResponse = await fetch("http://127.0.0.1:11434/api/chat", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           model: chat.model,
-          messages: messages.reverse(),
+          messages: messages.reverse().map((m) => ({ role: m.role, content: m.content })),
         }),
       });
 
       if (!ollamaResponse.body) {
-        throw new Error('No response body from Ollama');
+        throw new Error("No response body from Ollama");
       }
 
       const reader = ollamaResponse.body.getReader();
       const decoder = new TextDecoder();
       let done = false;
       let totalLength = 0;
-      let messageContent = ''; // Сюда будем собирать только текстовое содержание
+      let messageContent = "";
 
-      // Передаем потоковый ответ от Ollama клиенту
-      res.setHeader('Content-Type', 'application/json');
-      res.flushHeaders(); // Начинаем отправку данных сразу
+      res.setHeader("Content-Type", "application/json");
+      res.flushHeaders();
 
       while (!done) {
         const { value, done: doneReading } = await reader.read();
@@ -135,37 +166,30 @@ export class MessagesController {
           const chunk = decoder.decode(value, { stream: !done });
           totalLength += chunk.length;
 
-          // Если длина уже превышает 5000 символов, прекращаем отправку данных
           if (totalLength > 500000) {
-            res.write(JSON.stringify({ message: 'Response truncated after 500000 characters' }));
+            res.write(JSON.stringify({ message: "Response truncated after 500000 characters" }));
             break;
           }
 
-          // Парсим каждый чанк, извлекая только content
           try {
             const parsed = JSON.parse(chunk);
-            messageContent += parsed.message.content || ''; // Собираем только контент
-            res.write(JSON.stringify(parsed)); // Отправляем частичный ответ клиенту
+            messageContent += parsed.message.content || "";
+            res.write(JSON.stringify(parsed));
           } catch (error) {
-            console.error('Error parsing chunk:', chunk);
+            console.error("Error parsing chunk:", chunk);
           }
         }
       }
 
-      // После завершения стрима сохраняем только текстовое сообщение в базе данных
       if (messageContent) {
-        await PostgresClient.createRecord<IMessage>("messages", {
-          content: messageContent,
-          role: 'assistant', // Указываем роль бота
-          chat_id: Number(chat_id),
-        });
+        db.prepare(
+          "INSERT INTO messages (content, role, chat_id, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)"
+        ).run(messageContent, "assistant", chat_id);
       }
 
-      res.end(); // Завершаем ответ, когда поток завершен
-
+      res.end();
     } catch (error) {
-      res.status(500).json({ message: 'Error retrieving messages', error });
+      res.status(500).json({ message: "Error processing LLM chat", error });
     }
   }
-
 }
