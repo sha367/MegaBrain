@@ -1,10 +1,8 @@
 import { IChat } from "@/api/v1";
-import { Delete } from "@mui/icons-material";
-import { Card, IconButton, Stack, Typography } from "@mui/material";
+import { Delete, Message } from "@mui/icons-material";
+import { IconButton, Stack, Typography } from "@mui/material";
 import { MouseEvent } from "react";
-
-import cls from './ChatsListItem.module.scss';
-import { classNames } from "@/components/shared";
+import { lightTheme } from "@/theme/colors";
 
 interface IChatsListItemProps {
   chat: IChat;
@@ -15,24 +13,79 @@ interface IChatsListItemProps {
 
 export const ChatsListItem = (props: IChatsListItemProps) => {
   const { chat, active, onDelete, onClick } = props;
+  const { colors } = lightTheme;
 
   const onDeleteHandler = (e: MouseEvent<HTMLButtonElement>, chat: IChat) => {
     e.preventDefault();
     e.stopPropagation();
     onDelete(chat);
-  }
+  };
 
   return (
-    <Card className={classNames(cls.Card, { [cls.CardActive]: active })} onClick={() => onClick(chat)}>
-      <Typography className="relative truncate w-full">{chat.name}</Typography>
-      <Typography variant="subtitle2" className="text-gray-500">{chat.id}</Typography>
-      <Typography variant="subtitle2" className="text-gray-500">{chat.model}</Typography>
+    <Stack
+      direction="row"
+      alignItems="center"
+      spacing={1.5}
+      onClick={() => onClick(chat)}
+      sx={{
+        px: 1,
+        py: 1.5,
+        cursor: "pointer",
+        backgroundColor: active ? colors.background.secondary : "transparent",
+        "&:hover": {
+          backgroundColor: !active ? colors.background.secondary : undefined,
+          "& .delete-button": {
+            opacity: 1
+          }
+        },
+        transition: "background-color 0.2s ease",
+        borderRadius: "8px",
+        margin: "0 8px",
+      }}
+    >
+    
 
-      {!active && <Stack className={cls.Actions}>
-        <IconButton color='error' size="small" onClick={(e) => onDeleteHandler(e, chat)}>
-          <Delete />
-        </IconButton>
-      </Stack>}
-    </Card>
+      {/* Chat Name */}
+      <Stack 
+        direction="column" 
+        spacing={0.1} 
+        sx={{ 
+          flex: 1,
+          minWidth: 0 // Enable text truncation
+        }}
+      >
+        <Typography 
+          sx={{
+            color: active ? colors.text.primary : colors.text.secondary,
+            fontSize: "14px",
+            fontWeight: active ? 500 : 400,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis"
+          }}
+        >
+          {chat.name}
+        </Typography>
+      </Stack>
+
+      {/* Delete Button */}
+      <IconButton
+        className="delete-button"
+        size="small"
+        onClick={(e) => onDeleteHandler(e, chat)}
+        sx={{
+          opacity: 0,
+          transition: "opacity 0.2s ease",
+          color: colors.text.secondary,
+          "&:hover": {
+            backgroundColor: "transparent",
+            color: colors.error
+          },
+          padding: 0
+        }}
+      >
+        <Delete sx={{ fontSize: 18 }} />
+      </IconButton>
+    </Stack>
   );
-}
+};

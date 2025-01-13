@@ -24,7 +24,7 @@ export const App = () => {
         ? <AppLoader />
         : (
           <Stack className="relative flex flex-col h-screen bg-gray-100">
-            <AppHeader />
+            {/* <AppHeader /> */}
 
             <Stack direction="row" className="flex-grow h-full overflow-hidden">
               <ChatsList />
