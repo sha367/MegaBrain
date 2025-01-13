@@ -14,9 +14,9 @@ dist-ssr
 *.local
 
 .env
-database/
 resources/
 release/
+*.sqlite
 
 mac/*.p12
 mac/*.sh
