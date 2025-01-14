@@ -64,6 +64,12 @@ export const ChatsList = () => {
         top: 4,
         px: 2,
         borderBottom: `1px solid ${colors.border.divider}`,
+        WebkitAppRegion: "drag",
+        "& .MuiIconButton-root": {
+          WebkitAppRegion: "no-drag"
+        },
+        // backgroundColor: colors.background.primary,
+        zIndex: 1000,
       }}
     >
      
@@ -157,6 +163,7 @@ export const ChatsList = () => {
         minWidth: isSidebarOpen?"260px": "0px",
         transition: "width 0.2s ease-in-out",
         borderRight: `1px solid ${colors.border.divider}`,
+        zIndex: 999,
       }}
     >
     

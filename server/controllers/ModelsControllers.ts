@@ -9,6 +9,7 @@ export interface IModel {
   details?: {
     format: string;
     family: string;
+    description?: string;
   }
 }
 
@@ -26,10 +27,15 @@ export class ModelsController {
 
   public static async getRecommendedModels(_: Request, res: Response) {
     const recommendedModels: IModel[] = [
-      { name: 'llama3.2:3b' },
-      { name: 'phi3:3.8b' },
-      { name: 'mistral:7b' },
-      { name: 'gemma:2b' },
+      { name: 'llama3.2:3b', details:{description: 'Llama 3.2 3b is a new state-of-the-art model from Meta', format: 'ggml', family: 'llama'}},
+      { name: 'phi3:3.8b', details:{description: 'Phi 3 3.8b is a new state-of-the-art model from Meta', format: 'ggml', family: 'phi'}},
+      { name: 'mistral:7b', details:{description: 'Mistral 7b is a new state-of-the-art model from Meta', format: 'ggml', family: 'mistral'}},
+      { name: 'gemma:2b', details:{description: 'Gemma 2b is a new state-of-the-art model from Meta', format: 'ggml', family: 'gemma'}},
+      { name: 'phi4', details:{description: 'Phi 4 is a new state-of-the-art model from Meta', format: 'ggml', family: 'phi'}},
+      { name: 'mistral-small', details:{description: 'Mistral small is a new state-of-the-art model from Meta', format: 'ggml', family: 'mistral'}},
+      { name: 'llama3.1:8b', details:{description: 'Llama 3.1 is a new state-of-the-art model from Meta', format: 'ggml', family: 'llama'}},
+      { name: 'gemma2:9b', details:{description: 'Gemma 2 9b is a new state-of-the-art model from Meta', format: 'ggml', family: 'gemma'}},
+      { name: 'gemma2:27b', details:{description: 'Gemma 2 27b is a new state-of-the-art model from Meta', format: 'ggml', family: 'gemma'}},
     ];
 
     res.status(200).json({ models: recommendedModels });

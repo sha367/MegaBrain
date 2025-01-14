@@ -3,9 +3,10 @@ import { MessageBlock } from "@/components";
 import { ChatBottomPanel } from "@/components/widgets/ChatBottomPanel";
 import { BASE_URL } from "@/lib/utils/apiClient";
 import { Edit, Lens } from "@mui/icons-material";
-import { Stack } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
+import { useTheme } from "@/context/ThemeContext";
 
 export const ChatPage = () => {
   const { id } = useParams();
@@ -16,7 +17,8 @@ export const ChatPage = () => {
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);  // Ссылка на конец списка сообщений
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);  // Ссылка на контейнер сообщений
-
+  const { theme } = useTheme();
+  const { colors } = theme;
   const fetchMessages = useCallback(async () => {
     try {
       setLoading(true);
@@ -139,15 +141,39 @@ export const ChatPage = () => {
   }, [messages]);
 
   return (
-    <Stack className="flex-grow overflow-hidden p-2">
+    <Stack className="flex-grow overflow-hidden p-2" sx={{
+      backgroundColor: colors.background.primary,
+      paddingTop: 7,
+    }}>
       <Stack
         ref={messagesContainerRef}
+        sx={{
+          paddingTop: 7,
+          paddingX: 2,
+        }}
         className="flex-grow overflow-auto gap-2 scroll-auto"
-        onScroll={scrollToBottom} // Обработчик события прокрутки
+        onScroll={scrollToBottom}
       >
-        {[...messages].reverse().map((message) => (
-          <MessageBlock key={message.id} message={message} />
-        ))}
+        {messages.length > 0 ? (
+          [...messages].reverse().map((message) => (
+            <MessageBlock key={message.id} message={message} />
+          ))
+        ) : (
+          <Stack
+            alignItems="center"
+            justifyContent="center"
+            sx={{
+              height: "100%",
+              color: colors.text.secondary,
+              textAlign: "center",
+              p: 2,
+            }}
+          >
+            <Typography variant="body1">
+              Send a message to start a chat
+            </Typography>
+          </Stack>
+        )}
 
         <Stack className="gap-2">
           {botTypingMessage && (
@@ -171,7 +197,6 @@ export const ChatPage = () => {
           </Stack>
         </Stack>
 
-        {/* Этот элемент должен быть внизу, чтобы прокручивать его */}
         <div ref={messagesEndRef} />
       </Stack>
 
