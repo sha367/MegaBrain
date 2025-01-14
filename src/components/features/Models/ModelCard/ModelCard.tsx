@@ -143,7 +143,7 @@ export const ModelCard = (props: IModelCardProps) => {
       {isDownloaded && <Stack direction="row" spacing={1}>
         <Chip
           icon={<Storage sx={{ fontSize: 16 }} />}
-          label={formatSize(model.size)}
+          label={formatSize(model?.size?.toString() ?? '')}
           size="small"
           variant="outlined"
         />

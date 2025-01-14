@@ -1,7 +1,7 @@
 import { Stack } from "@mui/material";
 import { AppRouterView } from "./router";
 import { HashRouter } from "react-router-dom";
-import { AppHeader, ChatsList } from "./components";
+import { ChatsList } from "./components";
 import { useEffect, useState } from "react";
 import { AppLoader } from "./components/shared";
 import { ThemeProvider } from "@/context/ThemeContext";
