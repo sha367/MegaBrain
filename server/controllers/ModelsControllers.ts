@@ -11,7 +11,7 @@ export interface IModel {
     family: string;
     description?: string;
     quantization_level?: number;
-    parameter_size?: number;
+    parameter_size?: string;
   }
 }
 
@@ -29,16 +29,90 @@ export class ModelsController {
 
   public static async getRecommendedModels(_: Request, res: Response) {
     const recommendedModels: IModel[] = [
-      { name: 'llama3.2:3b', details:{description: 'Llama 3.2 3b is a new state-of-the-art model from Meta', format: 'ggml', family: 'llama'}},
-      { name: 'phi3:3.8b', details:{description: 'Phi 3 3.8b is a new state-of-the-art model from Meta', format: 'ggml', family: 'phi'}},
-      { name: 'mistral:7b', details:{description: 'Mistral 7b is a new state-of-the-art model from Meta', format: 'ggml', family: 'mistral'}},
-      { name: 'gemma:2b', details:{description: 'Gemma 2b is a new state-of-the-art model from Meta', format: 'ggml', family: 'gemma'}},
-      { name: 'phi4', details:{description: 'Phi 4 is a new state-of-the-art model from Meta', format: 'ggml', family: 'phi'}},
-      { name: 'mistral-small', details:{description: 'Mistral small is a new state-of-the-art model from Meta', format: 'ggml', family: 'mistral'}},
-      { name: 'llama3.1:8b', details:{description: 'Llama 3.1 is a new state-of-the-art model from Meta', format: 'ggml', family: 'llama'}},
-      { name: 'gemma2:9b', details:{description: 'Gemma 2 9b is a new state-of-the-art model from Meta', format: 'ggml', family: 'gemma'}},
-      { name: 'gemma2:27b', details:{description: 'Gemma 2 27b is a new state-of-the-art model from Meta', format: 'ggml', family: 'gemma'}},
-    ];
+      {
+        "name": "gemma2:27b",
+        "details": {
+          "description": "Gemma 2 27B is a high-capacity model from Google DeepMind, specialized for deep language comprehension and multi-task NLP.",
+          "parameter_size": "27B",
+          "format": "GGML",
+          "family": "Gemma"
+        }
+      },
+      {
+        "name": "phi4",
+        "details": {
+          "description": "Phi 4 is a 14B parameter model from Microsoft, offering state-of-the-art performance in conversational AI.",
+          "parameter_size": "14B",
+          "format": "GGML",
+          "family": "Phi"
+        }
+      },
+      {
+        "name": "gemma2:9b",
+        "details": {
+          "description": "Gemma 2 9B is a robust language model from Google DeepMind, designed for high-performance language understanding and generation.",
+          "parameter_size": "9B",
+          "format": "GGML",
+          "family": "Gemma"
+        }
+      },
+      {
+        "name": "llama3.1:8b",
+        "details": {
+          "description": "LLaMA 3.1 8B is a large-scale generative language model from Meta, built for complex reasoning and language tasks.",
+          "parameter_size": "8B",
+          "format": "GGML",
+          "family": "LLaMA"
+        }
+      },
+      {
+        "name": "mistral:7b",
+        "details": {
+          "description": "Mistral 7B is an advanced generative model from Mistral AI, known for its efficiency and strong language capabilities.",
+          "parameter_size": "7B",
+          "format": "GGML",
+          "family": "Mistral"
+        }
+      },
+      {
+        "name": "mistral-small",
+        "details": {
+          "description": "Mistral Small is a lightweight variant of the Mistral family, optimized for fast inference and memory efficiency.",
+          "parameter_size": "7B",
+          "format": "GGML",
+          "family": "Mistral"
+        }
+      },
+      {
+        "name": "phi3:3.8b",
+        "details": {
+          "description": "Phi 3 Mini is a 3.8B parameter model from Microsoft, designed for advanced reasoning and conversational AI tasks.",
+          "parameter_size": "3.8B",
+          "format": "GGML",
+          "family": "Phi"
+        }
+      },
+      {
+        "name": "llama3.2:3b",
+        "details": {
+          "description": "LLaMA 3.2 3B is a state-of-the-art language model from Meta, optimized for natural language understanding and generation.",
+          "parameter_size": "3B",
+          "format": "GGML",
+          "family": "LLaMA"
+        }
+      },
+      {
+        "name": "gemma:2b",
+        "details": {
+          "description": "Gemma 2B is a cutting-edge language model from Google DeepMind, specialized for comprehensive text generation and summarization.",
+          "parameter_size": "2B",
+          "format": "GGML",
+          "family": "Gemma"
+        }
+      }
+    ]
+    
+    ;
 
     res.status(200).json({ models: recommendedModels });
   }

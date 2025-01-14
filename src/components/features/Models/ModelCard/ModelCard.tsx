@@ -4,6 +4,9 @@ import { useCallback, useState } from "react";
 import { IModel } from "server/controllers/ModelsControllers";
 import { DeleteOutline, Download, Memory, Storage } from "@mui/icons-material";
 import { useTheme } from "@/context/ThemeContext";
+import { downloadStore } from "@/store/modelDownloadStore";
+import { useSnapshot } from "valtio";
+
 interface IModelCardProps {
   model: IModel;
   isDownloaded?: boolean;
@@ -20,6 +23,7 @@ export const ModelCard = (props: IModelCardProps) => {
   const { theme } = useTheme();
   const { colors } = theme;
   const { model, isDownloaded, onChanged } = props;
+  const downloadStatus = useSnapshot(downloadStore.state).downloads[model.name];
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState("");
@@ -34,50 +38,8 @@ export const ModelCard = (props: IModelCardProps) => {
   }
 
   const handleDownload = useCallback(async () => {
-    setIsLoading(true);
-    setProgress(0);
-
-    console.log('FUCK', model);
-
-    try {
-      const response = await fetch(`${BASE_URL}/api/model/pull`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ model: model.name }),
-      });
-
-      if (!response.body) {
-        throw new Error("No response body from server");
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let done = false;
-
-      while (!done) {
-        const { value, done: doneReading } = await reader.read();
-        done = doneReading;
-
-        if (value) {
-          const chunk = decoder.decode(value, { stream: !done });
-          try {
-            const parsed = JSON.parse(chunk);
-            setProgress(calculateProgress(parsed)); // Обновляем статус
-          } catch (error) {
-            console.error("Error parsing chunk:", chunk);
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Error pulling model:", error);
-      setLoadingStatus("Error occurred while pulling model");
-    } finally {
-      setIsLoading(false);
-      onChanged?.();
-    }
-  }, [model.name, onChanged]);
+    await downloadStore.actions.enqueueDownload({ name: model.name });
+  }, [model.name]);
 
   const handleDelete = useCallback(async () => {
     setIsLoading(true);
@@ -142,20 +104,34 @@ export const ModelCard = (props: IModelCardProps) => {
 
       {isDownloaded && <Stack direction="row" spacing={1}>
         <Chip
-          icon={<Storage sx={{ fontSize: 16 }} />}
+          icon={<Storage sx={{ fontSize: 16, color: colors.text.secondary }} />}
           label={formatSize(model?.size?.toString() ?? '')}
           size="small"
           variant="outlined"
+          sx={{
+            color: colors.text.secondary,
+            borderColor: colors.border.divider,
+            "& .MuiChip-label": {
+              color: colors.text.secondary,
+            },
+          }}
         />
         {model.details?.quantization_level && <Chip
-          icon={<Memory sx={{ fontSize: 16 }} />}
+          icon={<Memory sx={{ fontSize: 16, color: colors.text.secondary }} />}
           label={model.details?.quantization_level}
           size="small"
           variant="outlined"
+          sx={{
+            color: colors.text.secondary,
+            borderColor: colors.border.divider,
+            "& .MuiChip-label": {
+              color: colors.text.secondary,
+            },
+          }}
         />}
       </Stack>}
 
-      {isDownloaded && <Stack direction="row" spacing={1} alignItems="center">
+      <Stack direction="row" spacing={1} alignItems="center">
         <Typography variant="caption" sx={{ color: colors.text.secondary }}>
           Context: {model?.details?.parameter_size?.toLocaleString()} 
         </Typography>
@@ -165,7 +141,7 @@ export const ModelCard = (props: IModelCardProps) => {
         <Typography variant="caption" sx={{ color: colors.text.secondary }}>
           Type: {model.details?.family}
         </Typography>
-      </Stack>}
+      </Stack>
 
       {loadingStatus && (
         <Typography variant="caption" sx={{ color: colors.text.secondary }}>
@@ -173,10 +149,10 @@ export const ModelCard = (props: IModelCardProps) => {
         </Typography>
       )}
       
-      {progress > 0 && (
+      {downloadStatus && (
         <LinearProgress 
           variant="determinate" 
-          value={progress} 
+          value={downloadStatus.progress} 
           sx={{ height: 4, borderRadius: 2 }}
         />
       )}

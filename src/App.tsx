@@ -5,6 +5,7 @@ import { ChatsList } from "./components";
 import { useEffect, useState } from "react";
 import { AppLoader } from "./components/shared";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { ModelDownloadManager } from "./components/features/Models/ModelDownloadManager/ModelDownloadManager";
 
 export const App = () => {
   const [loading, setLoading] = useState(true);
@@ -32,6 +33,7 @@ export const App = () => {
                 <ChatsList />
                 <AppRouterView />
               </Stack>
+              <ModelDownloadManager />
             </Stack>
           )
         }
