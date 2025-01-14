@@ -1,7 +1,7 @@
 # MegaChat
 
-![Stars](https://img.shields.io/github/stars/your-username/MegaChat?style=social)
-![License](https://img.shields.io/github/license/your-username/MegaChat)
+![Stars](https://img.shields.io/github/stars/sha367/MegaChat?style=social)
+![License](https://img.shields.io/github/license/sha367/MegaChat)
 
 MegaChat is an open-source macOS desktop application designed to provide seamless chat experiences with advanced LLM (Large Language Model) integration. This application allows users to interact with AI models for various tasks, including text generation, summarization, and more.
 
