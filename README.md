@@ -30,7 +30,7 @@ To install MegaChat on your macOS system, follow these steps:
 
 3. **Run the application**:
    ```bash
-   yarn start
+   yarn dev
    ```
 
 ## Usage
