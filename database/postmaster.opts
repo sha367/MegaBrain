@@ -1,1 +1,0 @@
-/Users/manjotsingh/Projects/MegaLLM/resources/postgres/bin/postgres "-D" "/Users/manjotsingh/Projects/MegaLLM/database" "-k" "/Users/manjotsingh/Projects/MegaLLM/resources/postgres/tmp" "-p" "5432" "-c" "logging_collector=off" "-c" "log_destination=stderr"
