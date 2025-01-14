@@ -18,7 +18,6 @@ export const ChatsList = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredChats, setFilteredChats] = useState<IChat[]>([]);
 
@@ -111,7 +110,7 @@ export const ChatsList = () => {
               }
             }}
           >
-            <EditNoteIcon sx={{ fontSize: 25 }} />
+            <EditNoteIcon />
           </IconButton>
         </Tooltip>
         

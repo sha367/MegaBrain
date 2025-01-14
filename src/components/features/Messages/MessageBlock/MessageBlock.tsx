@@ -3,11 +3,14 @@ import { Message } from "@mui/icons-material";
 import ReactMarkdown from "react-markdown";
 import { useTheme } from "@/context/ThemeContext";
 
+interface IMessage {
+  content: string;
+  role: string;
+  id?: string;
+}
+
 interface IMessageBlockProps {
-  message: {
-    content: string;
-    role: string;
-  };
+  message: IMessage;
 }
 
 export const MessageBlock = ({ message }: IMessageBlockProps) => {

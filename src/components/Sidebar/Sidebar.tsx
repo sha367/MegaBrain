@@ -18,7 +18,11 @@ export const Sidebar = ({ onSelectCategory }: SidebarProps) => {
       </Typography>
       <List>
         {categories.map((text) => (
-          <ListItem button key={text} onClick={() => onSelectCategory(text)}>
+          <ListItem 
+            component="div"
+            onClick={() => onSelectCategory(text)}
+            key={text}
+          >
             <ListItemText primary={text} sx={{ color: "#555" }} />
           </ListItem>
         ))}

@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useTheme } from "@/context/ThemeContext";
 
+
 export const ChatPage = () => {
   const { id } = useParams();
   const [messages, setMessages] = useState<IMessage[]>([]);
@@ -182,10 +183,7 @@ export const ChatPage = () => {
                 id: 'typing',
                 content: botTypingMessage,
                 role: 'assistant',
-                chat_id: id!,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-              }}
+                }}
             />
           )}
 
@@ -206,3 +204,4 @@ export const ChatPage = () => {
     </Stack>
   );
 };
+               

@@ -10,6 +10,8 @@ export interface IModel {
     format: string;
     family: string;
     description?: string;
+    quantization_level?: number;
+    parameter_size?: number;
   }
 }
 

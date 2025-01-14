@@ -1,14 +1,13 @@
 import { ModelCard } from "@/components/features/Models";
 import { useModelsStore } from "@/store/useModelsStore";
-import { Stack, Typography, Box, Switch, FormControlLabel, RadioGroup, Radio } from "@mui/material";
+import { Stack, Typography, Box, FormControlLabel, RadioGroup, Radio } from "@mui/material";
 import { useEffect } from "react";
 import { useTheme } from "@/context/ThemeContext";
 import { DarkMode, LightMode, SettingsBrightness } from "@mui/icons-material";
 
 export const SettingsPage = () => {
   const { models, recommendedModels, refetchModels } = useModelsStore();
-  const { theme, isDark, toggleTheme, themeMode, setThemeMode } = useTheme();
-  const { colors } = theme;
+  const { theme, themeMode, setThemeMode } = useTheme();
 
   useEffect(() => {
     refetchModels();
@@ -20,31 +19,31 @@ export const SettingsPage = () => {
       padding: "2rem",  
       minHeight: "100vh", 
       paddingTop: 7,
-      backgroundColor: colors.background.primary,
+      backgroundColor: theme.colors.background.primary,
       overflowY: "auto",
       maxHeight: "100vh",
       "&::-webkit-scrollbar": {
         width: "8px",
       },
       "&::-webkit-scrollbar-track": {
-        background: colors.background.secondary,
+        background: theme.colors.background.secondary,
       },
       "&::-webkit-scrollbar-thumb": {
-        background: colors.border.divider,
+        background: theme.colors.border.divider,
         borderRadius: "4px",
         "&:hover": {
-          background: colors.text.secondary,
+          background: theme.colors.text.secondary,
         },
       },
     }}>
-      <Typography variant="h4" sx={{ color: colors.text.primary, marginBottom: "1rem" }}>
+      <Typography variant="h4" sx={{ color: theme.colors.text.primary, marginBottom: "1rem" }}>
         Settings
       </Typography>
 
       <Stack spacing={4}>
         {/* Theme Section */}
         <Box>
-          <Typography variant="h6" sx={{ color: colors.text.primary, marginBottom: "1rem" }}>
+          <Typography variant="h6" sx={{ color: theme.colors.text.primary, marginBottom: "1rem" }}>
             Appearance
           </Typography>
           <RadioGroup
@@ -56,13 +55,13 @@ export const SettingsPage = () => {
               control={
                 <Radio 
                   size="small"
-                  sx={{ color: colors.text.secondary }}
+                  sx={{ color: theme.colors.text.secondary }}
                 />
               }
               label={
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <LightMode sx={{ color: colors.text.secondary }} />
-                  <Typography sx={{ color: colors.text.secondary }}>
+                  <LightMode sx={{ color: theme.colors.text.secondary }} />
+                  <Typography sx={{ color: theme.colors.text.secondary }}>
                     Light
                   </Typography>
                 </Stack>
@@ -73,13 +72,13 @@ export const SettingsPage = () => {
               control={
                 <Radio 
                   size="small"
-                  sx={{ color: colors.text.secondary }}
+                  sx={{ color: theme.colors.text.secondary }}
                 />
               }
               label={
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <DarkMode sx={{ color: colors.text.secondary }} />
-                  <Typography sx={{ color: colors.text.secondary }}>
+                  <DarkMode sx={{ color: theme.colors.text.secondary }} />
+                  <Typography sx={{ color: theme.colors.text.secondary }}>
                     Dark
                   </Typography>
                 </Stack>
@@ -90,13 +89,13 @@ export const SettingsPage = () => {
               control={
                 <Radio 
                   size="small"
-                  sx={{ color: colors.text.secondary }}
+                  sx={{ color: theme.colors.text.secondary }}
                 />
               }
               label={
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <SettingsBrightness sx={{ color: colors.text.secondary }} />
-                  <Typography sx={{ color: colors.text.secondary }}>
+                  <SettingsBrightness sx={{ color: theme.colors.text.secondary }} />
+                  <Typography sx={{ color: theme.colors.text.secondary }}>
                     System
                   </Typography>
                 </Stack>
@@ -107,15 +106,15 @@ export const SettingsPage = () => {
 
         {/* Models Section */}
         <Box>
-          <Typography variant="h6" sx={{ color: colors.text.primary, marginBottom: "1rem" }}>
+          <Typography variant="h6" sx={{ color: theme.colors.text.primary, marginBottom: "1rem" }}>
             LLM Preference
           </Typography>
-          <Typography variant="body1" sx={{ color: colors.text.secondary, marginBottom: "2rem" }}>
+          <Typography variant="body1" sx={{ color: theme.colors.text.secondary, marginBottom: "2rem" }}>
             These are the settings for your preferred LLM chat & embedding provider.
           </Typography>
           <Stack direction="row" spacing={4}>
             <Box sx={{ flex: 1 }}>
-              <Typography variant="h6" sx={{ color: colors.text.primary, marginBottom: "1rem" }}>
+              <Typography variant="h6" sx={{ color: theme.colors.text.primary, marginBottom: "1rem" }}>
                 Recommended Models
               </Typography>
               <Box 
@@ -135,7 +134,7 @@ export const SettingsPage = () => {
               </Box>
             </Box>
             <Box sx={{ flex: 1 }}>
-              <Typography variant="h6" sx={{ color: colors.text.primary, marginBottom: "1rem" }}>
+              <Typography variant="h6" sx={{ color: theme.colors.text.primary, marginBottom: "1rem" }}>
                 Downloaded Models
               </Typography>
               <Box 

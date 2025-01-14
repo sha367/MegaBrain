@@ -1,5 +1,5 @@
 import { IChat } from "@/api/v1";
-import { Delete, Message } from "@mui/icons-material";
+import { Delete } from "@mui/icons-material";
 import { IconButton, Stack, Typography } from "@mui/material";
 import { MouseEvent } from "react";
 import { lightTheme } from "@/theme/colors";
