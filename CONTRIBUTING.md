@@ -1,6 +1,6 @@
-# Contributing to [Project Name]
+# Contributing to MegaChat
 
-Thank you for considering contributing to [Project Name]! We welcome contributions from the community.
+Thank you for considering contributing to MegaChat! We welcome contributions from the community.
 
 ## How to Contribute
 
