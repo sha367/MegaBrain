@@ -59,7 +59,7 @@ export const ChatBottomPanel = (props: IChatBottomPanelProps) => {
           multiline
           maxRows={4}
           disabled={disabled}
-          placeholder="Message MegaChat..."
+          placeholder="Message MegaBrain..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
@@ -107,7 +107,7 @@ export const ChatBottomPanel = (props: IChatBottomPanelProps) => {
           textAlign: "center" 
         }}
       >
-        MegaChat can make mistakes. Consider checking important information.
+        MegaBrain can make mistakes. Consider checking important information.
       </Typography>
     </Stack>
   );

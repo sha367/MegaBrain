@@ -1,7 +1,7 @@
 # MegaBrain
 
-[![Build Status](https://github.com/sha367/megabrain/actions/workflows/test-build.yml/badge.svg)](https://github.com/sha367/megabrain/actions/workflows/test-build.yml)
-[![GitHub stars](https://img.shields.io/github/stars/sha367/megabrain.svg?style=social&label=Star)](https://github.com/sha367/megabrain)
+[![Build Status](https://github.com/sha367/MegaBrain/actions/workflows/test-build.yml/badge.svg)](https://github.com/sha367/MegaBrain/actions/workflows/test-build.yml)
+[![GitHub stars](https://img.shields.io/github/stars/sha367/MegaBrain.svg?style=social&label=Star)](https://github.com/sha367/MegaBrain)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
