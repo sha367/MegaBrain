@@ -3,6 +3,9 @@ import { ChatPage } from "@/pages/ChatPage";
 import { NewChatPage } from "@/pages/NewChatPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { CreateChatPage } from "@/pages/CreateChatPage";
+import { AppearanceSettings } from "@/pages/Settings/AppearanceSettings";
+import { LLMSettings } from "@/pages/Settings/LLMSettings";
+import { AboutSettings } from "@/pages/Settings/AboutSettings";
 
 export const AppRouterView = () => {
 
@@ -12,8 +15,11 @@ export const AppRouterView = () => {
 
       <Route path="/newChat" element={<NewChatPage />} />
       <Route path="/chat/:id" element={<ChatPage />} />
-
-      <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/settings" element={<SettingsPage />}>
+            <Route path="appearance" element={<AppearanceSettings />} />
+            <Route path="llm" element={<LLMSettings />} />
+            <Route path="about" element={<AboutSettings />} />
+      </Route>
     </Routes>
   );
 };

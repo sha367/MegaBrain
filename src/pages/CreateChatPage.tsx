@@ -3,11 +3,12 @@ import { useChatsStore } from "@/store";
 import { useModelsStore } from "@/store/useModelsStore";
 import { Autocomplete, Button, Stack, TextField, Typography } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "@/context/ThemeContext";
 
 export const CreateChatPage = () => {
   const { theme } = useTheme();
+  const navigate = useNavigate();
   const { colors } = theme;
   const { refetchChats } = useChatsStore();
   const [newChatName, setNewChatName] = useState("");
@@ -24,7 +25,8 @@ export const CreateChatPage = () => {
       if (!response?.data) {
         throw new Error("No response from server");
       }
-
+      
+navigate(`/chat/${response.data.id}`);
       refetchChats();
       setNewChatName("");
     } catch (error) {
@@ -114,7 +116,7 @@ export const CreateChatPage = () => {
 
             <TextField
               disabled={!models.length}
-              label="Message MegaChat"
+              label="Message MegaBrain"
               size="medium"
               value={newChatName}
               onChange={(e) => setNewChatName(e.target.value)}

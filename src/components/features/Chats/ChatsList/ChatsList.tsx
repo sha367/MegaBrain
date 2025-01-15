@@ -1,14 +1,46 @@
 import { useEffect, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { IconButton, Stack, Tooltip, Typography } from "@mui/material";
+import { IconButton, Stack, Tooltip, Typography, Menu, MenuItem, ListItemIcon, ListItemText } from "@mui/material";
 import { FiSidebar as MenuIcon} from "react-icons/fi";
 import { BiSolidEdit as EditNoteIcon } from "react-icons/bi";
 import SettingsIcon from "@mui/icons-material/Settings";
+import PaletteIcon from "@mui/icons-material/Palette";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
+import InfoIcon from "@mui/icons-material/Info";
 import { IChat } from "@/api/v1";
 import { useChatsStore } from "@/store";
 import { ChatsListItem } from "./ui";
 import { SearchBar } from "@/components/widgets/SearchBar/SearchBar";
 import { useTheme } from "@/context/ThemeContext";
+import { FixedSizeList } from "react-window";
+import AutoSizer from "react-virtualized-auto-sizer";
+
+interface ChatRowProps {
+  index: number;
+  style: React.CSSProperties;
+  data: {
+    chats: IChat[];
+    currentChatId: string | null;
+    onDelete: (chat: IChat) => void;
+    onClick: (chat: IChat) => void;
+  };
+}
+
+const ChatRow = ({ index, style, data }: ChatRowProps) => {
+  const chat = data.chats[index];
+  return (
+    <div style={style}>
+      <ChatsListItem
+        key={chat.id}
+        chat={chat}
+        active={chat.id === data.currentChatId}
+        onDelete={data.onDelete}
+        onClick={() => data.onClick(chat)}
+      />
+    </div>
+  );
+};
+
 /**
  * Chats list component
  */
@@ -20,6 +52,8 @@ export const ChatsList = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredChats, setFilteredChats] = useState<IChat[]>([]);
+  const [settingsAnchorEl, setSettingsAnchorEl] = useState<null | HTMLElement>(null);
+  const isSettingsOpen = Boolean(settingsAnchorEl);
 
   const match = location.pathname.match(/\/chat\/(\d+)/);
   const currentChatId = match ? match[1] : null;
@@ -31,14 +65,16 @@ export const ChatsList = () => {
   }, [refetchChats]);
 
   useEffect(() => {
-    setFilteredChats(chats);
+    setFilteredChats(chats.sort((a, b) => Number(b.id) - Number(a.id)));
   }, [chats]);
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-    const filtered = chats.filter(chat => 
-      chat.name.toLowerCase().includes(query.toLowerCase())
-    );
+    const filtered = chats
+      .filter(chat => 
+        chat.name.toLowerCase().includes(query.toLowerCase())
+      )
+      .sort((a, b) => Number(b.id) - Number(a.id));
     setFilteredChats(filtered);
   }, [chats]);
 
@@ -48,6 +84,19 @@ export const ChatsList = () => {
 
   const onDeleteHandler = (chat: IChat) => {
     deleteChat(chat);
+  };
+
+  const handleSettingsClick = (event: React.MouseEvent<HTMLElement>) => {
+    setSettingsAnchorEl(event.currentTarget);
+  };
+
+  const handleSettingsClose = () => {
+    setSettingsAnchorEl(null);
+  };
+
+  const handleSettingsOptionClick = (path: string) => {
+    navigate(path);
+    handleSettingsClose();
   };
 
   return (
@@ -127,7 +176,7 @@ export const ChatsList = () => {
             transition: "margin-left 0.2s ease-in-out",
           }}
         >
-          Mega Chat
+          MegaBrain
         </Typography>
       <Stack 
         direction="row" 
@@ -141,7 +190,7 @@ export const ChatsList = () => {
       >
         <Tooltip title="Settings" placement="bottom">
           <IconButton
-            onClick={() => navigate("/settings")}
+            onClick={handleSettingsClick}
             sx={{
               color: colors.text.secondary,
               "&:hover": {
@@ -151,7 +200,60 @@ export const ChatsList = () => {
           >
             <SettingsIcon sx={{ fontSize: 20 }} />
           </IconButton>
-        </Tooltip></Stack>
+        </Tooltip>
+
+        <Menu
+          anchorEl={settingsAnchorEl}
+          open={isSettingsOpen}
+          onClose={handleSettingsClose}
+          PaperProps={{
+            sx: {
+              backgroundColor: colors.background.secondary,
+              color: colors.text.primary,
+              boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+              "& .MuiMenuItem-root": {
+                "&:hover": {
+                  backgroundColor: colors.background.hover,
+                },
+              },
+            },
+          }}
+        >
+          <MenuItem onClick={() => handleSettingsOptionClick("/settings/appearance")}>
+            <ListItemIcon>
+              <PaletteIcon sx={{ color: colors.text.secondary }} />
+            </ListItemIcon>
+            <ListItemText 
+              primary="Appearance" 
+              secondary="Theme and display settings"
+              primaryTypographyProps={{ color: colors.text.primary }}
+              secondaryTypographyProps={{ color: colors.text.secondary }}
+            />
+          </MenuItem>
+          <MenuItem onClick={() => handleSettingsOptionClick("/settings/llm")}>
+            <ListItemIcon>
+              <SmartToyIcon sx={{ color: colors.text.secondary }} />
+            </ListItemIcon>
+            <ListItemText 
+              primary="LLM Settings" 
+              secondary="Model and inference settings"
+              primaryTypographyProps={{ color: colors.text.primary }}
+              secondaryTypographyProps={{ color: colors.text.secondary }}
+            />
+          </MenuItem>
+          <MenuItem onClick={() => handleSettingsOptionClick("/settings/about")}>
+            <ListItemIcon>
+              <InfoIcon sx={{ color: colors.text.secondary }} />
+            </ListItemIcon>
+            <ListItemText 
+              primary="About" 
+              secondary="Version and system information"
+              primaryTypographyProps={{ color: colors.text.primary }}
+              secondaryTypographyProps={{ color: colors.text.secondary }}
+            />
+          </MenuItem>
+        </Menu>
+      </Stack>
       
     </Stack>
     <Stack 
@@ -159,7 +261,7 @@ export const ChatsList = () => {
       sx={{ 
         backgroundColor: colors.background.secondary,
         width: isSidebarOpen ? "260px" : "0px",
-        minWidth: isSidebarOpen?"260px": "0px",
+        minWidth: isSidebarOpen ? "260px" : "0px",
         transition: "width 0.2s ease-in-out",
         borderRight: `1px solid ${colors.border.divider}`,
         zIndex: 999,
@@ -169,33 +271,46 @@ export const ChatsList = () => {
 
       {/* Sidebar Content */}
       {isSidebarOpen && (
-        <Stack sx={{ height: "calc(100% - 48px)", overflow: "hidden", backgroundColor: colors.background.secondary }}>
-          {/* Action Buttons */}
-          
-
-          {/* Chat List */}
+        <Stack sx={{ 
+          height: "calc(100% - 48px)", 
+          overflow: "hidden",
+          backgroundColor: colors.background.secondary 
+        }}>
           <Stack 
-            className="overflow-auto"
             sx={{ 
               flexGrow: 1,
               p: 2,
               gap: 1,
               marginTop: 5,
+              height: "100%"
             }}
           >
             <SearchBar 
               onSearch={handleSearch}
               placeholder="Search"
             />
-            {filteredChats.map((chat) => (
-              <ChatsListItem
-                key={chat.id}
-                chat={chat}
-                active={chat.id === currentChatId}
-                onDelete={onDeleteHandler}
-                onClick={() => onChatClick(chat)}
-              />
-            ))}
+            
+            <div style={{ flex: 1 }}>
+              <AutoSizer>
+                {({ height, width }) => (
+                  <FixedSizeList
+                    height={height}
+                    width={width}
+                    itemCount={filteredChats.length}
+                    itemSize={38} // Adjust this based on your ChatListItem height
+                    itemData={{
+                      chats: filteredChats,
+                      currentChatId,
+                      onDelete: onDeleteHandler,
+                      onClick: onChatClick,
+                    }}
+                  >
+                    {ChatRow}
+                  </FixedSizeList>
+                )}
+              </AutoSizer>
+            </div>
+
             {searchQuery && filteredChats.length === 0 && (
               <Typography
                 variant="body2"
