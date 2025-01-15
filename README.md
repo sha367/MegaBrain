@@ -1,11 +1,11 @@
-# MegaChat
+# MegaBrain
 
-[![Build Status](https://github.com/sha367/megachat/actions/workflows/test-build.yml/badge.svg)](https://github.com/sha367/megachat/actions/workflows/test-build.yml)
-[![GitHub stars](https://img.shields.io/github/stars/sha367/megachat.svg?style=social&label=Star)](https://github.com/sha367/megachat)
+[![Build Status](https://github.com/sha367/megabrain/actions/workflows/test-build.yml/badge.svg)](https://github.com/sha367/megabrain/actions/workflows/test-build.yml)
+[![GitHub stars](https://img.shields.io/github/stars/sha367/megabrain.svg?style=social&label=Star)](https://github.com/sha367/megabrain)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-MegaChat is an open-source macOS desktop application designed to provide seamless chat experiences with advanced LLM (Large Language Model) integration. This application allows users to interact with AI models for various tasks, including text generation, summarization, and more.
+MegaBrain is an open-source macOS desktop application designed to provide seamless chat experiences with advanced LLM (Large Language Model) integration. This application allows users to interact with AI models for various tasks, including text generation, summarization, and more.
 
 ## Features
 
@@ -17,12 +17,12 @@ MegaChat is an open-source macOS desktop application designed to provide seamles
 
 ## Installation
 
-To install MegaChat on your macOS system, follow these steps:
+To install MegaBrain on your macOS system, follow these steps:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/sha367/MegaChat.git
-   cd MegaChat
+   git clone https://github.com/sha367/MegaBrain.git
+   cd MegaBrain
    ```
 
 2. **Install dependencies**:
