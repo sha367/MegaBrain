@@ -65,7 +65,6 @@ If you want to build from source or contribute to development:
 
 - macOS 10.15 (Catalina) or later
 - 4GB RAM minimum (8GB recommended)
-- [Ollama](https://ollama.ai) installed and running
 
 ## Contributing
 
