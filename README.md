@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/logo.jpg" alt="MegaBrain Logo" width="200" height="200" style="border-radius: 20px;"/>
+  <img src="https://github.com/user-attachments/assets/0a66a84d-6cc5-41b4-a681-404f06bd7e96" alt="MegaBrain Logo" width="200" height="200" style="border-radius: 20px;"/>
 </p>
 
 <h1 align="center">MegaBrain</h1>
