@@ -1,11 +1,27 @@
-# MegaBrain
+<p align="center">
+  <img src="src/logo.jpg" alt="MegaBrain Logo" width="200" height="200" style="border-radius: 20px;"/>
+</p>
 
-[![Build Status](https://github.com/sha367/MegaBrain/actions/workflows/test-build.yml/badge.svg)](https://github.com/sha367/MegaBrain/actions/workflows/test-build.yml)
-[![GitHub stars](https://img.shields.io/github/stars/sha367/MegaBrain.svg?style=social&label=Star)](https://github.com/sha367/MegaBrain)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+<h1 align="center">MegaBrain</h1>
 
-MegaBrain is an open-source macOS desktop application designed to provide seamless chat experiences with advanced LLM (Large Language Model) integration. This application allows users to interact with AI models for various tasks, including text generation, summarization, and more.
+<p align="center">
+  <a href="https://github.com/sha367/MegaBrain/actions/workflows/test-build.yml">
+    <img src="https://github.com/sha367/MegaBrain/actions/workflows/test-build.yml/badge.svg" alt="Build Status" />
+  </a>
+  <a href="https://github.com/sha367/MegaBrain">
+    <img src="https://img.shields.io/github/stars/sha367/MegaBrain.svg?style=social&label=Star" alt="GitHub stars" />
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" />
+  </a>
+  <a href="CONTRIBUTING.md">
+    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" />
+  </a>
+</p>
+
+<p align="center">
+  An open-source macOS desktop application designed to provide seamless chat experiences with advanced LLM integration.
+</p>
 
 ## Quick Installation
 
@@ -16,7 +32,7 @@ MegaBrain is an open-source macOS desktop application designed to provide seamle
 4. Open MegaBrain from your Applications folder
 5. If you see a security warning, go to System Preferences > Security & Privacy and click "Open Anyway"
 
-
+**Note**: You need to have [Ollama](https://ollama.ai) installed and running before using MegaBrain.
 
 ## Development Setup
 
