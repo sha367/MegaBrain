@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/logo.jpg" alt="MegaBrain Logo" width="200" height="200" style="border-radius: 20px;"/>
+  <img src="https://github.com/user-attachments/assets/0a66a84d-6cc5-41b4-a681-404f06bd7e96" alt="MegaBrain Logo" width="200" height="200" style="border-radius: 20px;"/>
 </p>
 
 <h1 align="center">MegaBrain</h1>
@@ -32,7 +32,6 @@
 4. Open MegaBrain from your Applications folder
 5. If you see a security warning, go to System Preferences > Security & Privacy and click "Open Anyway"
 
-**Note**: You need to have [Ollama](https://ollama.ai) installed and running before using MegaBrain.
 
 ## Development Setup
 
@@ -66,7 +65,6 @@ If you want to build from source or contribute to development:
 
 - macOS 10.15 (Catalina) or later
 - 4GB RAM minimum (8GB recommended)
-- [Ollama](https://ollama.ai) installed and running
 
 ## Contributing
 
