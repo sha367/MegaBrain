@@ -32,7 +32,6 @@
 4. Open MegaBrain from your Applications folder
 5. If you see a security warning, go to System Preferences > Security & Privacy and click "Open Anyway"
 
-**Note**: You need to have [Ollama](https://ollama.ai) installed and running before using MegaBrain.
 
 ## Development Setup
 
