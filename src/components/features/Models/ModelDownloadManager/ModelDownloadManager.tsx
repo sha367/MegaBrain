@@ -23,8 +23,9 @@ export const ModelDownloadManager: React.FC = () => {
         bottom: 20,
         right: 20,
         maxWidth: 300,
-        bgcolor: colors.background.secondary,
+        bgcolor: colors.background.primary,
         borderRadius: 2,
+        border: `1px solid ${colors.border.divider}`,
         p: 2,
         boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
         zIndex: 1000,
@@ -32,7 +33,7 @@ export const ModelDownloadManager: React.FC = () => {
       spacing={2}
     >
       <Typography variant="subtitle2" color={colors.text.primary}>
-        Downloads
+        Download Manager
       </Typography>
       {Object.entries(downloads).map(([modelName, task]) => (
         <Stack key={modelName} spacing={1}>
