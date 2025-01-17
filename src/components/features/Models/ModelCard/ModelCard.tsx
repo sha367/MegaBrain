@@ -1,11 +1,17 @@
-import { BASE_URL } from "@/lib/utils/apiClient";
-import { Stack, Typography, LinearProgress, IconButton, Chip } from "@mui/material";
-import { useCallback, useState } from "react";
+import { Stack, Typography, LinearProgress, IconButton, Chip, Box, Tooltip } from "@mui/material";
+import { useState } from "react";
 import { IModel } from "server/controllers/ModelsControllers";
-import { DeleteOutline, Download, Memory, Storage } from "@mui/icons-material";
+import { DeleteOutline, Download, Memory, Storage, Schedule, Timer, Warning, Psychology } from "@mui/icons-material";
 import { useTheme } from "@/context/ThemeContext";
 import { downloadStore } from "@/store/modelDownloadStore";
 import { useSnapshot } from "valtio";
+import { downloadedModelsStore } from "@/store/downloadedModelsStore";
+import { formatDistanceToNow, parseISO, isValid } from "date-fns";
+import { ReadmeModal } from "../ReadmeModal/ReadmeModal";
+import { formatEstimatedTime } from "@/utils/formatters";
+import { useDeviceRAM } from "@/hooks/useDeviceRAM";
+import { isTopModel } from "@/constants/topModels";
+import { BASE_URL } from "@/lib/utils/apiClient";
 
 interface IModelCardProps {
   model: IModel;
@@ -19,33 +25,51 @@ const formatSize = (sizeInBytes: string): string => {
   return `${Math.round(mb)} MB`;
 };
 
-export const ModelCard = (props: IModelCardProps) => {
-  const { theme } = useTheme();
-  const { colors } = theme;
-  const { model, isDownloaded, onChanged } = props;
-  const downloadStatus = useSnapshot(downloadStore.state).downloads[model.name];
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingStatus, setLoadingStatus] = useState("");
-  const [progress, setProgress] = useState(0);
-  console.log('model'+isDownloaded, model);
-  const calculateProgress = (data: { completed?: number; total?: number }) => {
-    if (data.completed && data.total) {
-      return Math.floor((data.completed / data.total) * 100);
+const formatUpdateTime = (updated: string): string => {
+  try {
+    // Try parsing as ISO date first
+    const date = parseISO(updated);
+    if (isValid(date)) {
+      return `Updated ${formatDistanceToNow(date)} ago`;
     }
 
-    return 0;
+    // If it's already a relative time string (e.g., "3 months ago")
+    if (updated.toLowerCase().includes("ago")) {
+      return `Updated ${updated}`;
+    }
+
+    // Fallback
+    return updated;
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return updated;
   }
+};
 
-  const handleDownload = useCallback(async () => {
-    await downloadStore.actions.enqueueDownload({ name: model.name });
-  }, [model.name]);
+export const ModelCard = (props: IModelCardProps) => {
+  const [readmeOpen, setReadmeOpen] = useState(false);
+  const { theme } = useTheme();
+  const { colors } = theme;
+  const { model, onChanged } = props;
+  const { models: downloadedModels, modelsDetails } = useSnapshot(downloadedModelsStore.state);
+  const { downloads } = useSnapshot(downloadStore.state);
+  const isDownloaded = downloadedModels.includes(model.name);
+  const modelDetails = modelsDetails.find(m => m.name === model.name);
+  const downloadStatus = downloads[model.name];
+  const totalRAM = useDeviceRAM();
+  console.log("model",model);
+  console.log("modelDetails",modelDetails);
+  const hasReadme = Boolean(model?.readme);
+  const handleDownload = () => {
+    if (!isDownloaded && !downloadStatus) {
+      downloadStore.actions.queueDownload({"name":model.name});
+    }
+  };
 
-  const handleDelete = useCallback(async () => {
-    setIsLoading(true);
-    setLoadingStatus('');
-
-    try {
+  const handleDelete = async () => {
+    if (isDownloaded) {
+      try {
+     
       const response = await fetch(`${BASE_URL}/api/model/delete`, {
         method: "POST",
         headers: {
@@ -56,106 +80,196 @@ export const ModelCard = (props: IModelCardProps) => {
 
       if (response.ok) {
         const data = await response.json();
-        setLoadingStatus(data.message);
       } else {
         const errorData = await response.json();
-        setLoadingStatus(errorData.message || "Unknown error occurred");
+        // setLoadingStatus(errorData.message || "Unknown error occurred");
       }
-    } catch (error) {
-      setLoadingStatus("Error deleting model. Please try again.");
-      console.error("Error deleting model:", error);
-    } finally {
-      setIsLoading(false);
-      onChanged?.();
+   
+        // await OLLAMA.DELETE({ name: model.name });
+        downloadedModelsStore.actions.removeModel(model.name);
+        onChanged?.();
+      } catch (error) {
+        console.error("Error deleting model:", error);
+      }
     }
-  }, [model.name, onChanged]);
+  };
+
+  const getModelSize = (): number => {
+    if (model.tags && model.tags.length > 0) {
+      return model.tags.filter((t:IModel)=>t.name == model.name)[0]?.size;
+     
+    }
+    return 0;
+  };
+
+  const shouldShowWarning = (): boolean => {
+    const modelSize = getModelSize();
+    // Convert model size to GB for comparison (assuming modelSize is in bytes)
+    const modelSizeGB = modelSize / (1024 * 1024 * 1024);
+    // Show warning if model size is more than 70% of available RAM
+    return totalRAM > 0 && modelSizeGB > (totalRAM * 0.7);
+  };
 
   return (
     <Stack
-      key={model.name}
+      spacing={2}
       sx={{
-        border: `1px solid ${colors.border.divider}`,
-        borderRadius: "12px",
         p: 2,
-        backgroundColor: colors.background.secondary,
-        transition: "all 0.2s ease-in-out",
-        gap: 1,
-        "&:hover": {
-          backgroundColor: colors.background.input,
-          transform: "translateY(-1px)",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-        },
+        border: `1px solid ${colors.border.divider}`,
+        borderRadius: 1,
+        backgroundColor: colors.background.paper,
       }}
     >
-      <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <Typography variant="subtitle1" sx={{ fontWeight: 500, color: colors.text.primary }}>
-          {model.name}
-        </Typography>
+      <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Typography 
+            variant="subtitle1" 
+            component={hasReadme ? "button" : "div"}
+            onClick={hasReadme ? () => setReadmeOpen(true) : undefined}
+            sx={{ 
+              color: colors.text.primary,
+              ...(hasReadme && {
+                cursor: "pointer",
+                background: "none",
+                border: "none",
+                padding: 0,
+                font: "inherit",
+                textAlign: "left",
+                "&:hover": {
+                  color: colors.primary,
+                },
+              }),
+            }}
+          >
+            {model.name}
+          </Typography>
+          {shouldShowWarning() && (
+            <Tooltip title={`This model may run slowly on your device (${totalRAM}GB RAM available)`}>
+              <Warning sx={{ 
+                color: colors.warning,
+                fontSize: 20,
+              }} />
+            </Tooltip>
+          )}
+        </Stack>
         {isDownloaded ? (
-          <IconButton disabled={isLoading} color="error" onClick={handleDelete} size="small">
+          <IconButton onClick={handleDelete} sx={{ color: colors.error }}>
             <DeleteOutline />
           </IconButton>
         ) : (
-          <IconButton disabled={isLoading} onClick={handleDownload} size="small" color="primary">
+          <IconButton 
+            onClick={handleDownload} 
+            disabled={!!downloadStatus}
+            sx={{ color: colors.text.primary }}
+          >
             <Download />
           </IconButton>
         )}
       </Stack>
 
-      {isDownloaded && <Stack direction="row" spacing={1}>
-        <Chip
-          icon={<Storage sx={{ fontSize: 16, color: colors.text.secondary }} />}
-          label={formatSize(model?.size?.toString() ?? '')}
-          size="small"
-          variant="outlined"
-          sx={{
-            color: colors.text.secondary,
-            borderColor: colors.border.divider,
-            "& .MuiChip-label": {
-              color: colors.text.secondary,
-            },
-          }}
-        />
-        {model.details?.quantization_level && <Chip
-          icon={<Memory sx={{ fontSize: 16, color: colors.text.secondary }} />}
-          label={model.details?.quantization_level}
-          size="small"
-          variant="outlined"
-          sx={{
-            color: colors.text.secondary,
-            borderColor: colors.border.divider,
-            "& .MuiChip-label": {
-              color: colors.text.secondary,
-            },
-          }}
-        />}
-      </Stack>}
+      <Typography variant="body2" sx={{ color: colors.text.secondary }}>
+        {model?.description}
+      </Typography>
 
-      <Stack direction="row" spacing={1} alignItems="center">
-        <Typography variant="caption" sx={{ color: colors.text.secondary }}>
-          Context: {model?.details?.parameter_size?.toLocaleString()} 
-        </Typography>
-        <Typography variant="caption" sx={{ color: colors.text.secondary }}>
-          •
-        </Typography>
-        <Typography variant="caption" sx={{ color: colors.text.secondary }}>
-          Type: {model.details?.family}
-        </Typography>
+      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+        {isDownloaded && modelDetails?.size && (
+          <Chip
+            icon={<Storage sx={{ fontSize: 16 }} />}
+            label={formatSize(modelDetails?.size?.toString() ?? "")}
+            size="small"
+            color="primary"
+            variant="outlined"
+          />
+        )}
+        {!isDownloaded && model?.tags?.length > 0 && (
+          <Chip
+            icon={<Storage sx={{ fontSize: 16 }} />}
+            label={model.tags.filter((t:IModel)=>t.name == model.name)[0]?.sizeHumanReadable ?? ""}
+            size="small"
+            color="primary"
+            variant="outlined"
+          />
+        )}
+        {model.pullCount && (
+          <Chip
+            icon={<Memory sx={{ fontSize: 16 }} />}
+            label={`${model.pullCount} Pulls`}
+            size="small"
+            color="primary"
+            variant="outlined"
+          />
+        )}
+        {model?.updated && (
+          <Chip
+            icon={<Schedule sx={{ fontSize: 16 }} />}
+            label={formatUpdateTime(model?.updated)}
+            size="small"
+            color="primary"
+            variant="outlined"
+          />
+        )}
+        {model.size && (
+          <Chip
+            icon={<Storage sx={{ fontSize: 16 }} />}
+            label={model.size}
+            size="small"
+            color="primary"
+            variant="outlined"
+          />
+        )}
+         {/* Add capabilities chips */}
+         {model.capabilities?.split(",").map((capability: string) => (
+          <Chip
+            key={capability.trim()}
+            icon={<Psychology sx={{ fontSize: 16 }} />}
+            label={capability.trim()}
+            size="small"
+            color="secondary"
+            variant="outlined"
+            sx={{
+              borderColor: colors.border.divider,
+              color: colors.text.secondary,
+              "& .MuiChip-icon": {
+                color: colors.text.secondary,
+              },
+            }}
+          />
+        ))}
+        {!isDownloaded && getModelSize() > 0 && (
+          <Chip
+            icon={<Timer sx={{ fontSize: 16 }} />}
+            label={formatEstimatedTime(getModelSize())}
+            size="small"
+            color="primary"
+            variant="outlined"
+          />
+        )}
       </Stack>
 
-      {loadingStatus && (
-        <Typography variant="caption" sx={{ color: colors.text.secondary }}>
-          {loadingStatus}
-        </Typography>
-      )}
       
       {downloadStatus && (
-        <LinearProgress 
-          variant="determinate" 
-          value={downloadStatus.progress} 
-          sx={{ height: 4, borderRadius: 2 }}
-        />
+        <Box>
+          <LinearProgress 
+            variant="determinate" 
+            value={downloadStatus.progress} 
+            sx={{ mb: 1 }}
+          />
+          <Typography variant="caption" sx={{ color: colors.text.secondary }}>
+            {downloadStatus.status === "downloading" 
+              ? `Downloading: ${downloadStatus.progress.toFixed(1)}%`
+              : downloadStatus.status}
+          </Typography>
+        </Box>
       )}
+
+      <ReadmeModal
+        open={readmeOpen}
+        onClose={() => setReadmeOpen(false)}
+        title={model.name}
+        content={model?.readme ?? ""}
+      />
+
+     
     </Stack>
   );
 };

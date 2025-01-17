@@ -1,5 +1,6 @@
 import { proxy, subscribe } from "valtio";
 import { PULL_MODEL, IPullModelParams, IModel } from "@/api/v1/models";
+import { downloadedModelsActions } from "./downloadedModelsStore";
 
 export interface DownloadTask {
   modelName: string;
@@ -46,7 +47,9 @@ const mapApiStatusToDownloadStatus = (apiStatus: string): DownloadTask["status"]
 
 // Actions
 export const modelDownloadActions = {
-  enqueueDownload: async (params: IPullModelParams) => {
+  queueDownload: async (params: IPullModelParams) => {
+    console.log("queueDownload", params);
+    
     // If already downloading or queued, skip
     if (state.downloads[params.name]) return;
 
@@ -68,6 +71,8 @@ export const modelDownloadActions = {
     if (state.activeDownloads >= state.maxConcurrent || state.queue.length === 0) return;
 
     const modelName = state.queue[0];
+    console.log("state.queue",state.queue);
+    
     state.queue.splice(0, 1); // Remove from queue
     state.activeDownloads += 1;
     state.downloads[modelName].status = "downloading";
@@ -90,6 +95,7 @@ await PULL_MODEL(
 
       state.downloads[modelName].status = "completed";
       state.downloads[modelName].progress = 100;
+      await downloadedModelsActions.fetchDownloadedModels();
     } catch (error) {
       console.error(error);
       state.downloads[modelName].status = "error";

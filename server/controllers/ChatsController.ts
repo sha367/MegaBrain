@@ -28,7 +28,7 @@ export class ChatsController {
         res.status(400).json({ message: "Name and model are required" });
         return;
       }
-
+      // console.log("createChat log", name, model);
       const db = openDb();
       const result = db
         .prepare(

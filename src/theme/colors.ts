@@ -3,6 +3,8 @@ export const lightTheme = {
     background: {
       primary: "#FFFFFF",    // Primary Background
       secondary: "#25292e11",  // Secondary Background
+      hover: "#F1F3F4",
+      popover: "#F1F3F4aa",
       input: "#FFFFFF",      // Input Field Background
       userBubble: "#E8F0FE", // Chat Bubble (User)
       botBubble: "#F1F3F4"   // Chat Bubble (Bot)
@@ -21,7 +23,8 @@ export const lightTheme = {
     },
     border: {
       divider: "#E0E0E0",   // Divider/Border
-      input: "#DADCE0"      // Input Field Border
+      input: "#DADCE0" ,
+      hover: "#DDDCE0" // Input Field Border
     },
     error: "#f44336"
   }

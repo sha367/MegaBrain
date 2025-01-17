@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/utils/apiClient";
 import { BASE_URL } from "@/lib/utils/apiClient";
+import { errorStore } from "@/store/errorStore";
 
 export interface IModel {
   name: string;
@@ -68,7 +69,8 @@ export const PULL_MODEL = async (
         const progress = JSON.parse(chunk);
         onProgress(progress);
       } catch (error) {
-        console.error("Error parsing chunk:", chunk);
+        errorStore.actions.showError(`Error in model pull: ${error}`);
+        console.error("Error parsing chunk2:", chunk);
       }
     }
   }

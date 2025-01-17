@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { openDb } from "./../database";
+import { errorStore } from "@/store/errorStore";
 
 export interface IMessage {
   id: number;
@@ -111,20 +112,14 @@ export class MessagesController {
   public static async llmChat(req: Request, res: Response): Promise<void> {
     try {
       const { chat_id } = req.body;
-
       if (!chat_id) {
         res.status(400).json({ message: "Chat ID is required" });
         return;
       }
 
-      const db = openDb(); // `openDb()` теперь возвращает синхронный объект better-sqlite3.Database
+      const db = openDb();
 
-      // Получение последних 20 сообщений
-      const messages = db
-        .prepare("SELECT * FROM messages WHERE chat_id = ? ORDER BY created_at DESC LIMIT 20")
-        .all(Number(chat_id)) as IMessage[];
-
-      // Получение информации о чате
+      // Get chat model info first
       const chat = db
         .prepare("SELECT id, model FROM chats WHERE id = ?")
         .get(Number(chat_id)) as { id: number; model: string };
@@ -134,62 +129,103 @@ export class MessagesController {
         return;
       }
 
-      const ollamaResponse = await fetch("http://127.0.0.1:11434/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: chat.model,
-          messages: messages.reverse().map((m) => ({ role: m.role, content: m.content })),
-        }),
-      });
+      // Get messages after validating chat exists
+      const messages = db
+        .prepare("SELECT * FROM messages WHERE chat_id = ? ORDER BY created_at DESC LIMIT 20")
+        .all(Number(chat_id)) as IMessage[];
 
-      if (!ollamaResponse.body) {
-        throw new Error("No response body from Ollama");
-      }
+      try {
+        const ollamaResponse = await fetch("http://127.0.0.1:11434/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: chat.model,
+            messages: messages.reverse().map((m) => ({ role: m.role, content: m.content })),
+          }),
+        });
 
-      const reader = ollamaResponse.body.getReader();
-      const decoder = new TextDecoder();
-      let done = false;
-      let totalLength = 0;
-      let messageContent = "";
+        // Set up streaming response
+        res.setHeader("Content-Type", "application/json");
+        res.flushHeaders();
 
-      res.setHeader("Content-Type", "application/json");
-      res.flushHeaders();
+        if (!ollamaResponse.body) {
+          throw new Error("No response body from Ollama");
+        }
 
-      while (!done) {
-        const { value, done: doneReading } = await reader.read();
-        done = doneReading;
+        const reader = ollamaResponse.body.getReader();
+        const decoder = new TextDecoder();
+        let done = false;
+        let totalLength = 0;
+        let messageContent = "";
+console.log("ollamaResponse", ollamaResponse);
 
-        if (value) {
-          const chunk = decoder.decode(value, { stream: !done });
-          totalLength += chunk.length;
+        while (!done) {
+          const { value, done: doneReading } = await reader.read();
+          done = doneReading;
 
-          if (totalLength > 500000) {
-            res.write(JSON.stringify({ message: "Response truncated after 500000 characters" }));
-            break;
-          }
+          if (value) {
+            const chunk = decoder.decode(value, { stream: !done });
+            totalLength += chunk.length;
 
-          try {
-            const parsed = JSON.parse(chunk);
-            messageContent += parsed.message.content || "";
-            res.write(JSON.stringify(parsed));
-          } catch (error) {
-            console.error("Error parsing chunk:", chunk);
+            if (totalLength > 500000) {
+              res.write(JSON.stringify({ message: "Response truncated after 500000 characters" }));
+              break;
+            }
+
+            // Split the chunk by newlines and parse each line separately
+            const lines = chunk.split("\n").filter(line => line.trim());
+            for (const line of lines) {
+              try {
+                const parsed = JSON.parse(line);
+                
+                // Check for error in the first message
+                if (parsed.error) {
+                  if (!res.headersSent) {
+                    res.status(400).json({ 
+                      message: "Model error", 
+                      error: parsed.error,
+                      type: "MODEL_ERROR" 
+                    });
+                  }
+                  return;
+                }
+
+                messageContent += parsed.message?.content || "";
+                res.write(`${line}\n`);
+              } catch (error) {
+                console.error("Error parsing line:", line);
+                continue;
+              }
+            }
           }
         }
-      }
 
-      if (messageContent) {
-        db.prepare(
-          "INSERT INTO messages (content, role, chat_id, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)"
-        ).run(messageContent, "assistant", chat_id);
-      }
+        if (messageContent) {
+          db.prepare(
+            "INSERT INTO messages (content, role, chat_id, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)"
+          ).run(messageContent, "assistant", chat_id);
+        }
 
-      res.end();
+        res.end();
+      } catch (error) {
+        if (!res.headersSent) {
+          res.status(500).json({ 
+            message: "Error processing LLM chat", 
+            error: error instanceof Error ? error.message : "Unknown error",
+            type: "PROCESSING_ERROR"
+          });
+        }
+      }
     } catch (error) {
-      res.status(500).json({ message: "Error processing LLM chat", error });
+      if (!res.headersSent) {
+        res.status(500).json({ 
+          message: "Error in chat controller", 
+          error: error instanceof Error ? error.message : "Unknown error",
+          type: "CONTROLLER_ERROR"
+        });
+      }
     }
   }
 }

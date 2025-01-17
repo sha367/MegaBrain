@@ -1,114 +1,97 @@
-import { Send, Add, Language, KeyboardVoice } from "@mui/icons-material";
-import { IconButton, Stack, TextField, Typography } from "@mui/material";
-import { useState } from "react";
+import { Stack, IconButton, TextField } from "@mui/material";
+import { Send, StopRounded } from "@mui/icons-material";
 import { useTheme } from "@/context/ThemeContext";
+import { useState, KeyboardEvent } from "react";
 
-interface IChatBottomPanelProps {
+interface ChatBottomPanelProps {
   disabled?: boolean;
   onSendMessage: (message: string) => void;
+  onStopGeneration?: () => void;
+  isGenerating?: boolean;
 }
 
-export const ChatBottomPanel = (props: IChatBottomPanelProps) => {
-  const { disabled, onSendMessage } = props;
+export const ChatBottomPanel = ({ 
+  disabled, 
+  onSendMessage, 
+  onStopGeneration,
+  isGenerating = false
+}: ChatBottomPanelProps) => {
+  const [message, setMessage] = useState("");
   const { theme } = useTheme();
   const { colors } = theme;
-  const [message, setMessage] = useState<string>("");
 
-  const sendMessage = async () => {
-    try {
-      const trimmedMessage = message.trim();
-      if (!trimmedMessage) return;
-      onSendMessage(message);
+  const handleSend = () => {
+    if (message.trim()) {
+      onSendMessage(message.trim());
       setMessage("");
-    } catch (error) {
-      console.error("Error sending message", error);
+    }
+  };
+
+  const handleKeyPress = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      handleSend();
     }
   };
 
   return (
-    <Stack 
-      className="flex flex-col items-center justify-center w-full max-w-[48rem]"
+    <Stack
+      direction="row"
       spacing={1}
-      sx={{ p: 2 }}
+      sx={{
+        width: "100%",
+        maxWidth: "800px",
+        p: 2,
+        backgroundColor: colors.background.secondary,
+        borderRadius: "12px",
+      }}
     >
-      <Stack 
-        direction="row" 
-        spacing={1}
+      <TextField
+        fullWidth
+        multiline
+        maxRows={4}
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        onKeyPress={handleKeyPress}
+        disabled={disabled || isGenerating}
+        placeholder="Type a message..."
         sx={{
-          width: "100%",
-          backgroundColor: colors.background.secondary,
-          borderRadius: "8px",
-          border: `1px solid ${colors.border.divider}`,
-          p: 1,
+          "& .MuiOutlinedInput-root": {
+            backgroundColor: colors.background.paper,
+            color: colors.text.primary,
+            "& fieldset": {
+              borderColor: colors.border.divider,
+            },
+            "&:hover fieldset": {
+              borderColor: colors.border.hover,
+            },
+            "&.Mui-focused fieldset": {
+              borderColor: colors.primary,
+            },
+          },
+        }}
+      />
+      <IconButton
+        onClick={handleSend}
+        disabled={disabled || !message.trim()}
+        sx={{
+          backgroundColor: colors.background.paper,
+          color: isGenerating 
+            ? colors.error.main 
+            : message.trim() 
+              ? colors.primary 
+              : colors.text.disabled,
+          "&:hover": {
+            backgroundColor: colors.background.hover,
+          },
+          "&.Mui-disabled": {
+            backgroundColor: colors.background.paper,
+            color: colors.text.disabled,
+          },
         }}
       >
-        <IconButton 
-          size="small"
-          sx={{ color: colors.text.secondary }}
-        >
-          <Add sx={{ fontSize: 20 }} />
-        </IconButton>
-        <IconButton 
-          size="small"
-          sx={{ color: colors.text.secondary }}
-        >
-          <Language sx={{ fontSize: 20 }} />
-        </IconButton>
-        <TextField
-          fullWidth
-          multiline
-          maxRows={4}
-          disabled={disabled}
-          placeholder="Message MegaBrain..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              border: "none",
-              "& fieldset": { border: "none" },
-              backgroundColor: "transparent",
-              color: colors.text.primary,
-            },
-            "& .MuiInputBase-input": {
-              "&::placeholder": {
-                color: colors.text.placeholder,
-                opacity: 1,
-              },
-            },
-          }}
-        />
-        <IconButton 
-          size="small"
-          sx={{ color: colors.text.secondary }}
-        >
-          <KeyboardVoice sx={{ fontSize: 20 }} />
-        </IconButton>
-        <IconButton 
-          size="small"
-          onClick={sendMessage} 
-          disabled={disabled || !message.trim()}
-          sx={{ 
-            color: message.trim() 
-              ? colors.accent.main 
-              : colors.text.secondary,
-            "&.Mui-disabled": {
-              color: colors.text.secondary,
-            }
-          }}
-        >
-          <Send sx={{ fontSize: 20 }} />
-        </IconButton>
-      </Stack>
-      <Typography 
-        variant="caption" 
-        sx={{ 
-          color: colors.text.secondary,
-          textAlign: "center" 
-        }}
-      >
-        MegaBrain can make mistakes. Consider checking important information.
-      </Typography>
+        {isGenerating ? <StopRounded /> : <Send />}
+      </IconButton>
     </Stack>
   );
 };

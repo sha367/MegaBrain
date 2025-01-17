@@ -2,11 +2,12 @@ import { GET_MESSAGES, IMessage, POST_MESSAGE } from "@/api/v1";
 import { MessageBlock } from "@/components";
 import { ChatBottomPanel } from "@/components/widgets/ChatBottomPanel";
 import { BASE_URL } from "@/lib/utils/apiClient";
-import { Edit, Lens } from "@mui/icons-material";
-import { Stack, Typography } from "@mui/material";
+import { Edit, Lens, StopRounded } from "@mui/icons-material";
+import { Stack, Typography, IconButton } from "@mui/material";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useTheme } from "@/context/ThemeContext";
+import { errorStore } from "@/store/errorStore";
 
 
 export const ChatPage = () => {
@@ -15,11 +16,15 @@ export const ChatPage = () => {
   const [loading, setLoading] = useState(false);
   const [botTypingMessage, setBotTypingMessage] = useState('');
   const [isBotTyping, setIsBotTyping] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);  // Ссылка на конец списка сообщений
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);  // Ссылка на контейнер сообщений
   const { theme } = useTheme();
   const { colors } = theme;
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+
   const fetchMessages = useCallback(async () => {
     try {
       setLoading(true);
@@ -30,7 +35,12 @@ export const ChatPage = () => {
         throw new Error('Error fetching messages');
       }
 
-      setMessages(data.items || []);
+      // Sort messages by date (oldest first)
+      const sortedMessages = [...data.items].sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
+      
+      setMessages(sortedMessages);
     } catch (error) {
       console.error(error);
     } finally {
@@ -38,18 +48,44 @@ export const ChatPage = () => {
     }
   }, [id]);
 
+  const stopGeneration = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setIsGenerating(false);
+      setIsBotTyping(false);
+      setBotTypingMessage("");
+    }
+  }, []);
+
   const llmChat = useCallback(async () => {
     try {
       setIsBotTyping(true);
-      setBotTypingMessage('');
+      setIsGenerating(true);
+      setBotTypingMessage("");
+
+      // Create new AbortController for this request
+      abortControllerRef.current = new AbortController();
 
       const response = await fetch(`${BASE_URL}/api/llmChat`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ chat_id: id! }),
+        signal: abortControllerRef.current.signal,
       });
+
+      // Check for error response first
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (errorData.type === "MODEL_ERROR") {
+          errorStore.actions.showError(`Model Error: ${errorData.error}`);
+        } else {
+          errorStore.actions.showError(`Server Error: ${errorData.message}`);
+        }
+        return;
+      }
 
       if (!response.body) {
         throw new Error('No response body from server');
@@ -58,8 +94,8 @@ export const ChatPage = () => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let done = false;
-      let messageContent = '';
-
+      let messageContent = "";
+      
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
@@ -68,33 +104,41 @@ export const ChatPage = () => {
           const chunk = decoder.decode(value, { stream: !done });
           try {
             const parsed = JSON.parse(chunk);
-            messageContent += parsed.message.content || '';
+            messageContent += parsed.message.content || "";
             setBotTypingMessage(messageContent);
           } catch (error) {
-            console.error('Error parsing chunk:', chunk);
+            console.error("Error parsing chunk:", chunk);
+            continue;
           }
         }
       }
 
-      setMessages((prev) => [
-        {
+      if (messageContent) {
+        const newMessage = {
           id: String(Date.now()),
           content: messageContent,
-          role: 'assistant',
+          role: "assistant",
           chat_id: id!,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        ...prev,
-      ]);
+          updated_at: new Date().toISOString(),
+        };
+        
+        setMessages((prev) => [...prev, newMessage]);
+      }
 
-      setBotTypingMessage('');
-
+      setBotTypingMessage("");
     } catch (error) {
-      console.error('Error in llmChat:', error);
-      setBotTypingMessage('Error occurred while chatting');
+      if (error instanceof Error && error.name === "AbortError") {
+        // Handle abort silently
+        return;
+      }
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      errorStore.actions.showError(`Chat Error: ${errorMessage}`);
+      console.error("Error in llmChat:", error);
     } finally {
+      setIsGenerating(false);
       setIsBotTyping(false);
+      abortControllerRef.current = null;
     }
   }, [id]);
 
@@ -103,12 +147,13 @@ export const ChatPage = () => {
       setLoading(true);
       const response = await POST_MESSAGE({ content, chat_id: Number(id) });
       const data = response?.data;
-
+     
       if (!data) {
         throw new Error('Error sending message');
       }
 
-      setMessages((prev) => [data, ...prev]);
+      // Add new message maintaining chronological order
+      setMessages((prev) => [...prev, data]);
 
       await llmChat();
     } catch (error) {
@@ -116,30 +161,47 @@ export const ChatPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, llmChat]);
 
   useEffect(() => {
     fetchMessages();
   }, [fetchMessages]);
 
-  // Функция для прокрутки блока вниз
-  const scrollToBottom = () => {
-    if (messagesEndRef.current) {
-      const container = messagesContainerRef.current;
-      if (container) {
-        const isScrolledToBottom =
-          container.scrollHeight - container.scrollTop - container.clientHeight <= 100;
+  // Function to check if user is near bottom
+  const isNearBottom = useCallback(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return false;
+    
+    const threshold = 100; // pixels from bottom
+    const position = container.scrollHeight - container.scrollTop - container.clientHeight;
+    return position <= threshold;
+  }, []);
 
-        if (isScrolledToBottom) {
-          messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-        }
-      }
+  // Function to scroll to bottom
+  const scrollToBottom = useCallback(() => {
+    if (messagesEndRef.current && shouldAutoScroll) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  };
+  }, [shouldAutoScroll]);
 
+  // Handle scroll events
+  const handleScroll = useCallback(() => {
+    setShouldAutoScroll(isNearBottom());
+  }, [isNearBottom]);
+
+  // Scroll on new messages or typing updates
   useEffect(() => {
-    scrollToBottom();  // Прокрутка вниз при изменении сообщений
-  }, [messages]);
+    scrollToBottom();
+  }, [messages, botTypingMessage, scrollToBottom]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   return (
     <Stack className="flex-grow overflow-hidden p-2" sx={{
@@ -149,14 +211,14 @@ export const ChatPage = () => {
       <Stack
         ref={messagesContainerRef}
         sx={{
-          paddingTop: 7,
+          paddingY: 2,
           paddingX: 2,
         }}
         className="flex-grow overflow-auto gap-2 scroll-auto"
-        onScroll={scrollToBottom}
+        onScroll={handleScroll}
       >
         {messages.length > 0 ? (
-          [...messages].reverse().map((message) => (
+          messages.map((message) => (
             <MessageBlock key={message.id} message={message} />
           ))
         ) : (
@@ -180,14 +242,14 @@ export const ChatPage = () => {
           {botTypingMessage && (
             <MessageBlock
               message={{
-                id: 'typing',
+                id: "typing",
                 content: botTypingMessage,
-                role: 'assistant',
-                }}
+                role: "assistant",
+              }}
             />
           )}
 
-          <Stack flexDirection='row' className={`flex items-end ${isBotTyping ? 'opacity-100' : 'opacity-0'}`}>
+          <Stack flexDirection="row" className={`flex items-end ${isBotTyping ? "opacity-100" : "opacity-0"}`}>
             <Edit />
             <Lens style={{ fontSize: 10 }} className="animate-[ping_0.9s_ease_0.3s_infinite]" />
             <Lens style={{ fontSize: 10 }} className="animate-[ping_0.9s_ease_0.4s_infinite]" />
@@ -198,8 +260,13 @@ export const ChatPage = () => {
         <div ref={messagesEndRef} />
       </Stack>
 
-      <Stack className="flex flex-row items-center justify-center">
-        <ChatBottomPanel disabled={loading} onSendMessage={onSendMessage} />
+      <Stack className="flex flex-row items-center justify-center gap-2">
+        <ChatBottomPanel 
+          disabled={loading} 
+          onSendMessage={onSendMessage}
+          onStopGeneration={stopGeneration}
+          isGenerating={isGenerating}
+        />
       </Stack>
     </Stack>
   );
