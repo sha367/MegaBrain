@@ -85,3 +85,6 @@ If you encounter any issues:
 
 - Thanks to all contributors who have helped make this project better.
 - Special thanks to the open-source community for their support and inspiration.
+
+## Star History 
+[![Star History Chart](https://api.star-history.com/svg?repos=sha367/MegaBrain&type=Date)](https://star-history.com/#sha367/MegaBrain&Date)
