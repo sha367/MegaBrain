@@ -9,6 +9,7 @@ export default defineConfig({
   plugins: [
     UnoCSS(),
     react(),
+    process.env.VITE_IS_ELECTRON === '1' &&
     electron({
       main: {
         // Shortcut of `build.lib.entry`.
