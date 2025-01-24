@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    /* Language Settings */
+    "target": "ESNext",
+    "lib": ["ES2020", "DOM"],                    // Include necessary libraries
+
+    /* Module Settings */
+    "module": "ESNext",
+    "moduleResolution": "Node16",
+    "allowJs": true,
+    "allowImportingTsExtensions": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+
+    /* Paths and Base Configuration */
+    "baseUrl": ".",                              // Base directory for module resolution
+    "outDir": "dist",
+    "paths": {
+      "@/*": ["./src/*"]                         // Alias for `src/`
+    },
+    "moduleDetection": "force",
+
+    /* TypeScript Features */
+    "strict": true,                              // Enable strict type checking
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  },
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
+  },
+  "include": ["./**/*.ts", "./**/*.json"],  // Include all TypeScript and JSON files
+  "exclude": ["node_modules", "dist"]
+}

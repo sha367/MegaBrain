@@ -11,23 +11,23 @@ import { ErrorSnackbar } from "@/components/shared/ErrorSnackbar/ErrorSnackbar";
 const AppContent = () => {
   const { theme } = useTheme();
   const { colors } = theme;
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    window.ipcRenderer?.invoke("get:loading").then((loading) => {
-      setLoading(loading.value);
-    });
+    // window.ipcRenderer?.invoke("get:loading").then((loading) => {
+    //   setLoading(loading.value);
+    // });
 
-    window.ipcRenderer?.on("set-loading", (_, loading) => {
-      setLoading(loading.value);
-    });
+    // window.ipcRenderer?.on("set-loading", (_, loading) => {
+    //   setLoading(loading.value);
+    // });
   }, []);
-
+console.log("loading", loading);
   return (
     <>
       {loading ? (
         <AppLoader />
-      ) : (
+      ) : 
         <Stack className="relative flex flex-col h-screen">
           {/* <AppHeader /> */}
           <Stack 
@@ -43,7 +43,7 @@ const AppContent = () => {
           <ModelDownloadManager />
           <ErrorSnackbar />
         </Stack>
-      )}
+      }
     </>
   );
 };
