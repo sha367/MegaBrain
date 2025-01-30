@@ -29,6 +29,15 @@ export const MessageBlock = ({ message }: IMessageBlockProps) => {
     }
   };
 
+  /**
+   * Removes <think> tags and their contents from the message
+   * @param content - The message content to filter
+   * @returns The filtered content without think tags and their contents
+   */
+  const filterThinkTags = (content: string): string => {
+    return content.replace(/<think>[\s\S]*?<\/think>/g, "");
+  };
+
   // Define common text styles
   const commonTextStyle = {
     color: colors.text.primary,
@@ -167,7 +176,7 @@ export const MessageBlock = ({ message }: IMessageBlockProps) => {
             ),
           }}
         >
-          {message.content}
+          {filterThinkTags(message.content)}
         </ReactMarkdown>
         
         <Tooltip title={copied ? "Copied!" : "Copy message"}>
