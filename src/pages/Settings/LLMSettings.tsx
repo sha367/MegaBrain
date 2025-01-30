@@ -35,6 +35,13 @@ export const LLMSettings = () => {
 
   const { topModels, recommendedModels, otherModels } = useMemo(() => {
     const filtered = models.filter((model) => {
+      // Allow all deepseek and qwen models
+      if (model.name.toLowerCase().includes("deepseek") || 
+          model.name.toLowerCase().includes("qwen")) {
+        return true;
+      }
+      
+      // Check against allowed models list for others
       if (!ALLOWED_MODELS.includes(model.name)) return false;
       
       if (!showHighMemoryModels && systemMemory) {

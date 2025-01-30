@@ -3,7 +3,7 @@
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "com.gpt.chatgpt.secure.ondevice",
   "asar": true,
-  "productName": "MyGenAI",
+  "productName": "MegaBrain",
   // TODO: Update this for other platforms
   "afterSign": "./mac/notarize.cjs",
   "directories": {
