@@ -69,7 +69,7 @@ export const PULL_MODEL = async (
         const progress = JSON.parse(chunk);
         onProgress(progress);
       } catch (error) {
-        errorStore.actions.showError(`Error in model pull: ${error}`);
+        // errorStore.actions.showError(`Error in model pull: ${error}`);
         console.error("Error parsing chunk2:", chunk);
       }
     }
