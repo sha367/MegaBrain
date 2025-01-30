@@ -21,7 +21,7 @@ export const MessageBlock = ({ message }: IMessageBlockProps) => {
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(message.content);
+      await navigator.clipboard.writeText(filterThinkTags(message.content));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
     } catch (err) {
@@ -30,12 +30,19 @@ export const MessageBlock = ({ message }: IMessageBlockProps) => {
   };
 
   /**
-   * Removes <think> tags and their contents from the message
+   * Removes everything between <think> tags or starting from <think> tag
    * @param content - The message content to filter
    * @returns The filtered content without think tags and their contents
    */
   const filterThinkTags = (content: string): string => {
-    return content.replace(/<think>[\s\S]*?<\/think>/g, "");
+    // First try to remove complete <think> tags and their contents
+    const withoutCompleteTags = content.replace(/<think>[\s\S]*?<\/think>/g, "");
+    
+    // Then check for any remaining incomplete <think> tags
+    const thinkIndex = withoutCompleteTags.indexOf("<think>");
+    return thinkIndex >= 0 
+      ? withoutCompleteTags.substring(0, thinkIndex).trim() 
+      : withoutCompleteTags.trim();
   };
 
   // Define common text styles
